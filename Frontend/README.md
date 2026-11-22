@@ -51,11 +51,14 @@ src/
 │  └─ [locale]/              Thin App Router pages: compose features, metadata, error/loading/not-found
 ├─ features/                 Domain modules (components, hooks, services, types, constants, mocks, index.ts)
 │  ├─ dashboard/             Overview metrics, activity chart, usage card, quick links, recent leads
+│  ├─ endpoints/             Lead ingestion endpoints table, status filters, row actions
 │  ├─ leads/                 Leads data table, toolbar, faceted filters, row actions
+│  ├─ logs/                  API request & error logs table, level/endpoint filters
 │  └─ _template/             Starter template for new features (type-checked; see its README)
+├─ layouts/                  Full-page layout shells shared across route groups (`dashboard-layout.tsx`, etc.)
 ├─ components/
 │  ├─ ui/                    shadcn/ui primitives — DO NOT edit manually (CLI overwrites)
-│  ├─ layout/                Shared page chrome (page-breadcrumbs, page-header, page-container)
+│  ├─ layout/                Small reusable page building blocks (`page-breadcrumbs`, `page-header`, `page-container`)
 │  ├─ data-table/            Reusable TanStack Table v9 wrapper, pagination, sorting, faceted filters
 │  └─ shared/                Cross-feature shared components
 ├─ config/                   App-wide configuration (`routes.ts`, `fonts.ts`)

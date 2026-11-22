@@ -4,7 +4,13 @@
     "description": "Description of my app"
   },
   "navigation": {
-    "home": "Home"
+    "home": "Home",
+    "main": "Main navigation",
+    "language": "Language",
+    "dashboard": "Dashboard",
+    "endpoints": "Endpoints",
+    "leads": "Leads",
+    "logs": "Logs"
   },
   "errors": {
     "title": "Something went wrong",

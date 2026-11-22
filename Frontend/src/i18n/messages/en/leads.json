@@ -1,4 +1,12 @@
 {
+  "name": "Leads",
+  "title": "Leads",
+  "description": "View and filter all captured leads across your endpoints",
+  "stats": {
+    "total": "Total Leads",
+    "last24h": "Last 24 Hours",
+    "activeEndpoints": "Active Endpoints"
+  },
   "columns": {
     "id": "ID",
     "endpoint": "Endpoint",

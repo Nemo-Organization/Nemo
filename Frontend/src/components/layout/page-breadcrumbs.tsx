@@ -1,5 +1,5 @@
+import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { CircleNotchIcon } from "@phosphor-icons/react/ssr";
 
 import {
   Breadcrumb,
@@ -47,11 +47,19 @@ export function PageBreadcrumbs({
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        {/* TODO: replace with the brand icon (public/icon.svg) once provided */}
-        <CircleNotchIcon
-          className="size-5 text-primary transition-transform duration-500 hover:rotate-180"
-          aria-hidden
-        />
+        <Link
+          href={ROUTES.home}
+          aria-label={t("home")}
+          className="flex items-center transition-opacity hover:opacity-80"
+        >
+          <Image
+            src="/icon.png"
+            alt=""
+            width={24}
+            height={24}
+            className="size-6 object-contain dark:invert"
+          />
+        </Link>
       </div>
     </header>
   );

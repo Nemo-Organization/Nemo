@@ -11,7 +11,7 @@ export function RecentLeadsSection() {
       <h2 className="text-lg font-semibold tracking-tight text-foreground">
         {t("recentLeads")}
       </h2>
-      <LeadsTable leads={mockLeads} endpoints={mockEndpoints} />
+      <LeadsTable leads={mockLeads.slice(0, 5)} endpoints={mockEndpoints} />
     </section>
   );
 }

@@ -4,7 +4,13 @@
     "description": "Mô tả ứng dụng của tôi"
   },
   "navigation": {
-    "home": "Trang chủ"
+    "home": "Trang chủ",
+    "main": "Điều hướng chính",
+    "language": "Ngôn ngữ",
+    "dashboard": "Tổng quan",
+    "endpoints": "Endpoints",
+    "leads": "Leads",
+    "logs": "Logs"
   },
   "errors": {
     "title": "Đã xảy ra lỗi",

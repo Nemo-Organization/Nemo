@@ -1,0 +1,31 @@
+{
+  "name": "Logs",
+  "title": "Nhật ký API",
+  "description": "Theo dõi các yêu cầu gần đây, độ trễ và phản hồi lỗi",
+  "stats": {
+    "totalRequests": "Tổng yêu cầu",
+    "successRate": "Tỷ lệ thành công",
+    "errors": "Lỗi",
+    "avgLatency": "Độ trễ trung bình"
+  },
+  "level": {
+    "success": "Thành công",
+    "warning": "Cảnh báo",
+    "error": "Lỗi"
+  },
+  "columns": {
+    "id": "Mã log",
+    "endpoint": "Endpoint",
+    "status": "Trạng thái",
+    "level": "Mức độ",
+    "latency": "Độ trễ",
+    "message": "Thông điệp",
+    "createdAt": "Thời gian"
+  },
+  "toolbar": {
+    "filterPlaceholder": "Lọc log theo thông điệp...",
+    "level": "Mức độ",
+    "endpoints": "Endpoints",
+    "reset": "Đặt lại"
+  }
+}

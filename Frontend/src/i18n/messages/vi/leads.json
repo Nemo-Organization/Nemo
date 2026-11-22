@@ -1,4 +1,12 @@
 {
+  "name": "Leads",
+  "title": "Leads",
+  "description": "Xem và lọc toàn bộ lead đã thu thập từ các endpoint của bạn",
+  "stats": {
+    "total": "Tổng số lead",
+    "last24h": "24 giờ qua",
+    "activeEndpoints": "Endpoint đang hoạt động"
+  },
   "columns": {
     "id": "ID",
     "endpoint": "Endpoint",

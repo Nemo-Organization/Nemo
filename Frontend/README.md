@@ -1,63 +1,102 @@
-# My App
+# Nemo — Frontend
 
-Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · shadcn/ui (Base UI, style `base-lyra`) · next-intl · Redux Toolkit · TanStack Table v9.
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui (Base UI, `base-lyra` style, Phosphor icons) · next-intl · Redux Toolkit · TanStack Table v9 · Recharts.
 
-> Đọc [AGENTS.md](./AGENTS.md) trước khi viết code: Next.js ở đây có breaking changes so với kiến thức cũ,
-> tài liệu chuẩn nằm ở `node_modules/next/dist/docs/`.
+> Read [AGENTS.md](./AGENTS.md) before writing code: this Next.js 16 version introduces breaking changes compared to earlier releases. Canonical documentation is bundled locally in `node_modules/next/dist/docs/`.
 
-## Bắt đầu
+## Prerequisites
+
+- Node.js 20+
+- npm
+
+## Getting Started
 
 ```bash
 npm install
 cp .env.example .env.local
-npm run dev        # http://localhost:3000 (tự chạy gen:i18n)
+npm run dev        # http://localhost:3000 (automatically runs gen:i18n)
 ```
 
-| Script | Mục đích |
+## Environment Variables
+
+Copy `.env.example` to `.env.local` and configure the values (never commit real secrets):
+
+| Variable | Description | Default / Example |
+| --- | --- | --- |
+| `NEXT_PUBLIC_APP_URL` | Public base URL of the app (metadata, absolute links) | `http://localhost:3000` |
+| `API_BASE_URL` | Backend API base URL *(planned — uncomment when backend is ready)* | — |
+
+## Scripts
+
+| Script | Purpose |
 | --- | --- |
-| `npm run dev` / `build` / `start` | Chạy dev / build / chạy production |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | Kiểm tra TypeScript |
-| `npm run gen:i18n` | Sinh `src/i18n/namespaces.generated.ts` từ `messages/en/*.json` |
-| `npm run gen:i18n:strict` | Như trên nhưng lỗi nếu `vi` thiếu/dư key so với `en` (chạy trước `build`) |
+| `npm run dev` | Run the development server (runs `predev` → `gen:i18n` first) |
+| `npm run build` | Build for production (runs `prebuild` → `gen:i18n:strict` first) |
+| `npm run start` | Start the production server |
+| `npm run lint` | Run ESLint (`eslint-config-next` core-web-vitals + TypeScript) |
+| `npm run typecheck` | Run TypeScript type checking (`tsc --noEmit`) |
+| `npm run gen:i18n` | Generate `src/i18n/namespaces.generated.ts` from `src/i18n/messages/en/*.json` and warn on key mismatches |
+| `npm run gen:i18n:strict` | Same as `gen:i18n`, but exits with an error if any locale has missing/extra files or keys compared to `en` |
 
-## Cấu trúc thư mục
+## Project Structure
 
-```
+```text
+scripts/
+└─ generate-namespaces.mjs   Generates i18n namespace types and validates locale parity
+
 src/
-├─ app/[locale]/        Route (mỏng): chỉ ghép feature, metadata, error/loading/not-found
-├─ features/<name>/     Mỗi tính năng: components, hooks, services, types, constants, mocks, index.ts
-│  └─ _template/        Mẫu để copy khi tạo feature mới (xem README trong thư mục)
+├─ proxy.ts                  next-intl locale routing proxy (Next.js 16)
+├─ app/
+│  ├─ globals.css            Tailwind CSS 4 entry, custom @theme type scale, theme tokens
+│  └─ [locale]/              Thin App Router pages: compose features, metadata, error/loading/not-found
+├─ features/                 Domain modules (components, hooks, services, types, constants, mocks, index.ts)
+│  ├─ dashboard/             Overview metrics, activity chart, usage card, quick links, recent leads
+│  ├─ leads/                 Leads data table, toolbar, faceted filters, row actions
+│  └─ _template/             Starter template for new features (type-checked; see its README)
 ├─ components/
-│  ├─ ui/               shadcn/ui — KHÔNG sửa tay (CLI sẽ ghi đè)
-│  ├─ layout/           Khung trang dùng chung (breadcrumbs, header, container)
-│  └─ data-table/       Bảng dữ liệu dùng chung (TanStack Table v9)
-├─ config/              Hằng cấu hình: routes, fonts
-├─ hooks/               Hook dùng chung
-├─ i18n/                next-intl: routing, request, messages/{en,vi}/<namespace>.json
-├─ lib/                 Tiện ích thuần (utils)
-├─ store/               Redux store + slices
-└─ styles/overrides/    Ghi đè style của shadcn/ui tách riêng theo từng thành phần (tokens, card, table, chart...)
+│  ├─ ui/                    shadcn/ui primitives — DO NOT edit manually (CLI overwrites)
+│  ├─ layout/                Shared page chrome (page-breadcrumbs, page-header, page-container)
+│  ├─ data-table/            Reusable TanStack Table v9 wrapper, pagination, sorting, faceted filters
+│  └─ shared/                Cross-feature shared components
+├─ config/                   App-wide configuration (`routes.ts`, `fonts.ts`)
+├─ hooks/                    Shared React hooks (`use-mobile.ts`)
+├─ i18n/                     next-intl setup (`routing.ts`, `request.ts`, `navigation.ts`, `messages/{en,vi}/`)
+├─ lib/                      Pure utility helpers (`utils.ts`)
+├─ store/                    Redux Toolkit store, typed hooks, provider, and slices (`ui-slice.ts`)
+└─ styles/overrides/         Per-component shadcn/ui CSS overrides (`tokens`, `base`, `card`, `table`, `chart`, `input`, `overlay`, `progress`)
 ```
 
-## Quy ước
+## Architecture & Conventions
 
-- **Tên file**: `kebab-case`; component `PascalCase`; hook `useXxx` trong `use-xxx.ts`;
-  mock `*.mock.ts`, type `*.types.ts`, service `*.service.ts`.
-- **Import giữa feature** chỉ qua `@/features/<name>` (barrel `index.ts`).
-- **Style**: dùng token Tailwind/shadcn (`bg-background`, `border`, ...). Muốn ghi đè shadcn thì thêm vào
-  `src/styles/overrides/<component>.css` (và import vào `index.css`), không sửa `components/ui/*`. Thang cỡ chữ dùng chung nằm ở `@theme` trong `globals.css`.
-- **Font**: Inter Tight qua `next/font` (`src/config/fonts.ts`).
-- **i18n**: không hard-code text. Mỗi feature một namespace (`<feature>.json`) ở cả `en` và `vi`,
-  sau đó chạy `npm run gen:i18n`.
-- **Route**: khai báo trong `src/config/routes.ts`, dùng `Link` từ `@/i18n/navigation`.
-- **Dữ liệu**: hiện là mock trong `features/*/mocks`. Thay bằng service thật rồi xóa mock.
+- **Next.js 16 Config**: Turbopack CSS loader (`@tailwindcss/turbopack`), React Compiler (`reactCompiler: true`), `cacheComponents: true`, and `partialPrefetching: true` are enabled in `next.config.ts`.
+- **Naming**:
+  - Files: `kebab-case`
+  - Components: `PascalCase`
+  - Hooks: `useXxx` in `use-xxx.ts`
+  - Feature modules: `*.types.ts`, `*.service.ts`, `*.mock.ts`, `*.constants.ts`
+- **Feature Boundaries**: Import across features only through their public barrel (`@/features/<name>`), never from internal paths.
+- **Thin Routes**: Keep files in `src/app/[locale]/` thin — delegate UI and domain logic to feature views.
+- **Styling & Theming**:
+  - Use Tailwind and shadcn semantic tokens (`bg-background`, `text-foreground`, `border`, etc.).
+  - The custom design tokens (Teal primary palette, sharp `0rem` corner radius) live in `src/styles/overrides/tokens.css`, and the shared type scale (one step above Tailwind defaults) lives under `@theme` in `src/app/globals.css`.
+  - Never edit `src/components/ui/*` directly. Add overrides in `src/styles/overrides/<component>.css` and import them in `src/styles/overrides/index.css`.
+- **Typography**: `Inter Tight` (`latin`, `vietnamese`) loaded via `next/font/google` in `src/config/fonts.ts` and bound to `--font-inter-tight`.
+- **Internationalization (`next-intl`)**:
+  - Supported locales: `vi` (default) and `en` (configured in `src/i18n/routing.ts`).
+  - Do not hardcode user-facing copy. Create one namespace per feature in `src/i18n/messages/{en,vi}/<feature>.json`, then run `npm run gen:i18n`.
+- **Routing**: Define route paths in `src/config/routes.ts` and use `Link`, `useRouter`, `usePathname`, and `redirect` from `@/i18n/navigation`.
+- **Data Tables**: Reuse components and the shared `dataTableFeatures` preset from `src/components/data-table/`.
+- **Data & Mocks**: Features currently read mock data from `src/features/*/mocks/`. Replace with real API calls in `services/` once the backend is available, then remove the mock files.
 
-## Thêm feature mới
+## Adding a New Feature
 
-Xem [src/features/_template/README.md](./src/features/_template/README.md).
+Follow the step-by-step guide in [src/features/_template/README.md](./src/features/_template/README.md).
 
-## Việc nên bổ sung (chưa có trong repo)
+## Recommended Additions (Not Yet Configured)
 
-Prettier + `prettier-plugin-tailwindcss`, Husky + lint-staged, kiểm thử (Vitest + Testing Library, Playwright),
-validate env/form (zod), CI (GitHub Actions: lint, typecheck, build), Sentry/logging.
+- Code formatting: Prettier + `prettier-plugin-tailwindcss`
+- Git hooks: Husky + `lint-staged`
+- Testing: Vitest + React Testing Library (unit/component), Playwright (E2E)
+- Runtime validation: `zod` (environment variables & forms)
+- CI/CD: GitHub Actions (`lint`, `typecheck`, `build`)
+- Observability: Sentry / structured logging

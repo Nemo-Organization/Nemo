@@ -1,0 +1,11 @@
+/* Overrides for shadcn `Chart` (`src/components/ui/chart.tsx`). */
+
+[data-slot="chart"] [class*="border-border/50"] {
+  border-color: var(--border);
+  box-shadow: 0 8px 20px -4px oklch(0.2 0.02 200 / 12%);
+}
+
+[data-slot="chart"] .recharts-cartesian-grid line {
+  stroke: var(--border);
+  stroke-dasharray: 3 3;
+}

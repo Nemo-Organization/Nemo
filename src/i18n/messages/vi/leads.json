@@ -1,0 +1,21 @@
+{
+  "columns": {
+    "id": "ID",
+    "endpoint": "Endpoint",
+    "createdAt": "Ngày tạo",
+    "actions": "Thao tác"
+  },
+  "toolbar": {
+    "filterPlaceholder": "Lọc lead theo ID...",
+    "endpoints": "Endpoints",
+    "reset": "Đặt lại"
+  },
+  "actions": {
+    "open": "Mở",
+    "delete": "Xóa",
+    "deleteTitle": "Bạn có chắc chắn không?",
+    "deleteDescription": "Hành động này không thể hoàn tác. Lead này sẽ bị xóa vĩnh viễn.",
+    "cancel": "Hủy",
+    "deleted": "Đã xóa lead (mock)."
+  }
+}

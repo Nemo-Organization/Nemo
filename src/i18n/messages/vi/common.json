@@ -1,0 +1,19 @@
+{
+  "app": {
+    "name": "Ứng dụng của tôi",
+    "description": "Mô tả ứng dụng của tôi"
+  },
+  "navigation": {
+    "home": "Trang chủ"
+  },
+  "errors": {
+    "title": "Đã xảy ra lỗi",
+    "description": "Có lỗi không mong muốn xảy ra. Vui lòng thử lại.",
+    "retry": "Thử lại"
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn đang tìm không tồn tại.",
+    "backHome": "Về trang chủ"
+  }
+}

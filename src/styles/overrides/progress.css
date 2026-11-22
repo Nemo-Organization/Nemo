@@ -1,0 +1,10 @@
+/* Overrides for shadcn `Progress` (`src/components/ui/progress.tsx`). */
+
+[data-slot="progress-track"] {
+  height: 0.5rem;
+  background-color: color-mix(in oklch, var(--primary) 14%, var(--muted));
+}
+
+[data-slot="progress-indicator"] {
+  background-color: var(--primary);
+}

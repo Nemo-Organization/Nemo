@@ -1,0 +1,5 @@
+/* Overrides for shadcn `Input` (`src/components/ui/input.tsx`). */
+
+[data-slot="input"] {
+  background-color: var(--card);
+}

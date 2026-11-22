@@ -1,0 +1,21 @@
+{
+  "columns": {
+    "id": "ID",
+    "endpoint": "Endpoint",
+    "createdAt": "Date Created",
+    "actions": "Actions"
+  },
+  "toolbar": {
+    "filterPlaceholder": "Filter leads by ID...",
+    "endpoints": "Endpoints",
+    "reset": "Reset"
+  },
+  "actions": {
+    "open": "Open",
+    "delete": "Delete",
+    "deleteTitle": "Are you absolutely sure?",
+    "deleteDescription": "This action cannot be undone. This will permanently delete this lead.",
+    "cancel": "Cancel",
+    "deleted": "Successfully deleted lead (mock)."
+  }
+}

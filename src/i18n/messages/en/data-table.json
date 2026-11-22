@@ -1,0 +1,9 @@
+{
+  "view": "View",
+  "toggleColumns": "Toggle columns",
+  "noResults": "No results.",
+  "clearFilters": "Clear filters",
+  "page": "Page {page} of {total}",
+  "previous": "Previous",
+  "next": "Next"
+}

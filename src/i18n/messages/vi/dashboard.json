@@ -1,0 +1,25 @@
+{
+  "name": "Tổng quan",
+  "title": "Tổng quan",
+  "description": "Tóm tắt endpoint và lead của bạn",
+  "recentLeads": "Lead gần đây",
+  "links": {
+    "endpoints": { "name": "Endpoints", "description": "Tạo và quản lý endpoint" },
+    "leads": { "name": "Leads", "description": "Xem dữ liệu lead và biểu mẫu đã gửi" },
+    "logs": { "name": "Logs", "description": "Theo dõi mức sử dụng API và lỗi" }
+  },
+  "chart": {
+    "title": "Tổng quan Router",
+    "description": "Tổng số lead và lỗi trong tháng qua",
+    "leads": "Lead",
+    "errors": "Lỗi"
+  },
+  "usage": {
+    "title": "Tổng quan sử dụng",
+    "description": "Theo dõi mức sử dụng của bạn.",
+    "leadsCaptured": "Lead đã thu thập",
+    "remaining": "Còn {count} lead",
+    "resetsIn": "Gói được làm mới sau {days} ngày",
+    "upgrade": "Nâng cấp gói để thu thập nhiều lead hơn"
+  }
+}

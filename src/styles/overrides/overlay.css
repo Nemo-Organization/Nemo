@@ -1,0 +1,14 @@
+/* Overrides for floating surfaces: Popover, DropdownMenu, Select, Dialog, AlertDialog. */
+
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="dropdown-menu-sub-content"],
+[data-slot="select-content"],
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"] {
+  --tw-ring-color: var(--border);
+  box-shadow:
+    0 10px 25px -5px oklch(0.2 0.02 200 / 10%),
+    0 4px 10px -4px oklch(0.2 0.02 200 / 6%),
+    0 0 0 1px var(--border);
+}

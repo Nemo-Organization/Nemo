@@ -1,0 +1,25 @@
+{
+  "name": "Dashboard",
+  "title": "Dashboard",
+  "description": "Snapshot of your endpoints and leads",
+  "recentLeads": "Recent Leads",
+  "links": {
+    "endpoints": { "name": "Endpoints", "description": "Create and manage endpoints" },
+    "leads": { "name": "Leads", "description": "View lead data and form submissions" },
+    "logs": { "name": "Logs", "description": "Monitor your API usage and errors" }
+  },
+  "chart": {
+    "title": "Router Overview",
+    "description": "Showing total lead and error counts for the past month",
+    "leads": "Leads",
+    "errors": "Errors"
+  },
+  "usage": {
+    "title": "Usage Overview",
+    "description": "Monitor your usage.",
+    "leadsCaptured": "Leads Captured",
+    "remaining": "{count} leads remaining",
+    "resetsIn": "Plan resets in {days, plural, one {# day} other {# days}}",
+    "upgrade": "Upgrade your plan to capture more leads"
+  }
+}

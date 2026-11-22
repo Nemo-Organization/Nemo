@@ -1,0 +1,9 @@
+{
+  "view": "Hiển thị",
+  "toggleColumns": "Bật/tắt cột",
+  "noResults": "Không có kết quả.",
+  "clearFilters": "Xóa bộ lọc",
+  "page": "Trang {page} / {total}",
+  "previous": "Trước",
+  "next": "Sau"
+}

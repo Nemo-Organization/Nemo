@@ -1,0 +1,27 @@
+name: Enforce source branch
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, synchronize, edited]
+
+jobs:
+  check-source-branch:
+    name: check-source-branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Only allow PRs from dev
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPO: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_REPO" != "$BASE_REPO" ]; then
+            echo "PRs from forks are not allowed to merge into master."
+            exit 1
+          fi
+          if [ "$HEAD_REF" != "dev" ]; then
+            echo "Only PRs from 'dev' into 'master' are allowed. Current source branch: $HEAD_REF"
+            exit 1
+          fi
+          echo "OK: PR from dev into master."

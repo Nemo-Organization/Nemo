@@ -1,0 +1,2 @@
+Backend/run.sh text eol=lf
+Backend/run.bat text eol=crlf

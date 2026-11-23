@@ -53,7 +53,12 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException) -> JSONResponse:
-        status = HTTPStatus(exc.status_code)
+        try:
+            status = HTTPStatus(exc.status_code)
+        except ValueError:
+            return error_response(
+                request, exc.status_code, "HTTP_ERROR", "HTTP request failed.", exc.headers
+            )
         code = {400: "BAD_REQUEST", 401: "SESSION_EXPIRED", 403: "FORBIDDEN"}.get(
             exc.status_code, status.name
         )

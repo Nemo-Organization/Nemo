@@ -26,3 +26,19 @@ The proposed database compatibility floor is PostgreSQL 16. The available local 
 Remaining runtime checks include cookie/proxy integration, live model access, concurrency, strict frontend build, exact evidence interpretation and hosted end-to-end behavior. Actual provider credentials, cloud credit eligibility and deploy cost have not been verified by document validation.
 
 The cloud runbook proposes Cloud SQL PostgreSQL 16 as the initial database and a route proxy with Google service identity. Provisioning requires the team's actual project, IAM permissions, secrets and verified provider configuration. The public deployment, migration job, scheduled execution and rollback checks remain implementation tasks.
+
+## Backend skeleton implementation
+
+Implemented on branch `feat/guardian-backend-skeleton` in incremental commits. The available runtime now includes the FastAPI application factory, liveness, safe JSON errors, request IDs, validated settings, lazy PostgreSQL engines, request-scoped sessions, Alembic scaffolding and a non-root Docker entry point.
+
+| Check | Observed result |
+| --- | --- |
+| Backend behavior tests | 22 passed, including two real PostgreSQL 16 integration checks |
+| Ruff lint and formatting | Passed |
+| Dependency lock | `uv lock --check` passed |
+| Migration scaffold | `alembic heads`, online upgrade and offline SQL generation ran successfully with no domain revisions yet |
+| Linux image | Docker build completed with Python 3.12 and locked production dependencies |
+| Container smoke | Health and JSON 404 served over HTTP using custom PORT 8123; runtime UID 10001 |
+| Independent code review | No blocking findings; nonstandard HTTP-status fallback fixed with a RED-to-GREEN regression test |
+
+The domain packages are initial boundaries. Product auth, transfers, the 19-table model/migration, live AI and cloud deployment remain subsequent milestones. Generated runtime OpenAPI currently describes the implemented health route; the full planned contract continues to define the future endpoints.

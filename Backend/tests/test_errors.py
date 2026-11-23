@@ -33,6 +33,10 @@ def client():
     async def auth():
         raise HTTPException(401, "private session value", headers={"WWW-Authenticate": "Bearer"})
 
+    @app.get("/test/custom-status")
+    async def custom_status():
+        raise HTTPException(499, "private upstream detail")
+
     with TestClient(app, raise_server_exceptions=False) as test_client:
         yield test_client
 
@@ -78,3 +82,12 @@ def test_request_ids_are_server_generated_and_distinct(client):
     assert UUID(first.headers["x-request-id"])
     assert first.headers["x-request-id"] != "untrusted-value"
     assert first.headers["x-request-id"] != second.headers["x-request-id"]
+
+
+def test_nonstandard_http_status_preserves_status_with_a_safe_message(client):
+    response = client.get("/test/custom-status")
+
+    assert response.status_code == 499
+    assert response.json()["error"]["code"] == "HTTP_ERROR"
+    assert response.json()["error"]["message"] == "HTTP request failed."
+    assert "private upstream detail" not in response.text

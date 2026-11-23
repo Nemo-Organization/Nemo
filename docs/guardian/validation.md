@@ -25,7 +25,7 @@ The proposed database compatibility floor is PostgreSQL 16. The available local 
 
 Remaining runtime checks include cookie/proxy integration, live model access, concurrency, strict frontend build, exact evidence interpretation and hosted end-to-end behavior. Actual provider credentials, cloud credit eligibility and deploy cost have not been verified by document validation.
 
-The cloud runbook proposes Cloud SQL PostgreSQL 16 as the initial database and a route proxy with Google service identity. Provisioning requires the team's actual project, IAM permissions, secrets and verified provider configuration. The public deployment, migration job, scheduled execution and rollback checks remain implementation tasks.
+The cloud runbook proposes Neon PostgreSQL as the default, Supabase PostgreSQL as an alternative, and a route proxy with Google service identity. Provisioning requires the team's actual projects, permissions, secrets and verified provider configuration. The public deployment, migration job, scheduled execution and rollback checks remain implementation tasks.
 
 ## Backend skeleton implementation
 
@@ -40,5 +40,8 @@ Implemented on branch `feat/guardian-backend-skeleton` in incremental commits. T
 | Linux image | Docker build completed with Python 3.12 and locked production dependencies |
 | Container smoke | Health and JSON 404 served over HTTP using custom PORT 8123; runtime UID 10001 |
 | Independent code review | No blocking findings; nonstandard HTTP-status fallback fixed with a RED-to-GREEN regression test |
+| Windows launcher | `run.bat` launched the backend and health returned HTTP 200 on test port 8127 |
+| Unix launcher | `bash run.sh` launched the backend in a Linux container, created the missing `.env`, and health returned HTTP 200 on container port 8128; macOS was not directly tested |
+| Launcher syntax and line endings | Bash and PowerShell syntax checks passed; Git attributes retain LF for the Unix script and CRLF for the batch script |
 
 The domain packages are initial boundaries. Product auth, transfers, the 19-table model/migration, live AI and cloud deployment remain subsequent milestones. Generated runtime OpenAPI currently describes the implemented health route; the full planned contract continues to define the future endpoints.

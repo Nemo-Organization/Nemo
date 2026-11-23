@@ -13,40 +13,97 @@ FastAPI foundation for Nemo's Guardian anti-fraud application. Python 3.12, Pyda
 
 Product requirements, the 19-table schema and full API contract live in [the delivery pack](../docs/guardian/README.md). The domain packages currently establish source boundaries. Authentication, transfers, inference and operator endpoints are future tasks. This migration scaffold has no schema revisions yet. Add domain models and the initial migration from the agreed schema before initializing product tables.
 
-## Local setup
+## Start on Windows, macOS or Linux
 
-Install Python 3.12 and [uv](https://docs.astral.sh/uv/getting-started/installation/). Run from `Backend/`. On Windows open PowerShell and enter the repository's Backend directory first.
+From `Backend/`, choose the launcher for your operating system. The Python environment must already be installed using the one-time setup below.
+
+| Terminal | Daily start command |
+| --- | --- |
+| Windows CMD | `run.bat` |
+| Windows PowerShell | `.\run.bat` or `.\run.ps1` |
+| macOS / Linux terminal | `bash run.sh` |
+
+For this Windows checkout, CMD can run the following.
+
+```bat
+cd /d "D:\Momo Tech Day\Nemo\Backend"
+run.bat
+```
+
+PowerShell can run the following.
 
 ```powershell
 cd "D:\Momo Tech Day\Nemo\Backend"
+.\run.bat
+```
+
+On macOS/Linux, adjust the checkout location.
+
+```bash
+cd /path/to/Nemo/Backend
+bash run.sh
+```
+
+Open `http://localhost:8080/docs`, expand GET `/api/v1/health`, choose **Try it out** and **Execute**. Expected response is `{"status":"ok"}`. Keep the terminal open and press Ctrl+C to stop. Stop an earlier backend on port 8080 before starting another instance.
+
+### One-time setup for a fresh checkout
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) using the official instructions for the operating system, then open a new terminal. In `Backend/`, run this command on Windows, macOS or Linux.
+
+```text
 uv sync --locked
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-uv run python -m app
 ```
 
-The service listens at `http://localhost:8080`. `PORT` selects another port. Development reload uses `uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8080`.
+uv installs the project's locked dependencies into `.venv`, using Python 3.12 or its managed Python installation. Each teammate runs this on their own machine. Do not copy a Windows `.venv` to a Mac or the reverse. After checkout or dependency changes, run `uv sync --locked` again.
 
-Interactive documentation is at `/docs`; implemented operations are at `/openapi.json`. The full planned contract is `../docs/guardian/openapi.yaml`.
+The launchers create `.env` from `.env.example` only when missing and preserve existing configuration. Set the private database URL there, then run the launcher again. The `.bat` option also works from PowerShell without changing its script execution policy.
 
-Open `http://localhost:8080/docs`, expand GET `/api/v1/health`, choose **Try it out**, then **Execute**. Expected response is `{"status":"ok"}`. Keep the terminal open while using the API. Press Ctrl+C to stop it. If 8080 is already occupied, stop the earlier backend or choose a different port.
+## What the commands mean
 
-If this checkout already has `.venv` from the skeleton setup, the installed interpreter can start the service directly.
+| Name | Purpose |
+| --- | --- |
+| FastAPI | Framework defining the backend APIs |
+| Uvicorn | HTTP server running the FastAPI application; installed with the project |
+| uv | Dependency and Python-environment manager, similar to npm; `uv sync --locked` installs the agreed versions |
+| `.venv` | Isolated Python interpreter and project libraries |
+| `run.bat` / `run.ps1` / `run.sh` | Platform launchers for the same backend |
+| Docker | Container packaging used for deployment and optional local DB testing |
 
-```powershell
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8080
-```
+For optional automatic reload while editing, use `uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8080`. The one-command launcher is sufficient for ordinary startup.
 
-That direct command assumes dependencies have already been installed. New checkouts use `uv sync --locked` first. Open the `Backend/` working directory so imports and the optional `.env` file resolve consistently.
+Implemented operations are at `/openapi.json`. The full planned contract is `../docs/guardian/openapi.yaml`.
 
 ## Where PostgreSQL runs
 
-| Environment | Database location | How backend connects |
+| Environment | Database location | Backend configuration |
 | --- | --- | --- |
-| Everyday development | PostgreSQL 16 in Docker on each developer's computer | Local `.env` points to `127.0.0.1:5433` |
-| Backend integration tests | A dedicated local `guardian_test` database | `TEST_DATABASE_URL` points to that disposable test database |
-| Shared online demo | Managed PostgreSQL, proposed Cloud SQL in GCP | Cloud Run receives a versioned DB secret and a Cloud SQL attachment |
+| Everyday development | Dedicated Neon development branch/database | Private `.env` contains that branch's TLS connection URL |
+| Shared online demo | Separate Neon demo branch/database | Cloud Run injects the demo URL from Secret Manager |
+| Backend integration tests | Dedicated disposable PostgreSQL database | `TEST_DATABASE_URL`, isolated from development and the live demo |
+| Alternative provider | Supabase PostgreSQL | Use a direct connection or the session pooler and retain TLS |
 
-Use local PostgreSQL for routine development. The hosted demo has its own managed database. Each environment has separate credentials and data. Changing `DATABASE_URL` selects the target; tables and application behavior follow the agreed schema/migrations.
+Neon is the proposed default because this application already implements its own backend and primarily needs PostgreSQL. Supabase is a supported alternative. Verify current quotas in [Neon pricing](https://neon.com/pricing) or [Supabase pricing](https://supabase.com/pricing) before exposing the judging URL. A free plan has resource and availability limits.
+
+### Connect Neon or Supabase
+
+1. Create a project in the selected provider. Choose a region close to the Cloud Run service where available.
+2. Keep separate development and demo databases/branches. Obtain the development connection string through the provider console.
+3. For Neon, start with a direct connection. For Supabase, use direct PostgreSQL when reachable, otherwise the session pooler. Verify IPv4/IPv6 reachability and connection limits.
+4. Open the private `.env` created by the launcher. Change `postgresql://` in the copied string to `postgresql+psycopg://` and retain the actual host, port, database and TLS query parameters.
+
+```dotenv
+DATABASE_URL=postgresql+psycopg://USER:URL_ENCODED_PASSWORD@HOST:5432/DATABASE?sslmode=require
+```
+
+URI-encode special characters in the password. Keep credentials in `.env` or Secret Manager. The backend uses SQLAlchemy/psycopg directly. Supabase client API keys are not database passwords.
+
+5. Restart with the launcher for your OS after changing `.env`. Liveness works before a database is configured. The database-query example below uses PowerShell; other shells can run the same Python statements in an interpreter started with `uv run python`.
+
+The migration owner and runtime application role should be separate for the hosted demo. The direct migration URL is supplied to the migration job. Direct/session connections are the initial baseline. A transaction pooler needs a deliberate compatibility check before use because advisory-lock lifetime, prepared statements and migration behavior depend on the mode. Guardian uses transaction-scoped advisory locks in its planned money services.
+
+For Supabase, ensure application tables are not exposed through an unprotected Data API. Configure its exposed schemas/RLS appropriately or disable the unused Data API. The browser accesses the FastAPI backend; it does not receive DB credentials.
+
+The current skeleton has not provisioned a provider project or the 19 product tables. Add the agreed domain models and initial migration in the next milestone. `alembic upgrade head` currently checks the empty migration chain.
 
 ### Start a local database
 
@@ -84,19 +141,11 @@ finally:
 
 Expected output is `1`. A successful liveness response only proves the API process is running; use this database query to confirm connectivity. At this skeleton milestone the database is empty of Guardian's 19 product tables. Alembic's initial domain migration is the next database implementation task. Running `alembic upgrade head` currently checks the empty migration chain.
 
-### Use a cloud database
+### Hosted deployment
 
-The [cloud runbook](../docs/guardian/cloud-deployment.md) specifies the online demo's Cloud SQL PostgreSQL 16, migration job, secrets and service identities. Create those resources during the cloud deployment task. The current skeleton setup has not provisioned a cloud database.
+The [cloud runbook](../docs/guardian/cloud-deployment.md) uses Cloud Run for frontend/backend, managed Neon PostgreSQL by default, private GCS evidence storage and Secret Manager. Supabase can replace Neon with the same schema and API.
 
-In Cloud Run, inject the application `DATABASE_URL` through Secret Manager and attach the SQL instance. The migration job uses a separate database-user secret. With an existing external managed PostgreSQL, use the provider's direct TLS connection details and the psycopg driver prefix. URI-encode special characters in credentials and verify the provider's transaction/connection-pool behavior.
-
-For an external managed provider, the local `.env` shape is illustrated below. Replace values only in your private environment file.
-
-```dotenv
-DATABASE_URL=postgresql+psycopg://USER:URL_ENCODED_PASSWORD@HOST:5432/DATABASE?sslmode=require
-```
-
-A developer connecting to Cloud SQL from a laptop should use an authorized Cloud SQL Auth Proxy connection or another explicitly configured secure connection. The `/cloudsql/...` Unix socket path in a Cloud Run secret applies to the attached cloud service environment. The web frontend never receives the database URL.
+Cloud Run receives the provider's TLS DATABASE_URL directly. The API and migration/maintenance jobs use their own credentials. No Cloud SQL instance or Cloud SQL attachment is required for this plan. Provider access, quotas and actual billing must be verified during deployment.
 
 ## Configuration
 

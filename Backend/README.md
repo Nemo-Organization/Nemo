@@ -1,144 +1,105 @@
-# Nemo — Backend
+# Guardian backend
 
-> **Template README:** Replace the `<TODO>` placeholders below as the backend stack, architecture, and endpoints are finalized.
+FastAPI foundation for Nemo's Guardian anti-fraud application. Python 3.12, Pydantic settings, SQLAlchemy/psycopg, Alembic and a locked uv environment.
 
-## Overview
+## Current implementation
 
-Backend service for **Nemo**, providing APIs for `<TODO: core domains, e.g., leads, endpoints, usage analytics, logs, authentication>`.
+- `GET /api/v1/health` returns `{"status":"ok"}` without contacting PostgreSQL or an AI provider.
+- Responses include a server-generated `X-Request-ID` and `Cache-Control: no-store`.
+- HTTP, validation and unexpected errors use the shared JSON error envelope with safe public messages.
+- `create_app(settings)` supports isolated test instances and lifespan-managed database engines.
+- Request-scoped sessions close and roll back uncommitted work. Business services will explicitly own commits.
+- Alembic configuration and domain package boundaries are prepared for the next milestone.
 
-### Tech Stack
+Product requirements, the 19-table schema and full API contract live in [the delivery pack](../docs/guardian/README.md). The domain packages currently establish source boundaries. Authentication, transfers, inference and operator endpoints are future tasks. This migration scaffold has no schema revisions yet. Add domain models and the initial migration from the agreed schema before initializing product tables.
 
-- **Language / Runtime:** `<TODO: e.g., TypeScript (Node.js 20+) / Go 1.23 / Python 3.12 / Java 21>`
-- **Framework:** `<TODO: e.g., NestJS / Fastify / Gin / FastAPI / Spring Boot>`
-- **Database:** `<TODO: e.g., PostgreSQL 16>`
-- **ORM / Query Builder:** `<TODO: e.g., Prisma / Drizzle / GORM / SQLAlchemy>`
-- **Cache / Queue:** `<TODO: e.g., Redis / BullMQ / RabbitMQ (optional)>`
-- **API Documentation:** `<TODO: e.g., OpenAPI 3.1 / Swagger UI>`
+## Local setup
 
-## Prerequisites
+Install Python 3.12 and [uv](https://docs.astral.sh/uv/getting-started/installation/). Run from `Backend/`.
 
-- `<TODO: Runtime & version>`
-- `<TODO: Package manager / build tool>`
-- `<TODO: Database / Docker Compose (if used for local services)>`
-
-## Getting Started
-
-```bash
-# 1. Install dependencies
-<TODO: e.g., npm install / go mod download / uv sync>
-
-# 2. Configure environment variables
-cp .env.example .env
-
-# 3. Start local dependencies (database, cache, etc.)
-<TODO: e.g., docker compose up -d>
-
-# 4. Run database migrations (and optional seed)
-<TODO: e.g., npm run db:migrate && npm run db:seed>
-
-# 5. Start the development server
-<TODO: e.g., npm run dev>
+```powershell
+uv sync --locked
+Copy-Item .env.example .env
+uv run python -m app
 ```
 
-Once running, the service should be available at `http://localhost:<PORT>` (health check at `GET /health`).
+The service listens at `http://localhost:8080`. `PORT` selects another port. Development reload uses `uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8080`.
 
-## Environment Variables
+Interactive documentation is at `/docs`; implemented operations are at `/openapi.json`. The full planned contract is `../docs/guardian/openapi.yaml`.
 
-Copy `.env.example` to `.env` and fill in the required values. Never commit real secrets.
+## Configuration
 
-| Variable | Required | Description | Default / Example |
-| --- | --- | --- | --- |
-| `APP_ENV` | Yes | Runtime environment (`development`, `staging`, `production`) | `development` |
-| `PORT` | No | HTTP server port | `8000` |
-| `DATABASE_URL` | Yes | Primary database connection string | `postgres://user:pass@localhost:5432/nemo` |
-| `REDIS_URL` | No | Cache / queue connection string | `redis://localhost:6379` |
-| `CORS_ORIGINS` | Yes | Comma-separated allowed frontend origins | `http://localhost:3000` |
-| `JWT_SECRET` | Yes | Secret key for signing auth tokens | `<change-me>` |
-| `LOG_LEVEL` | No | Logging verbosity (`debug`, `info`, `warn`, `error`) | `info` |
+Settings load environment variables and optional `.env` in the working directory. Environment values take precedence. Keep credentials out of source control.
 
-## Scripts / Commands
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `APP_ENV` | `development` | Development, test or production |
+| `PORT` | `8080` | Listener used by `python -m app` and Cloud Run |
+| `PUBLIC_APP_ORIGIN` | `http://localhost:3000` | Exact HTTP/HTTPS origin reserved for the forthcoming CSRF layer |
+| `DATABASE_URL` | Unset | `postgresql+psycopg://...`, masked in settings output |
+| `DB_POOL_SIZE`, `DB_MAX_OVERFLOW` | `3`, `2` | Bounded connections with pre-ping |
+| `EVIDENCE_BUCKET` | Unset | Private storage for the evidence milestone |
+| `AI_PROVIDER`, `AI_MODEL`, `AI_API_KEY` | Unset | Configuration for the inference milestone |
+| `AI_TIMEOUT_SECONDS` | `20` | Planned total inference deadline |
+| `HOLD_TTL_SECONDS` | `900` | Planned hold lifetime |
+| `DRAFT_TTL_SECONDS` | `1800` | Planned draft lifetime |
+| `ASSESSMENT_TTL_SECONDS` | `300` | Planned assessment lifetime |
+| `AI_SANDBOX_HOURLY_LIMIT` | `20` | Planned analysis quota |
+| `GROUP_SANDBOX_HOURLY_LIMIT` | `5` | Planned grouping quota |
+| `AI_DAILY_GLOBAL_LIMIT` | `300` | Planned global model quota |
 
-| Command | Purpose |
-| --- | --- |
-| `<TODO: dev command>` | Start development server with hot reload |
-| `<TODO: build command>` | Compile / build for production |
-| `<TODO: start command>` | Run production build |
-| `<TODO: lint command>` | Run linter & formatter checks |
-| `<TODO: test command>` | Run unit and integration tests |
-| `<TODO: migrate command>` | Apply pending database migrations |
-| `<TODO: seed command>` | Seed local development data |
+A configured DB creates a lazy engine during lifespan. Liveness stays available when that DB is unreachable. Financial/readiness endpoints will check their required dependencies explicitly. The origin setting is validated here; session authentication, CORS and CSRF enforcement belong to the auth milestone.
 
-## Project Structure
+## Source layout
 
 ```text
-<TODO: update to match chosen framework>
-src/
-├─ config/          Environment loading, validation, and app configuration
-├─ modules/         Domain modules (e.g., leads/, endpoints/, analytics/, auth/)
-│  └─ <module>/
-│     ├─ controller / handler   HTTP route handlers & request validation
-│     ├─ service                Business logic
-│     ├─ repository             Database access
-│     └─ dto / schema           Request & response schemas
-├─ common/          Shared middleware, error handling, guards, interceptors, utils
-├─ database/        Migrations, seeds, and database client setup
-└─ main.<ext>       Application entry point
+app/
+  __main__.py       Environment-configured listener
+  main.py           App factory and lifespan
+  settings.py       Validated environment and masked secrets
+  errors.py         Public error models and handlers
+  middleware.py     Request IDs and no-store headers
+  health.py         Liveness route
+  db.py             Metadata, engine factory and request sessions
+  auth/             Identity and session milestone
+  demo/             Isolated fixture milestone
+  transfers/        Transfer and ledger milestone
+  risk/             Risk evaluator milestone
+  evidence/         Upload and storage milestone
+  investigation/    AI evidence and trace milestone
+  operations/       Operator decisions and notice milestone
+migrations/
+  env.py            Independent migration runtime
+  script.py.mako    Revision template
+  versions/         Initial domain migration to implement
 ```
 
-## API Conventions
+## Verification
 
-- **Base Path:** `/api/v1`
-- **Interactive Docs:** `http://localhost:<PORT>/docs` *(when enabled in non-production)*
-- **Health Check:** `GET /health` → `200 OK`
-- **Authentication:** `<TODO: e.g., Bearer JWT / API Key header>`
-- **Pagination:** `<TODO: e.g., ?page=1&limit=20 or cursor-based>`
-- **Error Format:**
-
-```json
-{
-  "error": {
-    "code": "RESOURCE_NOT_FOUND",
-    "message": "Lead not found",
-    "details": []
-  }
-}
+```powershell
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest -q
+uv run alembic heads
 ```
 
-## Database & Migrations
+The default suite skips PostgreSQL integration checks unless `TEST_DATABASE_URL` points to a dedicated disposable database. The rollback test creates and removes `skeleton_session_probe`. Run this only against a test database.
 
-- Create a migration: `<TODO: command>`
-- Apply migrations: `<TODO: command>`
-- Rollback last migration: `<TODO: command>`
-- Seed sample data: `<TODO: command>`
-
-## Testing
-
-```bash
-# Unit tests
-<TODO: command>
-
-# Integration / E2E tests
-<TODO: command>
-
-# Coverage report
-<TODO: command>
+```powershell
+$env:TEST_DATABASE_URL = 'postgresql+psycopg://guardian:guardian-test-only@127.0.0.1:5432/guardian_test'
+uv run pytest -q
+$env:TEST_DATABASE_URL = $null
 ```
 
-## Coding Conventions
+`alembic heads` is empty for this skeleton. After the initial models and revision exist, configure `DATABASE_URL` and run `uv run alembic upgrade head`. Migration jobs use separate database-user credentials. Their settings do not require an AI key.
 
-- Validate all incoming payloads, query params, and environment variables at the boundary.
-- Keep controllers/handlers thin; place business rules in services and data access in repositories.
-- Return consistent, structured error responses and never leak stack traces in production.
-- Use structured JSON logging with request correlation IDs.
+## Container
 
-## Frontend Integration
+Run from the repository root.
 
-- Allow the Frontend dev server origin (`http://localhost:3000`) in `CORS_ORIGINS`.
-- Set `API_BASE_URL` in `../Frontend/.env.local` to point to this backend service.
-- As endpoints become ready, replace mock data in `../Frontend/src/features/*/mocks/` with real API service calls.
+```powershell
+docker build -t guardian-backend:skeleton Backend
+docker run --rm -p 8080:8080 -e PORT=8080 guardian-backend:skeleton
+```
 
-## Deployment & CI/CD
-
-- **Containerization:** `<TODO: Dockerfile / docker-compose.yml notes>`
-- **CI Checks:** Lint, typecheck/compile, unit & integration tests, migration check
-- **Observability:** `<TODO: structured logs, metrics, tracing, Sentry>`
+The image runs as an unprivileged user, installs locked runtime dependencies and includes Alembic for future migration jobs. Inject secrets through the deployment environment. [Cloud deployment plan](../docs/guardian/cloud-deployment.md) describes the planned public Next frontend, private API, managed database and scheduled jobs.

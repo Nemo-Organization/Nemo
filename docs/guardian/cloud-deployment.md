@@ -8,7 +8,7 @@ This is the executable deployment plan for the application described in this pac
 flowchart LR
     User[Judge browser] --> Web[Public Next.js Cloud Run service]
     Web -->|Google ID token and original actor cookies| API[Private FastAPI Cloud Run service]
-    API -->|Cloud SQL attachment| DB[(Cloud SQL PostgreSQL 16)]
+    API -->|TLS PostgreSQL connection| DB[(Neon PostgreSQL)]
     API --> Bucket[Private GCS evidence bucket]
     API --> Secrets[Secret Manager]
     API --> Model[Selected model API]
@@ -22,18 +22,20 @@ flowchart LR
 | Resource | Proposed name | Owner and responsibility |
 | --- | --- | --- |
 | GCP project | Existing team project selected on Day 1 | Dev A checks billing, credit eligibility, APIs and IAM |
-| Region | `asia-southeast1` | Both services, SQL, bucket and jobs use this region |
+| Region | `asia-southeast1` | GCP services use this region; choose a nearby database region where available |
 | Artifact Registry | `guardian` | Dev A stores images tagged by commit SHA |
 | Frontend service | `guardian-web` | Dev B supplies Next server image and authenticated API proxy |
 | Backend service | `guardian-api` | Dev A supplies API image and runtime configuration |
-| SQL instance / database | `guardian-pg` / `guardian` | Dev A owns migrations, access, backup and recovery |
+| Managed PostgreSQL | Neon project with separate dev/demo branches | Dev A owns migrations, access, quotas and recovery |
 | Evidence bucket | `<project-id>-guardian-evidence` | Backend serves authenticated evidence; public access prevention enabled |
 | Migration job | `guardian-migrate` | Deployment operator runs exactly once per schema release |
 | Maintenance job | `guardian-maintenance` | Expiry, stale AI-run reconciliation and expired-sandbox cleanup |
 | Scheduler | `guardian-maintenance-minute` | Invokes maintenance with a dedicated identity |
 | Secrets | See environment matrix | Versioned DB URLs and model credentials |
 
-Cloud SQL is the proposed primary database to use the reported GCP credit and keep services together. An existing Neon/Supabase PostgreSQL can be used if that is already available and materially improves the verified budget. Record that choice before Task 2. In that alternative use TLS DATABASE_URL, remove Cloud SQL attachment/IAM commands, and ensure the selected pool mode supports transactions and PostgreSQL advisory locks. A change of database host does not change the API or table definitions.
+Neon is the proposed default managed PostgreSQL and Supabase is the supported alternative. Both publish free plans with resource and availability limits. Create separate development and judging databases/branches. GCP credits apply to eligible GCP services; external database billing is separate. [Neon pricing](https://neon.com/pricing) · [Supabase pricing](https://supabase.com/pricing)
+
+Use direct PostgreSQL initially. Supabase's session pooler is an alternative when direct reachability requires it. Transaction poolers need a deliberate compatibility test for the planned transaction-scoped advisory locks, prepared statements and migration behavior. [Neon pooling](https://neon.com/docs/connect/connection-pooling) · [Supabase connections](https://supabase.com/docs/guides/database/connecting-to-postgres)
 
 ## 2. Cloud release prerequisites
 
@@ -71,27 +73,22 @@ Cloud Run supplies PORT and expects the ingress container to listen on the appro
 
 The implementation must use these names consistently in settings, environment examples and deployment files. A provider using workload identity may replace AI_API_KEY with its scoped service permissions; record that decision and remove unused key configuration. Never log secret values or complete connection URLs.
 
-Store DB URLs using the SQLAlchemy psycopg driver form `postgresql+psycopg://`. For a Cloud SQL Unix socket connection, URI-encode credentials and use the configured `/cloudsql/<instance-connection-name>` host path. Verify the selected SQLAlchemy/psycopg connection format with a migration before release. The API, migration job and maintenance job use separate database users. Cloud SQL attachments and connection pooling require explicit configuration. [Cloud SQL connection guide](https://docs.cloud.google.com/sql/docs/postgres/connect-run)
+Store DB URLs using `postgresql+psycopg://`, URI-encoded credentials and provider TLS settings, with `sslmode=require` as the baseline. The API, migration job and maintenance job use separate database users. With Supabase, configure exposed schemas/RLS appropriately or disable the unused Data API. The browser uses FastAPI rather than a public database connection.
 
 ## 4. Provision resources
 
-Examples below use placeholders and non-secret names. Select an existing billed project before execution. Confirm the chosen SQL machine's current price and credit eligibility in the billing console.
+Examples below use placeholders and non-secret names. Select an existing billed GCP project and verify the external database's actual quotas before execution.
 
 ```bash
 export PROJECT_ID='replace-with-team-project'
 export REGION='asia-southeast1'
-export SQL_INSTANCE='guardian-pg'
 export BUCKET="${PROJECT_ID}-guardian-evidence"
 export REGISTRY="${REGION}-docker.pkg.dev/${PROJECT_ID}/guardian"
 
 gcloud config set project "$PROJECT_ID"
-gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com sqladmin.googleapis.com secretmanager.googleapis.com storage.googleapis.com cloudscheduler.googleapis.com
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com storage.googleapis.com cloudscheduler.googleapis.com
 
 gcloud artifacts repositories create guardian --repository-format=docker --location="$REGION"
-
-gcloud sql instances create "$SQL_INSTANCE" --database-version=POSTGRES_16 --edition=ENTERPRISE --tier=db-custom-1-3840 --region="$REGION" --availability-type=zonal --storage-type=SSD --storage-size=10 --storage-auto-increase --storage-auto-increase-limit=20 --backup-start-time=18:00 --deletion-protection
-
-gcloud sql databases create guardian --instance="$SQL_INSTANCE"
 
 gcloud storage buckets create "gs://${BUCKET}" --location="$REGION" --uniform-bucket-level-access
 gcloud storage buckets update "gs://${BUCKET}" --public-access-prevention
@@ -101,9 +98,9 @@ for account in guardian-web guardian-api guardian-migrate guardian-maintenance g
 done
 ```
 
-These create commands are first-provisioning examples. For an existing resource inspect its configuration instead of blindly recreating it. The SQL choice is a single-zone starting point, not a price guarantee. Changing the region requires updating names, connection path and image URLs together. Cloud SQL versions and editions can affect supported configurations. [SQL instance creation](https://docs.cloud.google.com/sql/docs/postgres/create-instance)
+These create commands are first-provisioning examples. Inspect existing resources before reusing them. In the Neon console, create the project and separate dev/demo branches, then obtain direct TLS connection strings. With Supabase, use separate environments permitted by the plan and direct/session endpoints. Verify PostgreSQL 16+ and extension permissions before migration.
 
-Use the Cloud SQL console or an authorized admin session to create `guardian_app`, `guardian_migrate` and `guardian_maintenance` users with unique passwords. Migration owns application objects. The application needs table reads, intended business updates and ledger/audit inserts, with no routine update/delete permission on ledger/audit. Maintenance additionally needs expired-sandbox cleanup permissions. Configure matching default privileges for future migrations.
+Use a provider-authorized owner connection to create `guardian_app`, `guardian_migrate` and `guardian_maintenance` users with unique passwords. Migration owns application objects. The application needs table reads, intended business updates and ledger/audit inserts, with no routine update/delete permission on ledger/audit. Maintenance additionally needs expired-sandbox cleanup permissions. Configure matching default privileges for future migrations.
 
 Create Secret Manager secrets `guardian-app-database-url`, `guardian-migration-database-url`, `guardian-maintenance-database-url` and `guardian-ai-api-key`. Add values through the secure console or a protected local input file. Pin secret version numbers in the release manifest; the examples assume version `1`. Passwords and secret contents are absent from shell history and source control.
 
@@ -115,10 +112,6 @@ export API_SA="guardian-api@${PROJECT_ID}.iam.gserviceaccount.com"
 export MIGRATE_SA="guardian-migrate@${PROJECT_ID}.iam.gserviceaccount.com"
 export MAINT_SA="guardian-maintenance@${PROJECT_ID}.iam.gserviceaccount.com"
 export SCHED_SA="guardian-scheduler@${PROJECT_ID}.iam.gserviceaccount.com"
-
-for account in "$API_SA" "$MIGRATE_SA" "$MAINT_SA"; do
-  gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:${account}" --role=roles/cloudsql.client
-done
 
 gcloud secrets add-iam-policy-binding guardian-app-database-url --member="serviceAccount:${API_SA}" --role=roles/secretmanager.secretAccessor
 gcloud secrets add-iam-policy-binding guardian-ai-api-key --member="serviceAccount:${API_SA}" --role=roles/secretmanager.secretAccessor
@@ -141,12 +134,11 @@ Run from the repository root after the Dockerfiles exist and tests pass. The bac
 export RELEASE_SHA="$(git rev-parse --short=12 HEAD)"
 export API_IMAGE="${REGISTRY}/api:${RELEASE_SHA}"
 export WEB_IMAGE="${REGISTRY}/web:${RELEASE_SHA}"
-export SQL_CONNECTION="${PROJECT_ID}:${REGION}:${SQL_INSTANCE}"
 
 gcloud builds submit ./Backend --tag="$API_IMAGE"
 gcloud builds submit ./Frontend --tag="$WEB_IMAGE"
 
-gcloud run jobs deploy guardian-migrate --image="$API_IMAGE" --region="$REGION" --service-account="$MIGRATE_SA" --set-cloudsql-instances="$SQL_CONNECTION" --set-secrets=DATABASE_URL=guardian-migration-database-url:1 --set-env-vars=APP_ENV=production --command=python --args=-m,alembic,upgrade,head --tasks=1 --parallelism=1 --max-retries=0 --task-timeout=300s
+gcloud run jobs deploy guardian-migrate --image="$API_IMAGE" --region="$REGION" --service-account="$MIGRATE_SA" --set-secrets=DATABASE_URL=guardian-migration-database-url:1 --set-env-vars=APP_ENV=production --command=python --args=-m,alembic,upgrade,head --tasks=1 --parallelism=1 --max-retries=0 --task-timeout=300s
 
 gcloud run jobs execute guardian-migrate --region="$REGION" --wait
 ```
@@ -159,7 +151,7 @@ First deploy the private API using a deliberately nonmatching temporary app orig
 export AI_PROVIDER='replace-with-implemented-provider'
 export AI_MODEL='replace-with-tested-model-id'
 
-gcloud run deploy guardian-api --image="$API_IMAGE" --region="$REGION" --service-account="$API_SA" --no-allow-unauthenticated --add-cloudsql-instances="$SQL_CONNECTION" --set-secrets=DATABASE_URL=guardian-app-database-url:1,AI_API_KEY=guardian-ai-api-key:1 --set-env-vars="APP_ENV=production,PUBLIC_APP_ORIGIN=https://bootstrap.invalid,EVIDENCE_BUCKET=${BUCKET},AI_PROVIDER=${AI_PROVIDER},AI_MODEL=${AI_MODEL},DB_POOL_SIZE=3,DB_MAX_OVERFLOW=2,AI_TIMEOUT_SECONDS=20,HOLD_TTL_SECONDS=900,DRAFT_TTL_SECONDS=1800,ASSESSMENT_TTL_SECONDS=300,AI_SANDBOX_HOURLY_LIMIT=20,GROUP_SANDBOX_HOURLY_LIMIT=5,AI_DAILY_GLOBAL_LIMIT=300" --port=8080 --cpu=1 --memory=512Mi --concurrency=20 --min-instances=0 --max-instances=2 --timeout=60s
+gcloud run deploy guardian-api --image="$API_IMAGE" --region="$REGION" --service-account="$API_SA" --no-allow-unauthenticated --set-secrets=DATABASE_URL=guardian-app-database-url:1,AI_API_KEY=guardian-ai-api-key:1 --set-env-vars="APP_ENV=production,PUBLIC_APP_ORIGIN=https://bootstrap.invalid,EVIDENCE_BUCKET=${BUCKET},AI_PROVIDER=${AI_PROVIDER},AI_MODEL=${AI_MODEL},DB_POOL_SIZE=3,DB_MAX_OVERFLOW=2,AI_TIMEOUT_SECONDS=20,HOLD_TTL_SECONDS=900,DRAFT_TTL_SECONDS=1800,ASSESSMENT_TTL_SECONDS=300,AI_SANDBOX_HOURLY_LIMIT=20,GROUP_SANDBOX_HOURLY_LIMIT=5,AI_DAILY_GLOBAL_LIMIT=300" --port=8080 --cpu=1 --memory=512Mi --concurrency=20 --min-instances=0 --max-instances=2 --timeout=60s
 
 export API_URL="$(gcloud run services describe guardian-api --region="$REGION" --format='value(status.url)')"
 
@@ -181,7 +173,7 @@ Validate the frontend timeout/proxy can wait for the bounded 20-second model cal
 Implement `Backend/app/maintenance.py` as an idempotent one-shot CLI. Invocation `python -m app.maintenance` expires due drafts/holds using the shared transfer service, marks abandoned PENDING AI runs TIMED_OUT, and removes expired sandbox evidence/data after the retention grace period. Start stale-AI reconciliation at 120 seconds so an active 20-second analysis is not interrupted. Multiple executions can overlap safely through database locks.
 
 ```bash
-gcloud run jobs deploy guardian-maintenance --image="$API_IMAGE" --region="$REGION" --service-account="$MAINT_SA" --set-cloudsql-instances="$SQL_CONNECTION" --set-secrets=DATABASE_URL=guardian-maintenance-database-url:1 --set-env-vars="APP_ENV=production,EVIDENCE_BUCKET=${BUCKET},HOLD_TTL_SECONDS=900,DRAFT_TTL_SECONDS=1800" --command=python --args=-m,app.maintenance --tasks=1 --parallelism=1 --max-retries=1 --task-timeout=120s
+gcloud run jobs deploy guardian-maintenance --image="$API_IMAGE" --region="$REGION" --service-account="$MAINT_SA" --set-secrets=DATABASE_URL=guardian-maintenance-database-url:1 --set-env-vars="APP_ENV=production,EVIDENCE_BUCKET=${BUCKET},HOLD_TTL_SECONDS=900,DRAFT_TTL_SECONDS=1800" --command=python --args=-m,app.maintenance --tasks=1 --parallelism=1 --max-retries=1 --task-timeout=120s
 
 gcloud run jobs add-iam-policy-binding guardian-maintenance --region="$REGION" --member="serviceAccount:${SCHED_SA}" --role=roles/run.invoker
 
@@ -209,17 +201,17 @@ The Scheduler calls the authenticated Google API using OAuth. Confirm one actual
 
 ## 9. Cost and monitoring
 
-The team reported roughly USD 200 GCP credit. Verify current balance, expiry and service eligibility in billing. The following is a planning allocation, not quoted cloud pricing.
+Verify the reported GCP credit balance and service eligibility. Neon/Supabase and an external model provider have separate billing/quota controls. The free database tier is a starting option; estimate judging traffic and storage before relying on it.
 
-| Item | Planning allocation |
+| Service | Cost-control action |
 | --- | --- |
-| Cloud Run services and scheduled jobs | USD 25 |
-| Cloud SQL, disk and backups | USD 60 |
-| Registry, builds, storage, logs and network | USD 15 |
-| Runtime model calls, if eligible for the credit | USD 40 |
-| Unallocated buffer | USD 60 |
+| Neon PostgreSQL | Check compute, storage, connection limits and idle behavior for the actual plan |
+| Supabase alternative | Check free-project quotas and inactivity pausing before judging |
+| Cloud Run | Start at zero minimum/two maximum instances per service and measure maintenance-job startup cost |
+| GCS, registry and builds | Keep evidence/log retention bounded and inspect image storage |
+| Model provider | Enforce quotas and inspect actual token/image costs |
 
-If model calls are billed elsewhere, record that separately. Inspect actual costs daily, especially continuous SQL charges and maintenance-job startup frequency. Default services scale to zero, with a maximum of two instances each. One warm frontend/API instance during judging is an optional measured cost decision. Limits at the provider account should complement application quotas.
+Inspect all provider usage daily. One warm frontend/API instance during judging is an optional measured cost decision. Limits at each provider should complement application quotas.
 
 Set billing alerts at 50%, 80% and 95% of the agreed budget. An alerts-only budget does not cap spending; use explicit instance/call/storage limits and review spend-cap availability in the actual account. [Cloud Billing budgets](https://docs.cloud.google.com/billing/docs/how-to/budgets)
 
@@ -231,9 +223,9 @@ Monitor service 5xx, provider timeouts/quota failures, pool exhaustion, failed j
 2. Make additive DB changes before deploying callers that require them. Keep prior service revisions compatible until rollback is no longer needed.
 3. Record both service revision names and image digests. If a new revision fails, route traffic to the last known compatible revision with `gcloud run services update-traffic <service> --region="$REGION" --to-revisions=<previous-revision>=100`.
 4. App rollback does not reverse DB writes or migrations. For a destructive migration, review a restore/roll-forward plan before executing it. Prefer additive changes during the contest.
-5. A database recovery uses a backup restored to a separate instance, validation of the restored data, then updated versioned secrets/attachments and service revisions. Verify all sessions/hold deadlines after recovery.
+5. Database recovery uses the selected provider's available backup/branch capabilities, validation in a separate database, then updated versioned secrets and service revisions. Verify recovery availability for the actual plan and check all sessions/hold deadlines after recovery.
 6. Keep the submitted frontend/API images and schema revision reachable through the judging period. Record submission at 3 December 2026, 23:59:59 Asia/Bangkok; the local rules list online judging during 4–11 December. Freeze the submitted artifact rather than letting a routine dev push silently replace it.
-7. After judging, review budget, retention and archive requirements before removing resources. Database deletion protection prevents an accidental instance removal. Resource cleanup is a deliberate separate operation.
+7. After judging, review budget, retention, provider recovery and archive requirements before removing resources. Resource cleanup is a deliberate separate operation.
 
 ## 11. Troubleshooting
 
@@ -242,7 +234,7 @@ Monitor service 5xx, provider timeouts/quota failures, pool exhaustion, failed j
 | Frontend page loads but API proxy returns 403 | API URL audience, frontend service account run.invoker binding, ID-token attachment |
 | Bootstrap succeeds but next action is 401/403 | Multiple Set-Cookie forwarding, cookie path/Secure flags, actor CSRF, allowed public Origin |
 | Cloud Run cannot start | PORT/interface binding, runtime entry point, required secret accessor permission, application logs |
-| API cannot connect to DB | SQL attachment, Cloud SQL Client role, database-user grants, URI encoding, connection path and pool capacity |
+| API cannot connect to DB | Provider project activity, direct/session endpoint, TLS, network reachability, user grants, URI encoding and connection capacity |
 | First model call fails | Provider access, selected model ID/region, key version, provider billing and quota |
 | Evidence disappears after deploy | Uploaded to ephemeral disk instead of private GCS, or object scope/path mismatch |
 | Held balance never releases | Job IAM/schedule execution, shared expiry transaction, endpoint reconciliation and database time |

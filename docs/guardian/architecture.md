@@ -20,7 +20,7 @@ Deploy the Next.js server and FastAPI as two Cloud Run services. The frontend is
 
 FastAPI independently authenticates every application call after Cloud Run verifies service identity. The local-development route can skip Google ID-token authentication when using a loopback backend; application authorization remains mandatory. Configure Origin checks against the exact public frontend origin. [cloud-deployment.md](cloud-deployment.md) specifies provisioning, IAM, secret versions, image release, migration/maintenance jobs, smoke checks and rollback.
 
-Use one managed PostgreSQL with an encrypted managed connection and a bounded pool. The cloud plan proposes Cloud SQL PostgreSQL 16 with an authenticated Cloud Run attachment. An already available external managed database remains an explicit Day 1 alternative with TLS and verified transaction/advisory-lock support. Store uploaded evidence in a private GCS bucket. Only the backend serves evidence after ownership checks. The app's API key/DB credentials live in deployment secrets. Verify a billed provider call and cloud credit eligibility early.
+Use one managed PostgreSQL with TLS and a bounded pool. The cloud plan proposes Neon PostgreSQL as the default and Supabase direct/session PostgreSQL as the alternative. Separate development/demo data and verify transaction/advisory-lock compatibility and plan quotas. Store uploaded evidence in a private GCS bucket. Only the backend serves evidence after ownership checks. The app's API key/DB credentials live in deployment secrets. Verify a billed provider call and cloud credit eligibility early.
 
 ## Source map
 

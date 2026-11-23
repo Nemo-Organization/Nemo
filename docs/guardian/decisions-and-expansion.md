@@ -13,6 +13,7 @@
 | Reference-based tracing | Seeded issuance and access records permit a falsifiable investigation. A code and legitimate read do not establish the perpetrator. |
 | Private image storage | Evidence survives container restarts and remains available for scoped review. |
 | Next.js and FastAPI services | Matches the repository's actual frontend runtime; no static-export assumption. |
+| Neon PostgreSQL, with Supabase as an alternative | Follows the team's preference for affordable hosted PostgreSQL. Separate development/demo data, retain TLS, and verify plan quotas and connection limits before deployment. |
 | Public frontend and IAM-authenticated private API | The Next route proxy attaches its service identity and forwards actor cookies. FastAPI retains application authorization. The cloud-deployment document defines the release steps. |
 | Synchronous bounded AI calls | Keeps the first implementation comprehensible. Persisted runs support future workers. |
 | No automatic partner suspension in core | Investigation-to-customer-protection is sufficient for the primary journey; suspension adds a distinct permission lifecycle and operational impact model. |

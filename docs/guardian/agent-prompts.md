@@ -93,7 +93,7 @@ Validate request/response names and enums against OpenAPI, session/evidence acce
 ```text
 Implement the cloud release parts of Tasks 1, 2 and 8 using docs/guardian/cloud-deployment.md. Prepare the container/runtime/proxy changes and environment examples first. Verify local builds before executing any authorized provisioning.
 
-Use one public Next.js service and one private FastAPI service. The server-side route proxy attaches a Google ID token and preserves actor cookies, CSRF and Origin. Use Cloud SQL PostgreSQL 16 as the proposed database, unless the team records an existing external managed PostgreSQL choice. Use private GCS evidence and versioned Secret Manager references.
+Use one public Next.js service and one private FastAPI service. The server-side route proxy attaches a Google ID token and preserves actor cookies, CSRF and Origin. Use Neon PostgreSQL as the proposed database, with Supabase direct/session PostgreSQL as the alternative. Use separate development/demo databases, TLS and bounded connection pools. Use private GCS evidence and versioned Secret Manager references.
 
 Build images tagged by source revision, execute an Alembic migration job with its own database user, then release application revisions. Implement python -m app.maintenance and schedule it through an authenticated Cloud Scheduler trigger. Prove one actual scheduled expiry and a compatible application traffic rollback. Record image digests, secret versions, migration head, public URL, observed cost and remaining failures. Runtime credentials never enter the repository or frontend public variables.
 ```

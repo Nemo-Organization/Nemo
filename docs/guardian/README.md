@@ -28,7 +28,7 @@ Status — approved product direction, implementation-ready proposal. This deliv
 - Repository `Nemo-Organization/Nemo`, branch `dev`, inspected commit `2202141e89100516c38744608507284137874fd6` on 23 November 2026.
 - Existing frontend — Next.js App Router, React, TypeScript, Tailwind, next-intl, shared shadcn components and TanStack tables.
 - Proposed backend — Python 3.12+, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, PostgreSQL 16+.
-- Proposed hosting — two services, Next.js and FastAPI, with one public browser origin. PostgreSQL is a separate managed service. Google Cloud Run is the first hosting target.
+- Proposed hosting — two services, Next.js and FastAPI, with one public browser origin. PostgreSQL is hosted on Neon by default, with Supabase as an alternative. Google Cloud Run is the first application hosting target.
 - Contest theme — Anti-Fraud. System-side evidence tracing supports investigation. AI extracts and relates evidence. Server code authenticates users, calculates money and enforces decisions.
 - Customer and operator are the two application roles. The demo controller only manages synthetic scenarios.
 - All payment balances, orders, partners and financial outcomes in the contest build are synthetic. The model API, database changes, permission checks and risk decisions execute online.

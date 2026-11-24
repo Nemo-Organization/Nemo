@@ -18,6 +18,8 @@ Status — approved product direction, implementation-ready proposal. This deliv
 | [Scenarios and demo](scenarios.md) | Fixture blueprint, three-minute video, judge walkthrough |
 | [AI evaluation](evaluation.md) | Model output, baselines, held-out cases and failure handling |
 | [Delivery plan](../superpowers/plans/2026-11-23-guardian.md) | Tasks, owners, exact files, interfaces, schedule and checks |
+| [Backend API implementation plan](../superpowers/plans/2026-11-24-guardian-backend-api.md) | Detailed backend tasks, all 32 operations, transaction rules, tests and FE handoff gates |
+| [Frontend integration notes](frontend-integration-notes.md) | Current mock/contract differences, DTO mapping, auth and integration sequence |
 | [Cloud deployment](cloud-deployment.md) | Provisioning, IAM, secrets, images, migrations, jobs, acceptance, costs and rollback |
 | [Agent prompts](agent-prompts.md) | Small implementation assignments with acceptance gates |
 | [Decisions and expansion](decisions-and-expansion.md) | Assumptions, open dependencies and post-contest expansion |

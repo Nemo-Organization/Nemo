@@ -1,14 +1,20 @@
 "use client";
 
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useSyncExternalStore } from "react";
 
-import { readThemeCookie } from "@/lib/theme";
+import { readThemeCookie, THEME_INIT_SCRIPT } from "@/lib/theme";
 
-// Re-apply saved theme before paint when layout remounts (e.g. locale switch).
+const subscribe = () => () => {};
+
+// Applies saved theme before first paint (SSR script) and on locale remount.
 export function ThemeSync() {
+  const isClient = useSyncExternalStore(subscribe, () => true, () => false);
+
   useLayoutEffect(() => {
     document.documentElement.classList.toggle("dark", readThemeCookie() === "dark");
   }, []);
 
-  return null;
+  if (isClient) return null;
+
+  return <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />;
 }

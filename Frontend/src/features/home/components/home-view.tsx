@@ -27,6 +27,7 @@ export function HomeView() {
   return (
     <PageContainer className="space-y-8">
       <section className="relative overflow-hidden border bg-card px-6 py-12 shadow-2xs sm:px-12 sm:py-16">
+        {/* Decorative soft shapes (purely visual). */}
         <div
           aria-hidden
           className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-primary/10 blur-3xl"
@@ -53,7 +54,7 @@ export function HomeView() {
             className={cn(buttonVariants({ size: "lg" }), "group mt-2")}
           >
             {t("hero.cta")}
-            <ArrowRightIcon
+            <ArrowRightIcon data-icon="inline-end"
               className="transition-transform group-hover:translate-x-1"
               aria-hidden
             />

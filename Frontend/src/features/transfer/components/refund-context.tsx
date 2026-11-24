@@ -1,4 +1,7 @@
+"use client";
+
 import { useLocale, useTranslations } from "next-intl";
+import { useDateTimeFormatter } from "@/hooks/use-date-formatter";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -8,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatVnd } from "@/lib/format";
 import type { Order, Refund } from "../types/transfer.types";
 
 export function RefundContext({
@@ -19,8 +23,7 @@ export function RefundContext({
 }) {
   const t = useTranslations("transfer.refund");
   const locale = useLocale();
-  const fmt = (v: number) =>
-    new Intl.NumberFormat(locale, { style: "currency", currency: "VND" }).format(v);
+  const formatDateTime = useDateTimeFormatter();
 
   return (
     <Card>
@@ -39,11 +42,11 @@ export function RefundContext({
               <div className="space-y-1">
                 <p className="text-sm font-medium">{order?.label ?? refund.orderId}</p>
                 <p className="text-xs text-muted-foreground">
-                  {t("refundAmount", { amount: fmt(refund.amount) })}
-                  {order ? ` · ${t("orderAmount", { amount: fmt(order.amount) })}` : ""}
+                  {t("refundAmount", { amount: formatVnd(refund.amount, locale) })}
+                  {order ? ` · ${t("orderAmount", { amount: formatVnd(order.amount, locale) })}` : ""}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(refund.updatedAt).toLocaleString(locale)}
+                  {formatDateTime(refund.updatedAt)}
                 </p>
               </div>
               <Badge variant="secondary">{t(`status.${refund.status}`)}</Badge>

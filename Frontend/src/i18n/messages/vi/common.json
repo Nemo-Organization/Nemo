@@ -8,7 +8,8 @@
     "main": "Điều hướng chính",
     "language": "Ngôn ngữ",
     "theme": "Đổi giao diện sáng/tối",
-    "transfer": "Chuyển tiền"
+    "transfer": "Chuyển tiền",
+    "operator": "Vận hành"
   },
   "errors": {
     "title": "Đã xảy ra lỗi",

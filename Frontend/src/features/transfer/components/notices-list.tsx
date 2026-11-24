@@ -1,4 +1,7 @@
-import { useLocale, useTranslations } from "next-intl";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useDateTimeFormatter } from "@/hooks/use-date-formatter";
 
 import {
   Card,
@@ -11,7 +14,7 @@ import type { Notice } from "../types/transfer.types";
 
 export function NoticesList({ notices }: { notices: Notice[] }) {
   const t = useTranslations("transfer.notices");
-  const locale = useLocale();
+  const formatDateTime = useDateTimeFormatter();
 
   return (
     <Card>
@@ -30,7 +33,7 @@ export function NoticesList({ notices }: { notices: Notice[] }) {
             </p>
             <p className="text-sm">{t(`items.${n.key}`)}</p>
             <p className="text-xs text-muted-foreground">
-              {new Date(n.createdAt).toLocaleString(locale)}
+              {formatDateTime(n.createdAt)}
             </p>
           </div>
         ))}

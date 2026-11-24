@@ -1,0 +1,132 @@
+{
+  "name": "Vận hành",
+  "title": "Báo cáo, bằng chứng và duyệt giao dịch",
+  "description": "Xử lý báo cáo của khách hàng và duyệt các giao dịch bị giữ",
+  "back": "Quay lại hàng đợi",
+  "queues": {
+    "label": "Hàng đợi",
+    "reports": "Hàng đợi báo cáo",
+    "holds": "Hàng đợi giao dịch bị giữ"
+  },
+  "reports": {
+    "columns": {
+      "id": "Báo cáo",
+      "type": "Loại",
+      "status": "Trạng thái",
+      "priority": "Ưu tiên",
+      "createdAt": "Ngày tạo",
+      "actions": "Thao tác"
+    },
+    "toolbar": {
+      "filterPlaceholder": "Lọc báo cáo theo ID...",
+      "status": "Trạng thái",
+      "reset": "Đặt lại"
+    },
+    "type": {
+      "scamRecipient": "Người nhận đáng ngờ",
+      "phishingMessage": "Tin nhắn lừa đảo",
+      "fraudOrder": "Đơn hàng gian lận"
+    },
+    "status": {
+      "new": "Mới",
+      "inReview": "Đang xem xét",
+      "resolved": "Đã xử lý",
+      "dismissed": "Đã bỏ qua"
+    },
+    "priority": { "low": "Thấp", "medium": "Trung bình", "high": "Cao" },
+    "open": "Mở",
+    "detailTitle": "Báo cáo {id}",
+    "actions": {
+      "inReview": "Bắt đầu xem xét",
+      "resolved": "Đánh dấu đã xử lý",
+      "dismissed": "Bỏ qua",
+      "inReviewDone": "Đã chuyển báo cáo sang xem xét (mock).",
+      "resolvedDone": "Đã xử lý báo cáo (mock).",
+      "dismissedDone": "Đã bỏ qua báo cáo (mock)."
+    },
+    "closedNote": "Báo cáo này đã đóng."
+  },
+  "holds": {
+    "columns": {
+      "id": "Giao dịch giữ",
+      "customer": "Khách hàng",
+      "amount": "Số tiền",
+      "status": "Trạng thái",
+      "deadline": "Hạn xem xét",
+      "actions": "Thao tác"
+    },
+    "toolbar": {
+      "filterPlaceholder": "Lọc theo ID giao dịch giữ...",
+      "status": "Trạng thái",
+      "reset": "Đặt lại"
+    },
+    "status": {
+      "pending": "Chờ duyệt",
+      "approved": "Đã duyệt",
+      "rejected": "Đã từ chối"
+    },
+    "open": "Mở",
+    "detailTitle": "Giao dịch bị giữ {id}",
+    "detailDescription": "Giao dịch {transferId} đang chờ được xem xét.",
+    "recipientSignals": "Cảnh báo về người nhận",
+    "behavioralSignals": "Cảnh báo về hành vi",
+    "noSignals": "Không có cảnh báo trong nhóm này.",
+    "actions": {
+      "approved": "Duyệt giao dịch",
+      "rejected": "Từ chối giao dịch",
+      "approvedDone": "Đã duyệt giao dịch (mock).",
+      "rejectedDone": "Đã từ chối giao dịch (mock)."
+    },
+    "decidedNote": "Giao dịch này đã có quyết định."
+  },
+  "evidence": {
+    "title": "Bằng chứng gốc",
+    "description": "Nội dung khách hàng đã gửi ban đầu.",
+    "empty": "Không có bằng chứng đính kèm.",
+    "screenshotMock": "Ảnh chụp màn hình đính kèm: {name} (mock chưa hiển thị ảnh).",
+    "submittedAt": "Thời điểm gửi",
+    "linkedDraft": "Bản nháp liên kết",
+    "linkedOrder": "Đơn hàng liên kết"
+  },
+  "trace": {
+    "title": "Kết quả truy vết",
+    "description": "Tham chiếu trong bằng chứng được đối chiếu với bản ghi issuance và access.",
+    "empty": "Không tìm thấy bản ghi khớp.",
+    "recordType": { "issuance": "Bản ghi issuance", "access": "Bản ghi access" },
+    "match": { "exact": "Khớp hoàn toàn", "partial": "Khớp một phần" }
+  },
+  "decision": {
+    "title": "Quyết định về người nhận",
+    "description": "Tạo hoặc thu hồi hạn chế đối với người nhận này.",
+    "recipient": "Người nhận",
+    "current": "Hạn chế hiện tại",
+    "none": "Người nhận này chưa bị hạn chế.",
+    "level": "Mức hạn chế",
+    "warn": "WARN – cảnh báo khách trước khi chuyển",
+    "hold": "HOLD – giữ giao dịch để xem xét",
+    "reason": "Lý do",
+    "reasonPlaceholder": "Vì sao cần hạn chế này?",
+    "reasonRequired": "Vui lòng nhập lý do.",
+    "create": "Tạo hạn chế",
+    "revoke": "Thu hồi hạn chế",
+    "created": "Đã tạo hạn chế (mock).",
+    "revoked": "Đã thu hồi hạn chế (mock)."
+  },
+  "notice": {
+    "title": "Xem trước thông báo",
+    "description": "Kiểm tra danh sách khách nhận thông báo trước khi publish.",
+    "template": "Nội dung",
+    "templateBody": "Người nhận mà bạn đã chuyển tiền hoặc đang soạn giao dịch đã bị hạn chế. Vui lòng xem lại trước khi chuyển tiền.",
+    "audience": "{count} khách hàng sẽ nhận thông báo",
+    "empty": "Không có khách hàng nào cần thông báo.",
+    "reason": {
+      "transferredRecently": "Vừa chuyển tiền",
+      "hasDraft": "Có bản nháp đang mở"
+    },
+    "publish": "Publish thông báo",
+    "confirm": "Publish thông báo này tới {count} khách hàng theo một lô?",
+    "confirmPublish": "Xác nhận và publish",
+    "back": "Quay lại",
+    "published": "Đã publish thông báo tới {count} khách hàng (mock)."
+  }
+}

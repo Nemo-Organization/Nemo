@@ -9,7 +9,10 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [{ key: "transfer", href: ROUTES.transfer }] as const;
+const NAV_ITEMS = [
+  { key: "transfer", href: ROUTES.transfer },
+  { key: "operator", href: ROUTES.operator },
+] as const;
 
 export function AppTopbar() {
   const t = useTranslations("common.navigation");

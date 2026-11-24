@@ -1,4 +1,7 @@
-import { useLocale, useTranslations } from "next-intl";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useDateTimeFormatter } from "@/hooks/use-date-formatter";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,7 +56,7 @@ export function RiskResult({
   onCancel: () => void;
 }) {
   const t = useTranslations("transfer.risk");
-  const locale = useLocale();
+  const formatDateTime = useDateTimeFormatter();
 
   if (!risk || !status) {
     return (
@@ -93,7 +96,7 @@ export function RiskResult({
         {risk.level === "HOLD" && risk.holdDeadline && (
           <p className="text-sm">
             {t("deadline", {
-              date: new Date(risk.holdDeadline).toLocaleString(locale),
+              date: formatDateTime(risk.holdDeadline),
             })}
           </p>
         )}

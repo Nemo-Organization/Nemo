@@ -1,0 +1,132 @@
+{
+  "name": "Operator",
+  "title": "Reports, evidence and reviews",
+  "description": "Work through customer reports and review held transfers",
+  "back": "Back to queues",
+  "queues": {
+    "label": "Queues",
+    "reports": "Report queue",
+    "holds": "Hold queue"
+  },
+  "reports": {
+    "columns": {
+      "id": "Report",
+      "type": "Type",
+      "status": "Status",
+      "priority": "Priority",
+      "createdAt": "Created",
+      "actions": "Actions"
+    },
+    "toolbar": {
+      "filterPlaceholder": "Filter reports by ID...",
+      "status": "Status",
+      "reset": "Reset"
+    },
+    "type": {
+      "scamRecipient": "Suspicious recipient",
+      "phishingMessage": "Phishing message",
+      "fraudOrder": "Fraudulent order"
+    },
+    "status": {
+      "new": "New",
+      "inReview": "In review",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    },
+    "priority": { "low": "Low", "medium": "Medium", "high": "High" },
+    "open": "Open",
+    "detailTitle": "Report {id}",
+    "actions": {
+      "inReview": "Start review",
+      "resolved": "Resolve",
+      "dismissed": "Dismiss",
+      "inReviewDone": "Report moved to review (mock).",
+      "resolvedDone": "Report resolved (mock).",
+      "dismissedDone": "Report dismissed (mock)."
+    },
+    "closedNote": "This report is closed."
+  },
+  "holds": {
+    "columns": {
+      "id": "Hold",
+      "customer": "Customer",
+      "amount": "Amount",
+      "status": "Status",
+      "deadline": "Review deadline",
+      "actions": "Actions"
+    },
+    "toolbar": {
+      "filterPlaceholder": "Filter holds by ID...",
+      "status": "Status",
+      "reset": "Reset"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "open": "Open",
+    "detailTitle": "Held transfer {id}",
+    "detailDescription": "Transfer {transferId} is waiting for review.",
+    "recipientSignals": "Recipient warnings",
+    "behavioralSignals": "Behavioral warnings",
+    "noSignals": "No warnings in this group.",
+    "actions": {
+      "approved": "Approve transfer",
+      "rejected": "Reject transfer",
+      "approvedDone": "Transfer approved (mock).",
+      "rejectedDone": "Transfer rejected (mock)."
+    },
+    "decidedNote": "A decision has already been made for this transfer."
+  },
+  "evidence": {
+    "title": "Source evidence",
+    "description": "What the customer originally submitted.",
+    "empty": "No evidence was attached.",
+    "screenshotMock": "Screenshot attached: {name} (preview not available in mock).",
+    "submittedAt": "Submitted",
+    "linkedDraft": "Linked draft",
+    "linkedOrder": "Linked order"
+  },
+  "trace": {
+    "title": "Trace matches",
+    "description": "References from the evidence matched against issuance and access records.",
+    "empty": "No matching records found.",
+    "recordType": { "issuance": "Issuance record", "access": "Access record" },
+    "match": { "exact": "Exact match", "partial": "Partial match" }
+  },
+  "decision": {
+    "title": "Recipient decision",
+    "description": "Create or revoke a restriction on this recipient.",
+    "recipient": "Recipient",
+    "current": "Current restriction",
+    "none": "This recipient has no restriction.",
+    "level": "Restriction level",
+    "warn": "WARN – warn customers before they transfer",
+    "hold": "HOLD – hold transfers for review",
+    "reason": "Reason",
+    "reasonPlaceholder": "Why is this restriction needed?",
+    "reasonRequired": "Please enter a reason.",
+    "create": "Create restriction",
+    "revoke": "Revoke restriction",
+    "created": "Restriction created (mock).",
+    "revoked": "Restriction revoked (mock)."
+  },
+  "notice": {
+    "title": "Notice preview",
+    "description": "Check who will receive the notice before publishing.",
+    "template": "Message",
+    "templateBody": "A recipient you transferred to or drafted a transfer for has been restricted. Please review before sending money.",
+    "audience": "{count, plural, one {# customer will be notified} other {# customers will be notified}}",
+    "empty": "No customers to notify.",
+    "reason": {
+      "transferredRecently": "Transferred recently",
+      "hasDraft": "Has an open draft"
+    },
+    "publish": "Publish notice",
+    "confirm": "Publish this notice to {count, plural, one {# customer} other {# customers}} as one batch?",
+    "confirmPublish": "Confirm and publish",
+    "back": "Back",
+    "published": "Notice published to {count, plural, one {# customer} other {# customers}} (mock)."
+  }
+}

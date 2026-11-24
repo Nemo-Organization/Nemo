@@ -8,7 +8,8 @@
     "main": "Main navigation",
     "language": "Language",
     "theme": "Toggle light/dark theme",
-    "transfer": "Transfer"
+    "transfer": "Transfer",
+    "operator": "Operator"
   },
   "errors": {
     "title": "Something went wrong",

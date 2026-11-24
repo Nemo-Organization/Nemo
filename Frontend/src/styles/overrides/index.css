@@ -1,9 +1,4 @@
-/*
- * Entry point for per-component shadcn/ui overrides.
- *
- * RULE: Never edit `src/components/ui/*` directly. Add or update the
- * corresponding file in `src/styles/overrides/` instead.
- */
+/* Never edit src/components/ui/* directly; add overrides here. */
 
 @import "./tokens.css";
 @import "./base.css";

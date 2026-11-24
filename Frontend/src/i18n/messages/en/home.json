@@ -1,0 +1,30 @@
+{
+  "name": "Home",
+  "hero": {
+    "eyebrow": "Clearer transfers",
+    "title": "Transfer money with clearer risk signals",
+    "description": "Check your balance, send VND to saved recipients and see why a transfer may need a second look. Keep track of refunds and notices in one place.",
+    "cta": "Start a transfer"
+  },
+  "features": {
+    "title": "What you can do",
+    "items": {
+      "transfer": {
+        "title": "Transfer in VND",
+        "description": "Send money to saved recipients and see your available balance update."
+      },
+      "risk": {
+        "title": "Risk check",
+        "description": "Get specific reasons when a transfer needs attention, with recipient and behavior warnings shown separately."
+      },
+      "refund": {
+        "title": "Refund context",
+        "description": "Follow the status of refunds linked to your orders."
+      },
+      "notices": {
+        "title": "Notices",
+        "description": "Read the messages we send you about your transfers and refunds."
+      }
+    }
+  }
+}

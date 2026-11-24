@@ -1,5 +1,3 @@
-/* Overrides for shadcn `Card` (`src/components/ui/card.tsx`). */
-
 [data-slot="card"] {
   --tw-ring-color: var(--border);
   box-shadow: 0 1px 2px oklch(0.2 0.02 200 / 4%), 0 0 0 1px var(--border);

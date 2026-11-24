@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 
-// Next.js 16 error boundaries receive `retry` (not `reset`).
+// Next.js 16 uses `retry` instead of `reset`.
 export default function LocaleError({
   error,
   retry,
@@ -16,7 +16,7 @@ export default function LocaleError({
   const t = useTranslations("common.errors");
 
   useEffect(() => {
-    // TODO: send to an error reporting service (e.g. Sentry).
+    // TODO: report error to Sentry.
     console.error(error);
   }, [error]);
 

@@ -1,0 +1,94 @@
+{
+  "name": "Transfer",
+  "title": "Transfer and refund context",
+  "description": "Review your balance, make a transfer and follow refunds and notices",
+  "balance": {
+    "title": "Balance summary",
+    "balance": "Balance",
+    "available": "Available balance",
+    "availableHint": "Available balance excludes funds currently on hold."
+  },
+  "form": {
+    "title": "New transfer",
+    "description": "Transfer money in VND to a saved recipient.",
+    "recipient": "Recipient",
+    "recipientPlaceholder": "Select a recipient",
+    "amount": "Amount (VND)",
+    "amountHint": "Whole numbers only, greater than 0.",
+    "submit": "Check and transfer",
+    "errors": {
+      "recipient": "Please select a recipient.",
+      "amount": "Enter a positive whole number in VND."
+    }
+  },
+  "risk": {
+    "title": "Risk assessment",
+    "empty": "Submit a transfer to see its risk assessment.",
+    "allow": {
+      "title": "No additional warning identified",
+      "description": "We did not find extra warnings for this transfer."
+    },
+    "warn": {
+      "title": "Please review before continuing",
+      "description": "We found reasons you may want to double-check this transfer."
+    },
+    "hold": {
+      "title": "Transfer on hold for review",
+      "description": "Your transfer is pending review and the funds are being held."
+    },
+    "allowDisclaimer": "This is not a guarantee. Always verify the recipient yourself.",
+    "recipientWarnings": "Recipient warnings",
+    "behavioralWarnings": "Behavioral warnings",
+    "none": "No warnings in this group.",
+    "deadline": "Review deadline: {date}. You can cancel the transfer at any time before then.",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "cancelHold": "Cancel transfer",
+    "status": {
+      "completed": "Transfer completed.",
+      "cancelled": "Transfer cancelled. No money was moved."
+    },
+    "signals": {
+      "newRecipient": "You have not transferred to this recipient before.",
+      "reportedRecipient": "This recipient has been reported by other users.",
+      "unusualAmount": "This amount is higher than your usual transfers.",
+      "drainsBalance": "This transfer uses most of your available balance.",
+      "highAmount": "This amount exceeds the automatic approval limit."
+    }
+  },
+  "screenshot": {
+    "title": "Analyze a screenshot (optional)",
+    "description": "Upload a screenshot or paste text from a message to check it.",
+    "upload": "Screenshot",
+    "text": "Or paste text",
+    "textPlaceholder": "Paste the message you received...",
+    "linkDraft": "Link to a draft (optional)",
+    "linkOrder": "Link to an order (optional)",
+    "none": "None",
+    "analyze": "Analyze",
+    "result": "Analysis received (mock). No additional warning identified in the content provided. This is not a guarantee."
+  },
+  "refund": {
+    "title": "Refund context",
+    "description": "Refunds linked to your orders.",
+    "empty": "No refunds yet.",
+    "refundAmount": "Refund: {amount}",
+    "orderAmount": "Order: {amount}",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "completed": "Completed",
+      "rejected": "Rejected"
+    }
+  },
+  "notices": {
+    "title": "Notices",
+    "description": "Messages sent to you.",
+    "empty": "No notices.",
+    "kind": { "risk": "Risk", "refund": "Refund", "info": "Information" },
+    "items": {
+      "refundApproved": "Your refund for Order #5001 has been approved.",
+      "stayAlert": "We will never ask for your OTP or password by phone or message."
+    }
+  }
+}

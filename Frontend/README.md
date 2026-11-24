@@ -51,6 +51,7 @@ src/
 │  └─ [locale]/              Thin App Router pages: compose features, metadata, error/loading/not-found
 ├─ features/                 Domain modules (components, hooks, services, types, constants, mocks, index.ts)
 │  ├─ home/                  Landing overview and feature highlights
+│  ├─ operator/              Operator queues (reports, holds), case review, restrictions, notices
 │  ├─ transfer/              Transfer flow, risk evaluation, screenshot analysis, refunds, notices
 │  └─ _template/             Starter template for new features (type-checked; see its README)
 ├─ layouts/                  Full-page layout shells shared across route groups (`app-layout.tsx`, `app-topbar.tsx`)

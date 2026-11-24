@@ -60,7 +60,10 @@ export function TransferForm({
               id="recipient"
               className={selectClass}
               value={recipientId}
-              onChange={(e) => setRecipientId(e.target.value)}
+              onChange={(e) => {
+                setRecipientId(e.target.value);
+                if (errors.recipient) setErrors((prev) => ({ ...prev, recipient: false }));
+              }}
               aria-invalid={errors.recipient}
               disabled={disabled}
             >
@@ -85,7 +88,10 @@ export function TransferForm({
               inputMode="numeric"
               placeholder="500000"
               value={amount}
-              onChange={(e) => setAmount(e.target.value.trim())}
+              onChange={(e) => {
+                setAmount(e.target.value.trim());
+                if (errors.amount) setErrors((prev) => ({ ...prev, amount: false }));
+              }}
               aria-invalid={errors.amount}
               disabled={disabled}
             />

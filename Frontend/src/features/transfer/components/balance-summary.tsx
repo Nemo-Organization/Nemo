@@ -7,13 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatVnd } from "@/lib/format";
 import type { AccountBalance } from "../types/transfer.types";
 
 export function BalanceSummary({ account }: { account: AccountBalance }) {
   const t = useTranslations("transfer.balance");
   const locale = useLocale();
-  const fmt = (v: number) =>
-    new Intl.NumberFormat(locale, { style: "currency", currency: "VND" }).format(v);
 
   return (
     <Card>
@@ -24,12 +23,12 @@ export function BalanceSummary({ account }: { account: AccountBalance }) {
       <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1 border p-4">
           <p className="text-xs text-muted-foreground">{t("balance")}</p>
-          <p className="text-2xl font-bold tabular-nums">{fmt(account.balance)}</p>
+          <p className="text-2xl font-bold tabular-nums">{formatVnd(account.balance, locale)}</p>
         </div>
         <div className="space-y-1 border border-primary/25 bg-primary/5 p-4">
           <p className="text-xs text-muted-foreground">{t("available")}</p>
           <p className="text-2xl font-bold tabular-nums text-primary">
-            {fmt(account.available)}
+            {formatVnd(account.available, locale)}
           </p>
         </div>
       </CardContent>

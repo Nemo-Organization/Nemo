@@ -16,5 +16,18 @@ export function readThemeCookie(): Theme {
   return parseTheme(entry?.slice(THEME_COOKIE.length + 1));
 }
 
+export function subscribeTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+  return () => observer.disconnect();
+}
+
+export function getThemeSnapshot(): Theme {
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
+
 // Inlined in <head> to apply theme before first paint (no external deps).
 export const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=(light|dark)/);var t=m?m[1]:"${DEFAULT_THEME}";if(t==="dark")document.documentElement.classList.add("dark")}catch(e){}})();`;

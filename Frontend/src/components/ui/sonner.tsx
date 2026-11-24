@@ -4,20 +4,7 @@ import { useSyncExternalStore } from "react"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CheckCircleIcon, InfoIcon, WarningIcon, XCircleIcon, SpinnerIcon } from "@phosphor-icons/react/ssr"
 
-import { DEFAULT_THEME, type Theme } from "@/lib/theme"
-
-function subscribeTheme(onChange: () => void) {
-  const observer = new MutationObserver(onChange)
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["class"],
-  })
-  return () => observer.disconnect()
-}
-
-function getThemeSnapshot(): Theme {
-  return document.documentElement.classList.contains("dark") ? "dark" : "light"
-}
+import { DEFAULT_THEME, getThemeSnapshot, subscribeTheme } from "@/lib/theme"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const theme = useSyncExternalStore(

@@ -1,0 +1,94 @@
+{
+  "name": "Chuyển tiền",
+  "title": "Chuyển tiền và hoàn tiền",
+  "description": "Xem số dư, tạo chuyển khoản và theo dõi hoàn tiền, thông báo",
+  "balance": {
+    "title": "Tóm tắt số dư",
+    "balance": "Số dư",
+    "available": "Số dư khả dụng",
+    "availableHint": "Số dư khả dụng đã trừ phần tiền đang bị giữ."
+  },
+  "form": {
+    "title": "Chuyển tiền mới",
+    "description": "Chuyển tiền bằng VND tới người nhận có sẵn.",
+    "recipient": "Người nhận",
+    "recipientPlaceholder": "Chọn người nhận",
+    "amount": "Số tiền (VND)",
+    "amountHint": "Chỉ nhập số nguyên lớn hơn 0.",
+    "submit": "Kiểm tra và chuyển",
+    "errors": {
+      "recipient": "Vui lòng chọn người nhận.",
+      "amount": "Nhập số nguyên dương (VND)."
+    }
+  },
+  "risk": {
+    "title": "Đánh giá rủi ro",
+    "empty": "Tạo giao dịch để xem kết quả đánh giá rủi ro.",
+    "allow": {
+      "title": "Chưa phát hiện cảnh báo bổ sung",
+      "description": "Chúng tôi không thấy cảnh báo thêm cho giao dịch này."
+    },
+    "warn": {
+      "title": "Vui lòng xem lại trước khi tiếp tục",
+      "description": "Có một số lý do bạn nên kiểm tra lại giao dịch này."
+    },
+    "hold": {
+      "title": "Giao dịch đang chờ xem xét",
+      "description": "Giao dịch đang chờ review và số tiền đang được giữ."
+    },
+    "allowDisclaimer": "Đây không phải là sự đảm bảo. Hãy luôn tự xác minh người nhận.",
+    "recipientWarnings": "Cảnh báo về người nhận",
+    "behavioralWarnings": "Cảnh báo về hành vi",
+    "none": "Không có cảnh báo trong nhóm này.",
+    "deadline": "Hạn xem xét: {date}. Bạn có thể hủy giao dịch bất cứ lúc nào trước thời hạn này.",
+    "continue": "Tiếp tục",
+    "cancel": "Hủy",
+    "cancelHold": "Hủy giao dịch",
+    "status": {
+      "completed": "Giao dịch đã hoàn tất.",
+      "cancelled": "Đã hủy giao dịch. Không có khoản tiền nào bị chuyển đi."
+    },
+    "signals": {
+      "newRecipient": "Bạn chưa từng chuyển tiền cho người nhận này.",
+      "reportedRecipient": "Người nhận này đã bị người dùng khác báo cáo.",
+      "unusualAmount": "Số tiền cao hơn mức bạn thường chuyển.",
+      "drainsBalance": "Giao dịch này dùng phần lớn số dư khả dụng của bạn.",
+      "highAmount": "Số tiền vượt hạn mức tự động duyệt."
+    }
+  },
+  "screenshot": {
+    "title": "Phân tích ảnh chụp màn hình (tùy chọn)",
+    "description": "Tải ảnh hoặc dán nội dung tin nhắn để kiểm tra.",
+    "upload": "Ảnh chụp màn hình",
+    "text": "Hoặc dán văn bản",
+    "textPlaceholder": "Dán nội dung tin nhắn bạn nhận được...",
+    "linkDraft": "Liên kết với bản nháp (tùy chọn)",
+    "linkOrder": "Liên kết với đơn hàng (tùy chọn)",
+    "none": "Không chọn",
+    "analyze": "Phân tích",
+    "result": "Đã nhận kết quả phân tích (mock). Chưa phát hiện cảnh báo bổ sung trong nội dung đã cung cấp. Đây không phải là sự đảm bảo."
+  },
+  "refund": {
+    "title": "Thông tin hoàn tiền",
+    "description": "Các khoản hoàn tiền gắn với đơn hàng của bạn.",
+    "empty": "Chưa có hoàn tiền nào.",
+    "refundAmount": "Hoàn tiền: {amount}",
+    "orderAmount": "Đơn hàng: {amount}",
+    "status": {
+      "pending": "Đang chờ",
+      "approved": "Đã duyệt",
+      "completed": "Hoàn tất",
+      "rejected": "Từ chối"
+    }
+  },
+  "notices": {
+    "title": "Thông báo",
+    "description": "Các thông báo gửi tới bạn.",
+    "empty": "Không có thông báo.",
+    "kind": { "risk": "Rủi ro", "refund": "Hoàn tiền", "info": "Thông tin" },
+    "items": {
+      "refundApproved": "Khoản hoàn tiền cho Order #5001 đã được duyệt.",
+      "stayAlert": "Chúng tôi không bao giờ hỏi OTP hay mật khẩu của bạn qua điện thoại hoặc tin nhắn."
+    }
+  }
+}

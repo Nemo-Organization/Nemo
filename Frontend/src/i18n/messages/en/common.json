@@ -7,10 +7,8 @@
     "home": "Home",
     "main": "Main navigation",
     "language": "Language",
-    "dashboard": "Dashboard",
-    "endpoints": "Endpoints",
-    "leads": "Leads",
-    "logs": "Logs"
+    "theme": "Toggle light/dark theme",
+    "transfer": "Transfer"
   },
   "errors": {
     "title": "Something went wrong",

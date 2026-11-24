@@ -25,13 +25,11 @@ import { DataTablePagination } from "./data-table-pagination";
 type DataTableProps<TData extends RowData> = {
   columns: ColumnDef<DataTableFeatures, TData>[];
   data: TData[];
-  /** Optional toolbar rendered above the table (filters, view options...). */
   renderToolbar?: (
     table: ReactTable<DataTableFeatures, TData>,
   ) => React.ReactNode;
 };
 
-/** Generic, feature-agnostic data table. Feature code supplies columns + toolbar. */
 export function DataTable<TData extends RowData>({
   columns,
   data,

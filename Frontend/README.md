@@ -50,12 +50,10 @@ src/
 │  ├─ globals.css            Tailwind CSS 4 entry, custom @theme type scale, theme tokens
 │  └─ [locale]/              Thin App Router pages: compose features, metadata, error/loading/not-found
 ├─ features/                 Domain modules (components, hooks, services, types, constants, mocks, index.ts)
-│  ├─ dashboard/             Overview metrics, activity chart, usage card, quick links, recent leads
-│  ├─ endpoints/             Lead ingestion endpoints table, status filters, row actions
-│  ├─ leads/                 Leads data table, toolbar, faceted filters, row actions
-│  ├─ logs/                  API request & error logs table, level/endpoint filters
+│  ├─ home/                  Landing overview and feature highlights
+│  ├─ transfer/              Transfer flow, risk evaluation, screenshot analysis, refunds, notices
 │  └─ _template/             Starter template for new features (type-checked; see its README)
-├─ layouts/                  Full-page layout shells shared across route groups (`dashboard-layout.tsx`, etc.)
+├─ layouts/                  Full-page layout shells shared across route groups (`app-layout.tsx`, `app-topbar.tsx`)
 ├─ components/
 │  ├─ ui/                    shadcn/ui primitives — DO NOT edit manually (CLI overwrites)
 │  ├─ layout/                Small reusable page building blocks (`page-breadcrumbs`, `page-header`, `page-container`)

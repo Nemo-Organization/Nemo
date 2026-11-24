@@ -39,7 +39,13 @@ export default async function LocaleLayout({
         <ThemeSync />
       </head>
       <body className="font-sans antialiased">
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
         <NextIntlClientProvider>
+          <ThemeSync />
           <Suspense fallback={null}>
             <StoreProvider>{children}</StoreProvider>
             <Toaster />

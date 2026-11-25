@@ -1,12 +1,13 @@
 openapi: 3.1.0
 info:
   title: Guardian API
-  version: 1.1.0
+  version: 1.2.0
   description: 'Nemo contest contract. Synthetic finance; server-authenticated customer/operator roles. Datetimes
     are UTC and money is integer VND. Lists order newest first by timestamp then ID, except recipients by display_name
     then ID. Unknown /api paths return JSON errors. All responses with identity, money or evidence use Cache-Control:
     no-store. Role restrictions in each operation are enforced at the backend. Revision 1.1 adds optional nullable
-    source-linked dossier responses for bounded read-only AI investigation. No chat, streaming or public tool-execution
+    source-linked dossier responses for bounded read-only AI investigation. Revision 1.2 adds optional additional_actions
+    to ModelEvidence and an optional nullable signal to InvestigationFinding. No chat, streaming or public tool-execution
     endpoint is introduced. AI tools cannot mutate money, restrictions or notices.'
 servers:
 - url: /api/v1
@@ -2600,6 +2601,25 @@ components:
           - CONFIRM_LOGIN
           - OTHER
           - UNKNOWN
+          description: Primary request. When a message makes several requests, the primary one follows the precedence
+            SHARE_SECRET, CONFIRM_LOGIN, PAY_FEE, CONFIRM_TRANSFER, PAY_PURCHASE, OTHER. Definitions are in evaluation.md.
+        additional_actions:
+          type: array
+          maxItems: 3
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - PAY_FEE
+            - PAY_PURCHASE
+            - CONFIRM_TRANSFER
+            - SHARE_SECRET
+            - CONFIRM_LOGIN
+            - OTHER
+          description: Optional additive 1.2 extension. Other concrete requests in the same message, excluding the
+            primary requested_action and never UNKNOWN. New implementations emit an empty array when none; FE accepts
+            absence in legacy fixtures. Server finding composition and the fixed secret/login warning consider both
+            fields.
         claimed_purpose:
           type: string
         quotes:
@@ -3405,11 +3425,31 @@ components:
             maxLength: 80
           minItems: 1
           uniqueItems: true
+        signal:
+          anyOf:
+          - $ref: '#/components/schemas/InvestigationSignal'
+          - type: 'null'
+          description: Optional additive 1.2 extension. Message-level warning sign explained by this finding, or null
+            when the finding is about official/system data. New implementations emit null when no signal applies; FE
+            accepts absence in legacy fixtures. A signal never changes the composed finding, transfer state or restriction.
       required:
       - id
       - statement
       - relation
       - source_ids
+    InvestigationSignal:
+      type: string
+      description: Catalog of message-level warning signs. A tagged finding requires a literal quote from permitted
+        message/report text; PAYEE_DIFFERS_FROM_SENDER also requires a typed fact from the linked transfer. Absence
+        of a signal is not counter-evidence. Definitions are in evaluation.md.
+      enum:
+      - CLAIMS_OFFICIAL_ROLE
+      - URGENCY_PRESSURE
+      - OFF_PLATFORM_CHANNEL
+      - PAYEE_DIFFERS_FROM_SENDER
+      - USES_ORDER_DETAILS
+      - DISCOURAGES_VERIFICATION
+      - OTHER
     InvestigationActivity:
       type: object
       additionalProperties: false

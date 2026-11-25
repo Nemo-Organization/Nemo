@@ -73,3 +73,15 @@ Customer source kinds are limited to CUSTOMER_TEXT, IMAGE_TRANSCRIPTION, TRANSFE
 API wire names remain snake_case. No new conversation/message table or chat cache is required.
 
 For Ops recovery, keep client_request_id keyed by sandbox/actor/root report and replay the same POST /ops/reports/{id}/investigate after network loss or PENDING, with bounded backoff. There is no GET-investigation-by-run-ID endpoint in core. Generate a fresh key only on an explicit rerun and clear prior actor keys on selection changes. Analysis can use its existing GET once the ID is known. Investigation failures have status/missing_information/dossier.limitations, not an invented top-level error_code; pre-admission 429 is a separate HTTP error. Image parsing, scoped tool execution and model loops belong to BE. All new panels are specified future work; current FE mock components have not been modified by this documentation update.
+
+## Contract v1.2 amendment — action for FE
+
+Guardian API contract v1.2 adds two optional response fields and no endpoint. Request bodies are unchanged.
+
+| FE area | Required change |
+| --- | --- |
+| Additional actions | Read `evidence.additional_actions` (array, may be absent in legacy fixtures). When it or `requested_action` contains SHARE_SECRET or CONFIRM_LOGIN, show a fixed localized safety message, for example that nobody may ask for the customer's OTP. Do not change the finding or any transfer control. |
+| Finding signal | Read `dossier.findings[].signal` (nullable, may be absent). Show a neutral localized label for a non-null code. Do not use green/check styling, and do not show absent signals as "safe" or as counter-evidence. |
+| Locale keys | Add paired en/vi keys for the six signal codes, OTHER and the two safety messages. |
+
+Signal codes and definitions are in [evaluation](evaluation.md#contract-12-amendment). Treat unknown future codes as a generic neutral label rather than failing the page.

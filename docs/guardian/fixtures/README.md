@@ -1,6 +1,6 @@
 # Synthetic API response examples
 
-These hand-authored JSON files are frontend integration fixtures for Guardian API contract v1.1 (OpenAPI 3.1). They are not measured model outputs, live customer records or evidence that the business endpoints are implemented.
+These hand-authored JSON files are frontend integration fixtures for Guardian API contract v1.1 (OpenAPI 3.1), updated for v1.2 with the optional additional_actions and finding signal fields. The unchanged v1.1 copies are in the [archive](../archive/README.md). They are not measured model outputs, live customer records or evidence that the business endpoints are implemented.
 
 | File | Schema | Use |
 | --- | --- | --- |

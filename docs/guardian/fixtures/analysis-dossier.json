@@ -5,6 +5,7 @@
   "evidence": {
     "transcription": "Chi ung giup em 20k phi thu hoi, ben kho moi tra 500k don SHOP-4502. Ma tra soat A-017.",
     "requested_action": "PAY_FEE",
+    "additional_actions": [],
     "claimed_purpose": "Receive the pending order refund",
     "quotes": [
       {
@@ -66,7 +67,17 @@
           "src_message",
           "src_fee",
           "src_refund"
-        ]
+        ],
+        "signal": null
+      },
+      {
+        "id": "finding_order_details",
+        "statement": "The message cites the order number and a trace code. Specific details can make a request look legitimate, but legitimate shops also cite orders.",
+        "relation": "UNRESOLVED",
+        "source_ids": [
+          "src_message"
+        ],
+        "signal": "USES_ORDER_DETAILS"
       }
     ],
     "activity": [

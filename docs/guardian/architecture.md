@@ -90,7 +90,7 @@ Customer tools read only the run's explicitly linked owned order/refund/transfer
 
 Persist PENDING in a short transaction, release it before model/object-store calls, perform each scoped tool read in a short session, and finalize SUCCEEDED/FAILED/TIMED_OUT afterwards. Keep all loop requests/retries within 20 seconds and count each actual provider request. Retain source receipts/snapshots in ai_runs.output; no new physical table is required.
 
-Analysis/Investigation gain optional nullable dossier in OpenAPI 1.1. It contains validated findings/sources, completed activity, recommended checks, limitations and citation warnings. Do not return raw tool arguments, unrestricted logs or chain-of-thought. A malformed or unsupported claim cannot authorize money or a public restriction. The server composes customer verdicts using validated action interpretation and official facts.
+Analysis/Investigation gain optional nullable dossier in OpenAPI 1.1. It contains validated findings/sources, completed activity, recommended checks, limitations and citation warnings. Do not return raw tool arguments, unrestricted logs or chain-of-thought. A malformed or unsupported claim cannot authorize money or a public restriction. The server composes customer verdicts using validated action interpretation and official facts. OpenAPI 1.2 adds optional additional_actions to ModelEvidence and an optional signal to dossier findings.
 
 Core uses synchronous responses and loading states; no chat or streaming endpoints. Inject fake adapters for repeatable tests, then separately prove live provider/storage behavior. Provider/model remain configurable; no billing upgrade or live credential is implied by this design.
 

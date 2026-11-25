@@ -1,6 +1,6 @@
 # Guardian API integration examples
 
-All paths below are relative to the public frontend origin. The browser uses same-origin credentials. UUIDs are returned from the current sandbox; samples are illustrative. Mutation headers contain the CSRF token returned for the appropriate cookie. Never store provider credentials in the frontend. OpenAPI revision 1.1 adds optional nullable dossier responses; all request bodies and endpoints remain unchanged. These examples specify future behavior, not currently implemented business endpoints.
+All paths below are relative to the public frontend origin. The browser uses same-origin credentials. UUIDs are returned from the current sandbox; samples are illustrative. Mutation headers contain the CSRF token returned for the appropriate cookie. Never store provider credentials in the frontend. OpenAPI revision 1.1 adds optional nullable dossier responses; all request bodies and endpoints remain unchanged. Revision 1.2 adds optional additional_actions and finding signal fields; the examples below remain valid without them. These examples specify future behavior, not currently implemented business endpoints.
 
 ## Start and select an actor
 

@@ -104,6 +104,8 @@ Build images tagged by source revision, execute an Alembic migration job with it
 Read docs/guardian/scenarios.md and evaluation.md. Prepare clearly synthetic screenshot/text fixtures for the primary story, legitimate reorder, missing fee, missing code, forwarded image and unreadable evidence. Mark what each source proves and what it does not prove.
 
 Reserve 12–16 independently labeled cases before the devs tune prompts. For every case label requested action, whether a verified contradiction exists, expected trace match, report relationship and the permissible user/operator outcome. Confirm that Linh's initial HOLD comes from pre-existing reviewed near-miss evidence. Review the three-minute recording script and the separate live-app exploration guide.
+
+Contract 1.2 addition: also label additional actions, the expected reference string or abstention, and expected signals, using the definitions in evaluation.md. Keep the cases and labels outside the repository until prompts are frozen.
 ```
 
 ## Review prompt

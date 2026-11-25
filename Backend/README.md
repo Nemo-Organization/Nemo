@@ -214,7 +214,9 @@ $env:TEST_DATABASE_URL = $null
 
 If `guardian_test` already exists, reuse it. Keep the integration test URL separate from the database used for the live demo.
 
-`alembic heads` is empty for this skeleton. After the initial models and revision exist, configure `DATABASE_URL` and run `uv run alembic upgrade head`. Migration jobs use separate database-user credentials. Their settings do not require an AI key.
+The schema tests drop and recreate the `public` schema of `TEST_DATABASE_URL`, then apply the migrations. They refuse to run when the database name does not contain `test`, and they never read `DATABASE_URL` from `.env`. To apply migrations to an explicit database without `.env`, pass the URL: `uv run alembic -x url=<url> upgrade head`.
+
+`alembic heads` is empty for this skeleton. After the initial models and revision exist, configure `DATABASE_URL` and run `uv run alembic upgrade head`. Since backend Task 1, `alembic heads` reports `0001_guardian`, the frozen copy of `docs/guardian/schema.sql`. Migration jobs use separate database-user credentials. Their settings do not require an AI key.
 
 ## Container
 

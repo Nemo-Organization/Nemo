@@ -6,6 +6,7 @@
     "transcription": "Chi ung giup em 20k phi thu hoi, ben kho moi tra 500k don SHOP-4502. Ma tra soat A-017.",
     "requested_action": "PAY_FEE",
     "additional_actions": [],
+    "claimed_transfer_direction": "OUTGOING",
     "claimed_purpose": "Receive the pending order refund",
     "quotes": [
       {

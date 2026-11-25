@@ -173,3 +173,9 @@ Additional required proof:
 
 - A fee demand combined with an OTP request keeps MISMATCH through additional_actions and shows the secret warning.
 - A signal proposal without its required quote/fact support is dropped with a warning.
+
+## Contract 1.3 amendment
+
+Applied 26 November 2026. Earlier sections remain as the record; where they conflict, this section applies. The 1.2 contract file is archived in [archive](archive/README.md).
+
+Contract v1.3 adds optional `ModelEvidence.claimed_transfer_direction` (INCOMING, OUTGOING or UNKNOWN) and no endpoint, request body or table. The provider reports what the message claims the requested transfer does for the customer. Finding rule 1 reads this claim, requires a validated quote for it, and compares it with the linked transfer's actual direction from the TRANSFER snapshot. Definitions are in [evaluation](evaluation.md#contract-13-amendment).

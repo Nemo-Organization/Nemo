@@ -11,7 +11,7 @@
 | 15-minute hold, 30-minute draft, five-minute assessment | Concrete defaults for implementation and tests. They are design proposals, configurable and measurable during usability testing. |
 | Customer reconfirmation after clearance | The customer remains in control of whether a delayed transfer should still happen. |
 | Reference-based tracing | Seeded issuance and access records permit a falsifiable investigation. A code and legitimate read do not establish the perpetrator. |
-| Private image storage | Evidence survives container restarts and remains available for scoped review. |
+| Private Neon S3 evidence storage | Evidence survives Cloud Run restarts and remains available through authorized API reads; bucket credentials remain server-side. |
 | Next.js and FastAPI services | Matches the repository's actual frontend runtime; no static-export assumption. |
 | Neon PostgreSQL, with Supabase as an alternative | Follows the team's preference for affordable hosted PostgreSQL. Separate development/demo data, retain TLS, and verify plan quotas and connection limits before deployment. |
 | Public frontend and IAM-authenticated private API | The Next route proxy attaches its service identity and forwards actor cookies. FastAPI retains application authorization. The cloud-deployment document defines the release steps. |
@@ -62,3 +62,13 @@ The team reported roughly USD 200 GCP, USD 20 AWS and organizer coding-tool cred
 ## Scope reduction order
 
 If the integrated journey slips, first defer automatic multi-report grouping, then nonessential charts and polished analytics. Preserve recipient and behavioral branches, live screenshot interpretation, exact tracing, reviewed restrictions, cancel/expiry behavior and isolation between sandboxes. Keep targeted batch notices because they close the primary demo. Preserve the false-positive correction test even if its UI becomes a simple operator action.
+
+## Decisions applied on 25 November 2026
+
+- Keep exact-reference tracing in core. Add bounded read-only function calling and evidence dossiers; use [ai-investigation.md](ai-investigation.md) as the detailed behavior authority.
+- Keep all 19 physical tables/161 columns and 32 operations. OpenAPI version 1.1 adds optional nullable dossier to Analysis and Investigation and defines the shared source/finding/activity schemas. Legacy mock responses may omit it during integration.
+- Use private Neon Object Storage through S3 as the storage target, alongside Neon PostgreSQL. Cloud Run still hosts the app; provider credentials live only on the server.
+- Customer/Ops each get an explicit tool allowlist. No tool can transfer money, cancel a payment, change restrictions or publish notices. Every action remains an independently authenticated endpoint.
+- Three model requests, four tool executions and 20 seconds per run. Retain existing hourly logical-run settings and count actual provider attempts for the daily budget. No automatic multi-provider rotation in core.
+- Exclude general chat, token streaming, newly trained ML, signup/KYC, external fund settlement and partner suspension from the current contest implementation. No provider payment or production provisioning has been authorized by this documentation update.
+- Prioritize an early live-model quality/latency/cost check with synthetic development/smoke evidence, keeping the BA-held evaluation set separate. Function calling or a seeded HOLD is not proof of AI value; compare source-linked interpretations and false positives against baselines.

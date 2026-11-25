@@ -45,3 +45,22 @@ Implemented on branch `feat/guardian-backend-skeleton` in incremental commits. T
 | Launcher syntax and line endings | Bash and PowerShell syntax checks passed; Git attributes retain LF for the Unix script and CRLF for the batch script |
 
 The domain packages are initial boundaries. Product auth, transfers, the 19-table model/migration, live AI and cloud deployment remain subsequent milestones. Generated runtime OpenAPI currently describes the implemented health route; the full planned contract continues to define the future endpoints.
+
+## 25 November documentation amendment
+
+This revision implements the documentation-first instruction for bounded AI investigation and tracing. It does not implement backend business routes, models, migrations, AI/storage adapters, FE changes or cloud resources. The earlier skeleton test record remains historical and is not evidence for the new dossier behavior.
+
+| Check | Observed result |
+| --- | --- |
+| Guardian API contract v1.1 | OpenAPI 3.1 validation passed with openapi-spec-validator |
+| API compatibility | Same 32 operation IDs/methods and 28 paths; request bodies, parameters, auth and response references/statuses unchanged from eb91b32 |
+| Response schemas | Existing schemas retained; only optional nullable dossier added to Analysis/Investigation and four new shared schemas |
+| Examples | Seven inline JSON examples and two complete synthetic response fixtures passed JSON Schema validation with format checks |
+| Dossier consistency | Fixture source IDs resolve; customer source/tool projection checked; operator trace fixture fits lookup -> access -> final in three model requests |
+| Source support design | Private QuoteSupport/FactSupport binding and server-derived public source_ids specified; source binding distinguished from semantic correctness |
+| Physical database | schema.sql unchanged from eb91b32; 19 tables/161-column definition and PK/UQ/FK/type baseline retained |
+| Documentation links | All Guardian Markdown relative links resolve; no trailing whitespace |
+| Deployment examples | All five Bash blocks pass bash -n; planned Neon S3 settings/secret references consistent; no cloud commands executed |
+| Independent review | Important contradictions in tool-turn budget, fee-message support, private claim bindings, transfer source kind, error/replay handling, preview/publication and stale GCS text were corrected |
+
+Validation used an isolated uv tool environment with openapi-spec-validator, jsonschema and PyYAML. It did not add runtime dependencies or change Backend/uv.lock. Inspecting provider availability, purchasing API credits, checking live Neon credentials and executing migrations/deployment remain separate implementation gates.

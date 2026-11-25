@@ -5,7 +5,7 @@ Use one task per implementation session. A developer reviews the diff and checks
 ## Shared context prompt
 
 ```text
-You are implementing Guardian in Nemo. Read the repository instructions that apply to your paths, then docs/guardian/README.md, product-requirements.md, architecture.md, data-model.md, database-specification.md and openapi.yaml. Read the assigned task in docs/superpowers/plans/2026-11-23-guardian.md. Deployment tasks also read cloud-deployment.md.
+You are implementing Guardian in Nemo. Read the repository instructions that apply to your paths, then docs/guardian/README.md, ai-investigation.md, product-requirements.md, architecture.md, data-model.md, database-specification.md and openapi.yaml. Read the assigned task in docs/superpowers/plans/2026-11-23-guardian.md. Deployment tasks also read cloud-deployment.md.
 
 Follow the existing Frontend feature/i18n/component conventions. Read Frontend/AGENTS.md and the relevant installed Next.js docs before editing frontend code. Preserve Frontend and Backend casing. Use FastAPI/Pydantic/SQLAlchemy/Alembic/PostgreSQL for backend work.
 
@@ -43,9 +43,9 @@ Test exact draft-key replay, changed-key payload rejection, duplicate confirmati
 ## P4 — AI/evidence backend
 
 ```text
-Implement Task 4's provider adapter and analysis schemas in the owned investigation files. Coordinate route/storage/persistence ownership with Dev A. Use one authorized live vision provider and an injectable deterministic fake for tests.
+Implement product Task 4 using detailed backend Task 9 and ai-investigation.md. Build ReasoningModel, InvestigationRunner, ToolGateway and source validation in the owned investigation files; coordinate a single editor with Dev A. Use one authorized live vision provider and injected deterministic fake adapters for tests. No general chat or streaming.
 
-Validate MIME and decoded image, cap at 5 MiB and implement the 20-second total deadline. Preserve pending/succeeded/failed/timed-out runs. Compose official facts from the authenticated customer's records; a NULL fee remains unknown. Refuse unsupported citations and never let a model string become an authorization or a ledger field. Run timeout, ownership, image and replay tests, then one live deployment smoke call.
+Validate MIME and decoded image, cap at 5 MiB and enforce one 20-second deadline, at most three model requests including retry/final formatting and four read-only tool executions. Customer tools are limited to get_customer_context for linked owned facts. Return optional nullable dossier with validated sources/findings and sanitized completed activity; never model chain-of-thought. Count actual provider attempts independently of logical runs. Preserve pending/succeeded/failed/timed-out runs. Compose official facts from the authenticated customer's records; a NULL fee remains unknown. Refuse unsupported citations and never let a model string become an authorization or a ledger field. Run timeout, ownership, image and replay tests, then one live deployment smoke call.
 ```
 
 ## P5 — Customer frontend
@@ -67,9 +67,9 @@ Implement account-first expiry reconciliation, periodic cleanup command and the 
 ## P7 — Trace/operator backend
 
 ```text
-Implement Task 6's backend. Trace issued codes with exact same-sandbox DB queries, then show batch membership and actual access records. Keep partner/source attribution uncertain. Group at most 20 report excerpts with validated IDs/quotes if time permits.
+Implement Task 6's backend. Trace issued codes with exact same-sandbox DB queries, then show batch membership and actual access records. Keep partner/source attribution uncertain. Use the bounded runner with the Ops allowlist: read_case, search_related_reports, lookup_reference, get_batch_access_events. Consider at most 20 reports including root; validate all source IDs/quotes and preserve related_reports plus dossier. Customer principals must never acquire these tools.
 
-Require RESOLVED same-recipient evidence reports for recipient restriction creation. Use the shared recipient advisory lock for restriction changes and confirmation. Record revocation history. Notice preview/publish derives customers from a matched batch and requires a RESOLVED source report. Replays must not duplicate messages or silently change already published copy. Test missing code, foreign data, wrong recipient, duplicates and unrelated customers.
+Require RESOLVED same-recipient evidence reports for recipient restriction creation. Use the shared recipient advisory lock for restriction changes and confirmation. Record revocation history. Notice preview derives customers only from a batch matched by the root report trace and may occur before resolution; publication additionally requires that source report to be RESOLVED. Replays must not duplicate messages or silently change already published copy. Test missing code, foreign data, wrong recipient, duplicates and unrelated customers.
 ```
 
 ## P8 — Operator frontend
@@ -77,7 +77,7 @@ Require RESOLVED same-recipient evidence reports for recipient restriction creat
 ```text
 Build the operator investigations feature from Task 6. Reuse the existing tables, filters, page layout, tabs and dialogs. Show report queue, active hold queue and detail panels with original evidence, validated AI excerpts, exact-reference trace and explicit uncertainty.
 
-Support report review, recipient WARN/HOLD decision, revocation, hold approve/reject, notice preview and notice publication. Approval must visibly return READY, with no success claim that money was sent. Operator actions use actor CSRF and server-checked permissions. Surface 409 conflicts by refetching current state rather than assuming a successful action.
+Add an Investigate with AI action and source-linked dossier cards with completed activity, counter-evidence and missing information; accept absent/null dossier during mock integration. No timer-generated progress, chat page or SSE. Support separate report review, recipient WARN/HOLD decision, revocation, hold approve/reject, notice preview and notice publication. Approval must visibly return READY, with no success claim that money was sent. Operator actions use actor CSRF and server-checked permissions. Surface 409 conflicts by refetching current state rather than assuming a successful action.
 ```
 
 ## P9 — Acceptance and release
@@ -93,7 +93,7 @@ Validate request/response names and enums against OpenAPI, session/evidence acce
 ```text
 Implement the cloud release parts of Tasks 1, 2 and 8 using docs/guardian/cloud-deployment.md. Prepare the container/runtime/proxy changes and environment examples first. Verify local builds before executing any authorized provisioning.
 
-Use one public Next.js service and one private FastAPI service. The server-side route proxy attaches a Google ID token and preserves actor cookies, CSRF and Origin. Use Neon PostgreSQL as the proposed database, with Supabase direct/session PostgreSQL as the alternative. Use separate development/demo databases, TLS and bounded connection pools. Use private GCS evidence and versioned Secret Manager references.
+Use one public Next.js service and one private FastAPI service. The server-side route proxy attaches a Google ID token and preserves actor cookies, CSRF and Origin. Use Neon PostgreSQL as the proposed database, with Supabase direct/session PostgreSQL as the alternative. Use separate development/demo databases, TLS and bounded connection pools. Use private Neon Object Storage through an S3 adapter, branch-scoped storage credentials and versioned Secret Manager references. Follow the updated runbook; do not provision GCS as the default evidence store.
 
 Build images tagged by source revision, execute an Alembic migration job with its own database user, then release application revisions. Implement python -m app.maintenance and schedule it through an authenticated Cloud Scheduler trigger. Prove one actual scheduled expiry and a compatible application traffic rollback. Record image digests, secret versions, migration head, public URL, observed cost and remaining failures. Runtime credentials never enter the repository or frontend public variables.
 ```

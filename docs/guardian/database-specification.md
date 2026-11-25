@@ -1,6 +1,6 @@
 # Guardian database specification
 
-This field-level specification accompanies [schema.sql](schema.sql) and [transaction rules](data-model.md). PostgreSQL 16+ is the target. Every table below includes every physical column from the baseline DDL.
+This field-level specification accompanies [schema.sql](schema.sql) and [transaction rules](data-model.md). PostgreSQL 16+ is the target. Every table below includes every physical column from the baseline DDL. The 25 November AI amendment retains all 19 tables/161 columns and keys: dossier/activity are versioned JSON in ai_runs.output; see [AI investigation storage](ai-investigation.md). REPORT_GROUPING retains its physical enum value for the broader bounded operator investigation. No chat/conversation table is introduced.
 
 ## Conventions
 
@@ -231,15 +231,15 @@ Preserves inference input identity, private evidence location, model version, st
 | 5 | `kind` | `text` | — | — | No | — | IMAGE_ANALYSIS, TEXT_ANALYSIS or REPORT_GROUPING. DB check `kind IN ('IMAGE_ANALYSIS', 'TEXT_ANALYSIS', 'REPORT_GROUPING')`. |
 | 6 | `transfer_id` | `uuid` | FK | FK → `transfers.id`<br>Composite `(sandbox_id, transfer_id)` → `transfers(sandbox_id, id)` | Yes | — | Transfer associated with this record within the same sandbox. |
 | 7 | `order_id` | `uuid` | FK | FK → `orders.id`<br>Composite `(sandbox_id, order_id)` → `orders(sandbox_id, id)` | Yes | — | Order associated with this record within the same sandbox. |
-| 8 | `input_text` | `text` | — | — | Yes | — | Customer text or canonical grouping input snapshot with source report IDs/excerpts. |
+| 8 | `input_text` | `text` | — | — | Yes | — | Canonical permitted text/root-case source snapshot; operator runs include root report IDs/excerpts for exact replay. |
 | 9 | `input_digest` | `text` | — | — | No | — | SHA-256 of canonical submitted input, including image bytes or root grouping request identity. |
 | 10 | `evidence_object_key` | `text` | — | — | Yes | — | Private storage key for original uploaded evidence; never a publicly readable URL. |
 | 11 | `evidence_mime` | `text` | — | — | Yes | — | Verified decoded image media type: image/png, image/jpeg or image/webp. |
 | 12 | `status` | `text` | — | — | No | `'PENDING'` | PENDING, SUCCEEDED, FAILED or TIMED_OUT independently of report/transfer state. DB check `status IN ('PENDING', 'SUCCEEDED', 'FAILED', 'TIMED_OUT')`. |
-| 13 | `output` | `jsonb` | — | — | Yes | — | Validated ModelEvidence or grouping object plus citation warnings and composed findings. |
+| 13 | `output` | `jsonb` | — | — | Yes | — | Versioned output_version/public_result/dossier/private _execution envelope; project only validated public fields and never credentials or chain-of-thought. |
 | 14 | `provider` | `text` | — | — | Yes | — | Configured inference provider recorded for repeatability and evaluation. |
 | 15 | `model` | `text` | — | — | Yes | — | Exact model identifier used by this run. |
-| 16 | `prompt_version` | `text` | — | — | No | — | Version of the extraction/grouping prompt and output contract. |
+| 16 | `prompt_version` | `text` | — | — | No | — | Version of evidence/investigation prompts and output contract. |
 | 17 | `error_code` | `text` | — | — | Yes | — | Stable provider/validation failure code; omit sensitive upstream details. |
 | 18 | `created_at` | `timestamptz` | — | — | No | `now()` | Database timestamp when this record was created. |
 | 19 | `finished_at` | `timestamptz` | — | — | Yes | — | Timestamp when the run finished or was reconciled as timed out. |
@@ -420,3 +420,16 @@ Retains append-only operational and security events with actor and request corre
 ## Implementation agreement
 
 Copy every column, key and DB check into the initial Alembic migration and SQLAlchemy metadata. Retain the SQL file as the reviewable baseline. Update this specification when a migration changes storage. [data-model.md](data-model.md) defines authorization, locking, deadlines and ledger aggregates that span multiple rows.
+
+## AI JSON payload specification — no physical column change
+
+| Existing storage | Planned application meaning |
+| --- | --- |
+| ai_runs.kind | IMAGE_ANALYSIS/TEXT_ANALYSIS for customer verification; REPORT_GROUPING for the bounded Ops investigation including related reports |
+| ai_runs.input_text / input_digest | Canonical root/linked client input, allowed source snapshot and SHA-256 replay comparison; no arbitrary SQL/tool instructions |
+| ai_runs.output | JSON envelope output_version / public_result / dossier / _execution; dossier follows OpenAPI; _execution is private and never returned wholesale |
+| ai_runs.provider / model / prompt_version | Actual configured model and prompt used, persisted for reproducibility; no API credentials |
+| ai_runs.status / error_code / finished_at | Existing lifecycle, including budget/error/timeout outcomes; partial activity does not imply success |
+| audit_events.event_type / details | AI_MODEL_REQUEST_RESERVED plus sanitized request counters/model metadata for actual-call budgets; not raw prompt/image/token/key contents |
+
+Physical types, PK/UQ/FK definitions and defaults above are unchanged. The application must validate dossier sources/citations/size and permission checks; SQL JSONB alone does not enforce these rules. See [the executable contract](openapi.yaml) for field types and [the investigation design](ai-investigation.md) for trust boundaries.

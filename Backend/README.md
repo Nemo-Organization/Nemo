@@ -143,7 +143,7 @@ Expected output is `1`. A successful liveness response only proves the API proce
 
 ### Hosted deployment
 
-The [cloud runbook](../docs/guardian/cloud-deployment.md) uses Cloud Run for frontend/backend, managed Neon PostgreSQL by default, private GCS evidence storage and Secret Manager. Supabase can replace Neon with the same schema and API.
+The [cloud runbook](../docs/guardian/cloud-deployment.md) uses Cloud Run for frontend/backend, managed Neon PostgreSQL by default, private Neon Object Storage via an S3 adapter and Secret Manager. Supabase can replace Neon with the same schema and API.
 
 Cloud Run receives the provider's TLS DATABASE_URL directly. The API and migration/maintenance jobs use their own credentials. No Cloud SQL instance or Cloud SQL attachment is required for this plan. Provider access, quotas and actual billing must be verified during deployment.
 
@@ -248,3 +248,9 @@ Inside the backend container, `guardian-postgres:5432` reaches the database cont
 | Password authentication failed | Use the credentials that initialized the persistent volume; later environment changes do not replace them |
 | Health succeeds but tables are missing | Liveness is independent of DB readiness; implement/apply the initial domain migration in the next milestone |
 | Container cannot reach DB at localhost | Use the shared Docker network and `guardian-postgres:5432` when both run in containers |
+
+## AI documentation update — 25 November
+
+The approved [AI investigation design](../docs/guardian/ai-investigation.md) adds bounded read-only function calling and optional dossier responses to the planned Analysis/Investigation APIs. [Guardian API contract v1.1 (OpenAPI 3.1)](../docs/guardian/openapi.yaml) remains the full future contract: 32 operations; runtime still implements health only. No AI provider/tool adapter, business route, domain migration or storage integration is implemented by this documentation change.
+
+Neon Object Storage through an S3 adapter is the evidence-storage target. Endpoint/region/scoped storage credentials and bounded-runner settings are documented in the [cloud runbook](../docs/guardian/cloud-deployment.md); they are future settings until implemented. An existing .env or successful health request does not prove DB/storage/model connectivity. Do not add secrets to shared docs or assume that changing AI_MODEL enables an absent adapter.

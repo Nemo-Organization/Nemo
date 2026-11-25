@@ -70,3 +70,13 @@ Create two held transfers to test both correction paths. On one, cancellation re
 | 160–180 s | Approved refund settles; display measured held-out AI results | Legitimate credit continues and measured AI value is explicit |
 
 Use preloaded fixtures to save typing time while still calling the live backend and model. Record actual latency. If a full model call consumes the video budget, trim navigation and explanatory speech; the live product retains arbitrary text/image input for judging. The video duration limits the submitted recording; the judge can continue exploring the live app afterward.
+
+## AI evidence variants and bounded investigation — 25 November
+
+Keep the original balance/reservation/refund checkpoints and all three scenario names. The pre-existing recipient HOLD protects Linh independently of AI; explain that provenance rather than attributing the hold to the model.
+
+For the same amount/recipient, provide three separately authored evidence variants: (1) fee demanded to receive the refund with verified fee zero; (2) a clearly separate new purchase mentioning the old refund; (3) cropped/ambiguous evidence or unknown fee. AI must return supported MISMATCH, no invented fee-scam contradiction for the purchase, and UNCERTAIN where evidence is missing. An independent recipient HOLD remains effective in all variants.
+
+The Ops investigate action returns a completed source-linked dossier. Show a quoted claim, a corroborating or countervailing fact, the exact reference lookup if supported, and limitations. Demonstrate NO_REFERENCE/NO_MATCH as valid outcomes. A-017 maps to the stored BATCH_A and READ event; this narrows investigation scope without proving partner culpability.
+
+The submitted recording remains at most three minutes. Use existing navigation and preloaded synthetic input to avoid typing, but run actual APIs/model; do not fake progress or hard-code verdicts. The broader live guide/evaluation covers variants that cannot fit in the recording. No chatbot or streaming is required. Candidate numbers/results are not measured findings until saved in the evaluation results.

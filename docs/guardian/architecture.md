@@ -2,7 +2,7 @@
 
 ## Repository facts and proposed shape
 
-Nemo already has `Frontend/` with Next.js 16.4.6, React 19.3.0, TypeScript, Tailwind 4, next-intl, Redux UI state, shared tables and dashboard layouts. `Backend/README.md` is a template. Existing leads/endpoints/logs pages contain mock domain data. They provide reusable presentation components and examples of feature boundaries. Preserve the installed package/lockfile pairing unless a build failure justifies a targeted change.
+Nemo has `Frontend/` with Next.js 16.4.6, React 19.3.0, TypeScript, Tailwind 4, next-intl, Redux UI state and shared components. At inspected dev commit 6f96e51, transfer/operator screens use local mock data and decisions. The backend implements health/errors/settings, lazy DB sessions, migration scaffolding, Docker and launchers; domain APIs are not implemented. Preserve the installed package/lockfile pairing unless a verified failure justifies a targeted change.
 
 Read `Frontend/AGENTS.md` and relevant bundled Next documentation under `node_modules/next/dist/docs/` before implementation. The frontend README describes an intended `components/shared/` directory that is not present at the inspected commit. Create a shared component only when an actual use requires it.
 
@@ -20,7 +20,7 @@ Deploy the Next.js server and FastAPI as two Cloud Run services. The frontend is
 
 FastAPI independently authenticates every application call after Cloud Run verifies service identity. The local-development route can skip Google ID-token authentication when using a loopback backend; application authorization remains mandatory. Configure Origin checks against the exact public frontend origin. [cloud-deployment.md](cloud-deployment.md) specifies provisioning, IAM, secret versions, image release, migration/maintenance jobs, smoke checks and rollback.
 
-Use one managed PostgreSQL with TLS and a bounded pool. The cloud plan proposes Neon PostgreSQL as the default and Supabase direct/session PostgreSQL as the alternative. Separate development/demo data and verify transaction/advisory-lock compatibility and plan quotas. Store uploaded evidence in a private GCS bucket. Only the backend serves evidence after ownership checks. The app's API key/DB credentials live in deployment secrets. Verify a billed provider call and cloud credit eligibility early.
+Use one managed PostgreSQL with TLS and a bounded pool. The cloud plan proposes Neon PostgreSQL as the default and Supabase direct/session PostgreSQL as the alternative. Separate development/demo data and verify transaction/advisory-lock compatibility and plan quotas. Store uploaded evidence in private Neon Object Storage through an S3 adapter (boto3); configure its branch endpoint/region and scoped credentials separately from the database URL. Only the backend serves evidence after ownership checks. The app's API key/DB credentials live in deployment secrets. Verify a billed provider call and cloud credit eligibility early.
 
 ## Source map
 
@@ -80,11 +80,19 @@ All mutating actor endpoints verify actor CSRF and Origin. Demo controls verify 
 
 ## AI boundary
 
-Define `EvidenceAnalyzer.analyze(input: AnalysisInput) -> ModelEvidence` and `ReportGrouper.group(input: GroupInput) -> GroupEvidence`. A single provider implementation can satisfy both. Prompts receive only permitted text/images and approved report excerpts. Server code merges official facts for the response. AI returns claims/excerpts, not permissions or money commands.
+Use a provider adapter and bounded runner, specified in [ai-investigation.md](ai-investigation.md):
 
-The model can misread digits or invent IDs. Verify source excerpts against transcription where possible, present uncertain image transcription as uncertain, and accept trace matches only through exact issued-reference lookup. Model-proposed report links require existing same-sandbox source IDs and validated quotations. Similar wording supports a review hypothesis. It cannot establish a common attacker or source leak by itself.
+- `ReasoningModel.next(messages, tool_schemas, remaining_seconds) -> ModelTurn` returns proposed tool calls or a final structured payload.
+- `InvestigationRunner.run(context: InvestigationContext) -> InvestigationRunResult` owns the shared deadline, three-request/four-tool budget and source validation. It never receives a general SQL/shell or mutation tool.
+- `ToolGateway.execute(context, call) -> ToolReceipt` validates arguments, role and scope on every call, issues run-local source IDs and limits response size. Customer and operator registries are separate.
 
-Processing uses bounded synchronous requests in core scope. Create an AI run as PENDING in a short DB transaction, release the transaction before calling the provider, then store SUCCEEDED/FAILED/TIMED_OUT. A repeated analysis request with the same client request ID returns the existing run. PENDING runs abandoned by process death are marked timed out during reconciliation. Retries of external model calls may incur charges, so use the same logical run and bound attempts.
+Customer tools read only the run's explicitly linked owned order/refund/transfer facts. Ops tools read the root case, bounded related reports, exact reference lookups and access events for batches established in that run. Backend exact trace remains independently available without AI. No model-selected actor/sandbox can widen retrieval.
+
+Persist PENDING in a short transaction, release it before model/object-store calls, perform each scoped tool read in a short session, and finalize SUCCEEDED/FAILED/TIMED_OUT afterwards. Keep all loop requests/retries within 20 seconds and count each actual provider request. Retain source receipts/snapshots in ai_runs.output; no new physical table is required.
+
+Analysis/Investigation gain optional nullable dossier in OpenAPI 1.1. It contains validated findings/sources, completed activity, recommended checks, limitations and citation warnings. Do not return raw tool arguments, unrestricted logs or chain-of-thought. A malformed or unsupported claim cannot authorize money or a public restriction. The server composes customer verdicts using validated action interpretation and official facts.
+
+Core uses synchronous responses and loading states; no chat or streaming endpoints. Inject fake adapters for repeatable tests, then separately prove live provider/storage behavior. Provider/model remain configurable; no billing upgrade or live credential is implied by this design.
 
 ## Extension points
 
@@ -97,6 +105,6 @@ Processing uses bounded synchronous requests in core scope. Create an AI run as 
 
 ## Operational controls
 
-Use structured request IDs and record state-changing events with actor, reason and evidence IDs. Exclude raw screenshots, session tokens, API keys and full account identifiers from ordinary logs. Configure upload limits, sandbox quotas, model-call quotas and cleanup retention. For the contest default, allow 20 analyses and 5 grouping runs per sandbox per hour plus a configurable deployment-wide daily provider limit of 300 calls. Preserve a normal transfer path when the provider quota is exhausted.
+Use structured request IDs and record state-changing events with actor, reason and evidence IDs. Exclude raw screenshots, session tokens, API keys and full account identifiers from ordinary logs. Configure upload limits, sandbox quotas, model-call quotas and cleanup retention. For the contest default, allow 20 analysis runs and 5 operator investigation runs per sandbox per hour plus 300 actual provider requests per UTC day deployment-wide. Existing GROUP_SANDBOX_HOURLY_LIMIT names the operator investigation budget; each tool-loop request and retry counts against the actual provider budget. Preserve a normal transfer path when the provider quota is exhausted.
 
 Deployment remains reproducible from committed source and locked dependencies. Freeze the submitted revision and keep the live app reachable throughout judging. Collect health, provider failures, unprocessed holds and database connectivity signals. Maintain an expiry sweep every minute; use Cloud Scheduler/Job execution identity with direct DB access instead of a public unauthenticated cleanup endpoint.

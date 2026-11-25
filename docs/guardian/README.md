@@ -2,13 +2,16 @@
 
 Guardian protects a customer before a transfer and helps an operator investigate the evidence behind recipient warnings. Refund impersonation is the primary contest scenario. This pack specifies the application to build in Nemo.
 
-Status — approved product direction, implementation-ready proposal. This delivery contains specifications and implementation prompts. Application behavior and delivery dates require verification during implementation.
+Status — approved direction updated on 25 November 2026; specifications, not completed product APIs. Current backend implements health and technical scaffolding; frontend business screens still use mocks. This revision adds bounded AI tools/source-linked dossiers and retains exact tracing. No implementation, provider billing or cloud provisioning is performed by the documentation update.
 
 ## Reading order
 
 | Document | Purpose |
 | --- | --- |
+| [Team brief](team-brief.md) | Shareable product scope, AI role, demo, assignments and changes in this revision |
+| [Specification changes](CHANGELOG.md) | Revision history and what changed in the shared contract |
 | [Product requirements](product-requirements.md) | User journeys, mandatory scope, state transitions, acceptance criteria |
+| [Bounded AI investigation](ai-investigation.md) | Read-only tool allowlists, trust boundaries, run limits, dossier, UI and provider decisions |
 | [Architecture](architecture.md) | Existing repository, module boundaries, trust boundaries, deployment |
 | [Data model](data-model.md) | ERD, ownership, transaction rules, extension rules |
 | [Database specification](database-specification.md) | All 19 tables and 161 columns, with types, nullability, defaults, keys and explanations |
@@ -31,9 +34,9 @@ Status — approved product direction, implementation-ready proposal. This deliv
 - Existing frontend — Next.js App Router, React, TypeScript, Tailwind, next-intl, shared shadcn components and TanStack tables.
 - Proposed backend — Python 3.12+, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, PostgreSQL 16+.
 - Proposed hosting — two services, Next.js and FastAPI, with one public browser origin. PostgreSQL is hosted on Neon by default, with Supabase as an alternative. Google Cloud Run is the first application hosting target.
-- Contest theme — Anti-Fraud. System-side evidence tracing supports investigation. AI extracts and relates evidence. Server code authenticates users, calculates money and enforces decisions.
+- Contest theme — Anti-Fraud. AI interprets evidence and selects bounded read-only verification steps, returning validated source-linked dossiers. Exact system tracing supports investigation. Server code authenticates users, calculates money and enforces human-approved decisions.
 - Customer and operator are the two application roles. The demo controller only manages synthetic scenarios.
-- All payment balances, orders, partners and financial outcomes in the contest build are synthetic. The model API, database changes, permission checks and risk decisions execute online.
+- All payment balances, orders, partners and financial outcomes in the contest build are synthetic. Release requirement: model calls, database writes, permission checks and risk decisions must execute online when implemented; current skeleton/mock screens do not yet satisfy this gate.
 
 ## Decisions made for this pack
 

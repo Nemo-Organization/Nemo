@@ -1,5 +1,18 @@
 # Guardian specification changes
 
+## 25 November 2026 — API contract 1.2, evaluation labels and baseline
+
+Scope: documentation and executable API specification only. No runtime code, migration or deployment changes.
+
+- Added optional `ModelEvidence.additional_actions` and a nullable `InvestigationFinding.signal`, plus the `InvestigationSignal` schema. Operations, paths, request bodies and required fields are unchanged.
+- Defined the seven requested_action codes, their precedence for multi-request messages, ordered finding rules (two MISMATCH, one CONSISTENT, UNCERTAIN otherwise) and a fixed UI safety message for secret/login requests.
+- Defined six message signals plus OTHER, their support requirements and neutral display. Added `recipient_display_name` to the TRANSFER fact allowlist.
+- Specified the keyword baseline: input text, normalization, four term groups, decision order, reference pattern and freeze rule.
+- Recorded the NEW_RECIPIENT live-guide variant, held-out case handling outside the repository, the plain-Python runner decision and the open rule 1 direction field.
+- Added the new rules as dated "Contract 1.2 amendment" sections in evaluation.md and ai-investigation.md. The 1.1 text stays in place with pointers to the amendment.
+- Archived OpenAPI 1.0.0 and 1.1.0 and the 1.1.0 fixtures byte-for-byte in [archive](archive/README.md).
+- Updated the two fixtures and added notes to FE integration, team brief, architecture, API examples, the BA prompt, AGENTS.md and the backend README.
+
 ## 25 November 2026 — API contract 1.1, bounded AI investigation
 
 Scope: documentation and executable API specification only. No business API, model adapter, migration, billing change or cloud deployment is implemented by this revision.

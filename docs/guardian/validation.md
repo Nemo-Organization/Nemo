@@ -64,3 +64,20 @@ This revision implements the documentation-first instruction for bounded AI inve
 | Independent review | Important contradictions in tool-turn budget, fee-message support, private claim bindings, transfer source kind, error/replay handling, preview/publication and stale GCS text were corrected |
 
 Validation used an isolated uv tool environment with openapi-spec-validator, jsonschema and PyYAML. It did not add runtime dependencies or change Backend/uv.lock. Inspecting provider availability, purchasing API credits, checking live Neon credentials and executing migrations/deployment remain separate implementation gates.
+
+## 25 November contract 1.2 amendment
+
+Documentation and contract only. Compared against `origin/dev` at `9168dc5` (contract 1.1.0).
+
+| Check | Observed result |
+| --- | --- |
+| Guardian API contract v1.2 | OpenAPI 3.1 validation passed with openapi-spec-validator 0.9.0; info.version 1.2.0 |
+| API compatibility | Same 28 paths and 32 operations; operation IDs and operation definitions identical to 1.1.0 |
+| Schema changes | Only InvestigationSignal added; only ModelEvidence and InvestigationFinding changed. Their required lists and existing properties are unchanged; requested_action gained a description only |
+| New field constraints | additional_actions rejects UNKNOWN and duplicates; signal rejects unknown codes; a finding without signal still validates |
+| Examples and fixtures | Seven inline JSON examples and both updated fixtures pass JSON Schema validation with format checks; fixture source IDs resolve |
+| Archive | openapi-1.0.0.yaml, openapi-1.1.0.yaml and both 1.1.0 fixtures are byte-identical to their Git sources; both archived contracts validate; archived fixtures validate against 1.1.0 |
+| Earlier prose | In every existing Markdown file, each original line is still present, five of them with one inserted sentence. In openapi.yaml only the version line and one re-wrapped description line changed |
+| Documentation | Relative links in changed Markdown resolve; no trailing whitespace in changed files |
+
+The checks ran in a temporary virtual environment outside the repository with openapi-spec-validator 0.9.0, jsonschema 4.26.0 and PyYAML 6.0.4. No runtime dependency or lock file changed. These checks do not validate model behavior, the rule 1 direction field, which is still open, or any provider.

@@ -72,3 +72,15 @@ If the integrated journey slips, first defer automatic multi-report grouping, th
 - Three model requests, four tool executions and 20 seconds per run. Retain existing hourly logical-run settings and count actual provider attempts for the daily budget. No automatic multi-provider rotation in core.
 - Exclude general chat, token streaming, newly trained ML, signup/KYC, external fund settlement and partner suspension from the current contest implementation. No provider payment or production provisioning has been authorized by this documentation update.
 - Prioritize an early live-model quality/latency/cost check with synthetic development/smoke evidence, keeping the BA-held evaluation set separate. Function calling or a seeded HOLD is not proof of AI value; compare source-linked interpretations and false positives against baselines.
+
+## Decisions applied on 25 November 2026, contract 1.2
+
+- Implement the bounded runner in plain Python. No LangGraph: the run is short and synchronous, Ops approval sits outside the AI loop, and the ai_runs persistence already covers what a checkpointer would add.
+- Contract 1.2 adds optional `ModelEvidence.additional_actions` and a nullable `InvestigationFinding.signal` with a six-code catalog plus OTHER. No endpoint, request body or table changes.
+- Customer findings follow ordered rules: two MISMATCH rules, one CONSISTENT rule, and UNCERTAIN for everything else. SHARE_SECRET and CONFIRM_LOGIN show a fixed UI safety message instead of a new finding value.
+- The keyword baseline vocabulary and decision order are fixed in evaluation.md before any held-out case is written. BA may add terms, not remove them.
+- BA authors and labels the held-out cases outside the repository. Developers and coding agents do not see them until prompts are frozen.
+- The NEW_RECIPIENT evidence variants go in the live guide. The three-minute video keeps the pre-existing HOLD story.
+- Provider remains unselected in these documents. AWS Bedrock is a candidate pending a live smoke test of image input, tool use, region and quota. If adopted, update the provider section and rename the Neon storage variables so they do not use the default AWS credential and region names.
+- Open before backend Task 9: the structured field that carries finding rule 1's claimed incoming transfer.
+- Version records: superseded contract and fixture files are copied byte-for-byte into `docs/guardian/archive/`. In prose documents, superseded text stays in place with a pointer to the dated amendment that replaces it.

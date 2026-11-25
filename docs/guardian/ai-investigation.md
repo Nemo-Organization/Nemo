@@ -97,7 +97,7 @@ Require literal quotes from customer text/report excerpts and exact canonical va
 
 ### Private per-claim support contract
 
-The provider proposes `FindingProposal(id, statement, relation, supports)`, where supports is a nonempty list of typed `QuoteSupport(source_id, exact_quote)` or `FactSupport(source_id, whitelisted_field, typed_value)`. QuoteSupport applies to permitted message/transcription/report snapshots and must match a literal span. FactSupport applies to a server-issued structured fact snapshot; the field is allowlisted for that tool and its JSON scalar value must equal the canonical value with the correct type. Source IDs alone are insufficient claim support.
+The provider proposes `FindingProposal(id, statement, relation, supports)`, where supports is a nonempty list of typed `QuoteSupport(source_id, exact_quote)` or `FactSupport(source_id, whitelisted_field, typed_value)`. QuoteSupport applies to permitted message/transcription/report snapshots and must match a literal span. FactSupport applies to a server-issued structured fact snapshot; the field is allowlisted for that tool and its JSON scalar value must equal the canonical value with the correct type. Source IDs alone are insufficient claim support. Contract 1.2 adds a signal to FindingProposal and extends the TRANSFER allowlist; see [Contract 1.2 amendment](#contract-12-amendment).
 
 The gateway owns the source catalog and canonical fact maps. Model output cannot create official sources, timestamps or completed tool receipts. Validate private support bindings before projection, drop unsupported proposals, and derive public source_ids from retained supports. Compose/check decisive amount/direction/fee comparisons server-side. Persist bounded validated support bindings in private _execution for evaluation, without chain-of-thought. Public InvestigationFinding retains statement/relation/source_ids.
 
@@ -109,7 +109,7 @@ An image transcription remains model-derived and can be wrong; identify its sour
 
 Reject source references to another run or actor. Drop any finding with unsupported source IDs/quotes and record the warning. If necessary evidence for a verdict is invalid or absent, the overall customer finding must remain UNCERTAIN; do not silently retain a definitive verdict after its only support was removed.
 
-Customer finding remains gated by verified facts: PAY_FEE tied to a refund with authoritative fee zero can support MISMATCH. Missing fee remains unknown; an explicit new purchase must not become a fee scam merely because the message mentions a refund. A model's recommendation never becomes a transfer state, restriction, publication or proof of a perpetrator.
+Customer finding remains gated by verified facts: PAY_FEE tied to a refund with authoritative fee zero can support MISMATCH. Missing fee remains unknown; an explicit new purchase must not become a fee scam merely because the message mentions a refund. Contract 1.2 makes composition follow the ordered rules in [evaluation](evaluation.md#contract-12-amendment) and also reads additional_actions. A model's recommendation never becomes a transfer state, restriction, publication or proof of a perpetrator.
 
 ## Exact tracing and exposure scope
 
@@ -154,3 +154,22 @@ Required states: idle, submitting, pending, succeeded, inconclusive, failed, tim
 - Trace A-017 -> BATCH_A with actual stored READ record and three candidate customers; Mai excluded. Test NO_REFERENCE and NO_MATCH and preserve forwarding uncertainty.
 - Prove no AI tool can transfer/cancel/restrict/publish or alter issued records. All mutations remain separately authenticated API commands.
 - Live-smoke the actual model and private storage with synthetic data. A fake adapter test is not evidence that provider quota, Vietnamese OCR or deployment works.
+
+## Contract 1.2 amendment
+
+Applied 25 November 2026. Earlier sections remain as the 1.1 record; where they conflict, this section applies. The 1.1 contract file is archived in [archive](archive/README.md).
+
+Contract v1.2 adds two optional fields and no endpoint, request body or table: `ModelEvidence.additional_actions` and a nullable `InvestigationFinding.signal` from the `InvestigationSignal` catalog. New implementations emit an empty array and null respectively when nothing applies; FE accepts their absence. Action definitions, precedence, finding rules and the signal catalog are in [evaluation](evaluation.md#contract-12-amendment).
+
+The provider now proposes `FindingProposal(id, statement, relation, signal, supports)`, where signal is an `InvestigationSignal` code or null. A proposal with a non-null signal must include at least one QuoteSupport from CUSTOMER_TEXT, IMAGE_TRANSCRIPTION or REPORT text. PAYEE_DIFFERS_FROM_SENDER also requires a FactSupport for `recipient_display_name` from the linked TRANSFER snapshot. A proposal missing the required support is dropped with a citation warning. Finding composition never reads signals.
+
+`get_customer_context` includes the linked draft recipient's verified display name in the TRANSFER snapshot, and `recipient_display_name` joins that snapshot's FactSupport allowlist.
+
+Customer finding composition reads PAY_FEE from requested_action or additional_actions. Every case outside the two MISMATCH rules and the one CONSISTENT rule is UNCERTAIN.
+
+UI: render finding signals as neutral labels, never green/check styling. When requested_action or additional_actions contains SHARE_SECRET or CONFIRM_LOGIN, show a fixed localized safety message; it does not change the finding or transfer state.
+
+Additional required proof:
+
+- A fee demand combined with an OTP request keeps MISMATCH through additional_actions and shows the secret warning.
+- A signal proposal without its required quote/fact support is dropped with a warning.

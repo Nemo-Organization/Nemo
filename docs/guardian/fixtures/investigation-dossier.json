@@ -43,7 +43,8 @@
           "src_report",
           "src_reference",
           "src_access"
-        ]
+        ],
+        "signal": null
       }
     ],
     "activity": [

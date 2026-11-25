@@ -1,6 +1,6 @@
 # Guardian API integration examples
 
-All paths below are relative to the public frontend origin. The browser uses same-origin credentials. UUIDs are returned from the current sandbox; samples are illustrative. Mutation headers contain the CSRF token returned for the appropriate cookie. Never store provider credentials in the frontend.
+All paths below are relative to the public frontend origin. The browser uses same-origin credentials. UUIDs are returned from the current sandbox; samples are illustrative. Mutation headers contain the CSRF token returned for the appropriate cookie. Never store provider credentials in the frontend. OpenAPI revision 1.1 adds optional nullable dossier responses; all request bodies and endpoints remain unchanged. These examples specify future behavior, not currently implemented business endpoints.
 
 ## Start and select an actor
 
@@ -81,18 +81,25 @@ The Analysis response has model evidence, finding and official_facts as separate
 
 ```json
 {
-  "transcription": "Chi ung giup em 20k phi thu hoi. Ma tra soat A-017.",
+  "transcription": "Chi ung giup em 20k phi thu hoi, ben kho moi tra 500k don SHOP-4502. Ma tra soat A-017.",
   "requested_action": "PAY_FEE",
   "claimed_purpose": "Receive the pending order refund",
   "quotes": [{
     "source": "IMAGE_TRANSCRIPTION",
-    "text": "ung giup em 20k phi thu hoi",
+    "text": "ung giup em 20k phi thu hoi, ben kho moi tra 500k don SHOP-4502",
     "report_id": null
   }],
   "extracted_references": ["A-017"],
   "missing_information": []
 }
 ```
+
+Complete synthetic response fixtures, including the 1.1 dossier, are available for FE mocks:
+
+- [Analysis with customer-safe sources](fixtures/analysis-dossier.json): ModelEvidence, official facts, one completed get_customer_context receipt and a source-linked contradiction. No internal batch/access sources.
+- [Ops investigation with trace evidence](fixtures/investigation-dossier.json): existing related_reports fields plus a dossier with exact reference/access records, unresolved attribution and completed activity. Empty related_reports is valid; do not invent matches to fill a card.
+
+Resolve each finding's source_ids against dossier.sources. Render source text safely and open resources only through existing authorized routes; a source ID is not an access credential. No public tool-execution route is added. No SSE or live activity endpoint is implied. Accept absent/null dossier in legacy fixtures and pending/error responses. On a failure, partial sources/activity may be shown without presenting a successful definitive verdict. The Ops top-level citation_warnings must include the union of grouping and dossier-validation warnings.
 
 `POST /api/v1/reports` creates the review item. The same recipient must match the linked transfer.
 
@@ -111,7 +118,7 @@ The Analysis response has model evidence, finding and official_facts as separate
 Select OPS using the demo controller first. All following actions use the new actor cookie/CSRF.
 
 1. `GET /api/v1/ops/reports/<id>` returns report, analysis and trace.
-2. `POST /ops/reports/<id>/investigate` with a new client_request_id requests bounded report grouping.
+2. `POST /ops/reports/<id>/investigate` with a new client_request_id starts bounded read-only investigation: related reports plus an optional validated dossier. Internal tool calls are not FE endpoints.
 3. `GET /ops/reports/<id>/trace` performs exact lookup and returns MATCHED_SCOPE, NO_MATCH or NO_REFERENCE.
 4. `PATCH /ops/reports/<id>` with status RESOLVED and a reason records review.
 5. `GET /ops/reports/<id>/notice-preview?batch_id=<id>` lists the server-derived scope.

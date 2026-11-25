@@ -54,3 +54,22 @@ Observed source files: `Frontend/src/features/transfer/types/transfer.types.ts`,
 | D: operations and release | Exact trace, restriction decisions, notice publication, audit | Linh/An/Binh preview, Mai excluded; publication replay creates no duplicates; full API contract checks pass |
 
 No gate is complete merely because a route exists or Swagger lists it. Backend delivery reports must name implemented operations, tests, unresolved external configuration and the commit to integrate.
+
+## 25 November AI amendment — action for FE
+
+Read [bounded AI investigation](ai-investigation.md) and Guardian API contract v1.1 (OpenAPI 3.1). There is no new chat, streaming or public tool-call endpoint. Keep the current upload/evidence/report screens and add result/dossier cards.
+
+| FE area | Required change |
+| --- | --- |
+| Analysis result | Preserve evidence/finding/official_facts; optionally render dossier sources/findings, limitations and recommended_checks. Accept absent/null dossier in old mocks and pending/error states. |
+| Source navigation | Resolve source_ids against returned dossier.sources; link only to an existing authorized resource view. Do not treat model text as a URL, HTML or executable action. |
+| Ops investigate | POST existing /ops/reports/{id}/investigate; keep related_reports/citation_warnings and add dossier view. Separate review/hold/restriction/publication buttons from AI suggestions. |
+| Activity | Show returned completed tool receipts after the response. Display neutral loading while waiting. No timer-generated fake progress or raw tool arguments/chain-of-thought. |
+| Error/uncertainty | Keep verified facts and allowed cancel/report navigation. FAILED/TIMED_OUT do not display a definitive AI verdict. An unavailable dossier does not hide an active financial HOLD. |
+| Changed input | Any image/text/order/transfer edit marks the old result stale; re-check uses a new request key. Saved result/replay does not invoke AI again. |
+
+Customer source kinds are limited to CUSTOMER_TEXT, IMAGE_TRANSCRIPTION, TRANSFER, ORDER and REFUND for their owned context. Internal REPORT/TRACE_REFERENCE/ACCESS_EVENT sources belong only to authorized Ops results. Recommended checks are textual review suggestions. Neither a CONSISTENT finding nor an AI suggestion can bypass a server-enforced hold.
+
+API wire names remain snake_case. No new conversation/message table or chat cache is required.
+
+For Ops recovery, keep client_request_id keyed by sandbox/actor/root report and replay the same POST /ops/reports/{id}/investigate after network loss or PENDING, with bounded backoff. There is no GET-investigation-by-run-ID endpoint in core. Generate a fresh key only on an explicit rerun and clear prior actor keys on selection changes. Analysis can use its existing GET once the ID is known. Investigation failures have status/missing_information/dossier.limitations, not an invented top-level error_code; pre-admission 429 is a separate HTTP error. Image parsing, scoped tool execution and model loops belong to BE. All new panels are specified future work; current FE mock components have not been modified by this documentation update.

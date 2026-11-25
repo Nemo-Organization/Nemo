@@ -2,9 +2,9 @@
 
 ## AI hypothesis
 
-Given a customer-supplied screenshot/text, AI identifies the requested action and its claimed purpose across paraphrases, then the application compares that interpretation with verified transaction/order facts. Given a small set of report excerpts, AI proposes related refund-scam reports with valid citations. The model does not determine authorization or create active recipient restrictions.
+Given customer evidence or an Ops root report, a bounded model runner interprets requested action/purpose, chooses permitted read-only verification tools, and produces a source-linked dossier of findings, counter-evidence, missing information and recommended checks. The backend validates sources and composes customer findings with official facts. Exact-reference tracing is deterministic support. The model never determines authorization or changes money/restrictions/notices. See [AI investigation](ai-investigation.md).
 
-OCR alone proves transcription. A useful model must distinguish a fee demanded to receive a refund from a legitimate purchase despite overlapping words, amounts and order references. If a keyword baseline performs similarly on the held-out cases, report that outcome and reconsider the AI-value claim before submission.
+OCR alone produces a candidate transcription that must be checked against the original. A useful model must distinguish a fee demanded to receive a refund from a legitimate purchase despite overlapping words, amounts and order references. If a keyword baseline performs similarly on the held-out cases, report that outcome and reconsider the AI-value claim before submission.
 
 ## Provider contract
 
@@ -19,7 +19,7 @@ OCR alone proves transcription. A useful model must distinguish a fee demanded t
 
 A fee greater than zero does not by itself verify the external receiver, the claim or the requested amount. A CONSISTENT result means the checked evidence is consistent within its scope. Display independent recipient/behavior findings alongside it. AI-extracted amounts/identifiers never overwrite immutable transfer or account fields.
 
-Group input contains this report and up to 19 other same-sandbox reports, their permitted text/transcription excerpts and report IDs. Output contains proposed report IDs, rationale, source quotations and missing information. Do not give the model partner access logs or personal histories to enable grouping. Backend exact tracing remains independent.
+Group input contains this report and up to 19 other same-sandbox reports, their permitted text/transcription excerpts and report IDs. Output contains proposed report IDs, rationale, source quotations and missing information. The related-report tool gets only bounded permitted excerpts. A separate authorized Ops lookup/access tool may return minimized records for an evidenced batch; customers never receive internal access logs. Backend exact tracing remains independently callable without AI.
 
 ## Baselines and held-out evaluation
 
@@ -76,3 +76,13 @@ Use PostgreSQL for transactional tests. SQLite does not verify the relevant row/
 | Hosted end-to-end | Main scenario on the deployed URL with two independent browser contexts and an actual provider response |
 
 The three-minute video uses the main scenario. The live guide links normal/anomaly/false-positive/inconclusive scenarios so judges can verify behavior beyond the recording.
+
+## Bounded-runner evaluation amendment
+
+Compare three configurations on the same permitted facts: OCR/text + keyword/exact-ID baseline; LLM with fixed supplied context; bounded tool runner. Do not weaken the baseline or withhold facts just to make tools look better. Keep independent labels hidden during prompt tuning. Report whether the runner actually improves outcomes; negative/no-improvement results are valid findings.
+
+Add per-case model/prompt/output version, actual model request count, tool count, source coverage, valid/invalid finding citations, abstention correctness and provider token cost. Count response-shape validation separately from factual correctness. A 12-16-case result is a bounded demonstration, not a production fraud-reduction or unseen-attack discovery claim.
+
+Required cases: customer attempts Ops tool; foreign source IDs; invented quotes; valid forwarded code; too many tool calls; oversized output; SDK retry inflation; provider 429; total deadline exceeded; process death after PENDING; safe partial dossier and canonical replay. Unsupported findings are dropped with warnings; if remaining evidence cannot support a definitive verdict, require UNCERTAIN. Activity must come from executed server receipts, never model assertions.
+
+No training/fine-tuning experiment is added to core. The behavioral median rule must be disclosed as a rule; do not present it as learned anomaly detection. The MAIN_REFUND pre-existing HOLD is also not an AI detection result.

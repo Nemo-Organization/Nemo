@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.12, FastAPI/Pydantic v2, SQLAlchemy 2, psycopg, Alembic, PostgreSQL 16+, Neon-compatible S3 object storage via an adapter, and one explicitly configured vision/text provider.
 
-**Spec:** `docs/guardian/product-requirements.md`, `data-model.md`, `database-specification.md`, `schema.sql`, `openapi.yaml`, `scenarios.md`, `evaluation.md`, `architecture.md`. The 23 November delivery plan remains the product-wide plan; this document expands its backend tasks. Conflicts resolve against the product requirements and shared API/SQL contract, with an explicit recorded ruling.
+**Spec:** `docs/guardian/ai-investigation.md` (25 November bounded-tool amendment), `docs/guardian/product-requirements.md`, `data-model.md`, `database-specification.md`, `schema.sql`, `openapi.yaml`, `scenarios.md`, `evaluation.md`, `architecture.md`. The 23 November delivery plan remains the product-wide plan; this document expands its backend tasks. Conflicts resolve against the product requirements and shared API/SQL contract, with an explicit recorded ruling.
 
 ## Global Constraints
 
@@ -22,7 +22,7 @@
 - Acquire recipient advisory lock, sorted account row locks, then sorted transfer/refund locks. Never acquire the advisory lock after account locks.
 - Anomaly rule: at least five settled outgoing observations in 30 days; amount >= three times median AND >= 2,000,000 => WARN. Sparse history remains INSUFFICIENT_HISTORY. Behavioral risk alone does not create HOLD.
 - Model output is untrusted evidence; it cannot query arbitrary SQL, invoke shell tools, authorize transfers or change restrictions. Normal transfer/risk endpoints never call the model.
-- Images: PNG/JPEG/WebP, maximum 5 MiB. Text: maximum 12,000 characters. Inference deadline: 20 seconds total. Grouping input: at most 20 reports.
+- Images: PNG/JPEG/WebP, maximum 5 MiB. Text: maximum 12,000 characters. Shared run deadline: 20 seconds; at most three model requests including retry/final formatting and four tool executions. Operator investigation input includes at most 20 reports. No general chat or streaming in core.
 - Provider limits: 20 analyses and five grouping runs per sandbox per hour; 300 total provider calls per deployment per day by default. Tests use injected adapters; no hard-coded production AI verdict.
 - Runtime secrets stay out of git, logs, browser bundles and prompts. Never echo a live connection string while checking configuration.
 - Disposable PostgreSQL is mandatory for money/concurrency verification. Never run reset/downgrade/test fixtures against the user's Neon production branch.
@@ -44,7 +44,7 @@ Inspected `dev` at `6f96e51` on 24 November 2026. Working branch: `feat/guardian
 - Not implemented: domain models/migration, session/demo endpoints, transfers, AI/evidence, reports or Ops endpoints. Current generated OpenAPI exposes only health.
 - Shared contract: 32 operations across 28 paths; SQL: 19 tables, 161 physical columns.
 - FE has transfer/operator UI but mock DTOs and decision logic differ from the contract. See `docs/guardian/frontend-integration-notes.md`; do not copy the local mock engine into BE.
-- The existing docs still prescribe GCS. This plan proposes a storage adapter with Neon S3 as the selected deployment target, matching the team's current Neon setup. Update architecture/cloud examples when this choice is implemented; do not claim the storage adapter already exists.
+- Storage target is private Neon Object Storage through S3. Architecture/cloud examples now use this choice. The adapter/settings are still future implementation; docs do not provision storage.
 - Docker engine was unavailable at inspection. Start the installed Docker engine or use an existing local PostgreSQL binary to create a disposable test instance. This is a verification dependency, not a reason to substitute SQLite or use production data.
 - Neon and AI credentials/live connectivity are not established by this plan. An existing `.env` does not prove that a provider works.
 
@@ -101,7 +101,7 @@ Keep routers limited to validation/dependencies/status serialization. Avoid a si
 
 Tasks 1 -> 2 -> 3 -> 4 precede all domain HTTP work. Tasks 5-8 share money state and are sequential. Task 9 can be assigned to the AI developer after Task 3 only with explicit file ownership; Task 10 consumes it. Task 11 consumes Tasks 7 and 10; Tasks 12-13 consume reports. Task 14 consumes all persistence lifecycles; Task 15 is the final gate.
 
-Planning allowance: roughly 45-70 backend engineering hours including meaningful tests/review and uncertainty, not a promise based on code-generation speed. Prefer Gate A on 24-25 November, B by 26-27 November, C/D by 28-29 November, and E by 30 November-1 December. Keep 2 December for hosted integration/submission preparation. Re-estimate after Gate A using observed throughput. Agent assistance accelerates implementation but does not replace concurrency, live-provider or FE integration checks.
+Planning allowance: roughly 45-70 backend engineering hours including meaningful tests/review and uncertainty, not a promise based on code-generation speed. As a revised planning target, aim for Gate A on 25-26 November, B by 26-27 November, C/D by 28-29 November, and E by 30 November-1 December. Keep 2 December for hosted integration/submission preparation. Re-estimate after Gate A using observed throughput. Agent assistance accelerates implementation but does not replace concurrency, live-provider or FE integration checks.
 
 ## Common task execution contract
 
@@ -211,17 +211,17 @@ The task assertions below are test outcomes to encode in the named tests; helper
 - [ ] GREEN: APPROVE leaves posted balance unchanged, creates READY, and customer confirmation executes once. A replacement restriction re-holds without a second reservation or deadline extension. Refund retry produces one REFUND_CREDIT, including during a hold.
 - [ ] Commit `feat(backend): add hold reviews and idempotent demo refunds`.
 
-### Task 9: Private evidence and bounded AI analysis
+### Task 9: Private evidence and bounded read-only AI investigation
 
-**Files:** create evidence storage/validation/router modules, investigation provider/schemas/prompts/service modules, `tests/test_evidence.py`, `tests/test_analysis.py`, `tests/test_ai_quotas.py`; extend settings/env/dependencies only as required.
+**Files:** create evidence storage/validation/router modules, investigation provider/schemas/prompts/service/runner/tools/citations modules, `tests/test_evidence.py`, `tests/test_analysis.py`, `tests/test_ai_quotas.py`, `tests/test_ai_tools.py`, `tests/test_ai_dossier.py`; extend settings/env/dependencies only as required.
 
-**Interfaces:** `EvidenceStore.put(key: str, content: bytes, mime: str) -> None`, `get(key: str) -> StoredEvidence`, `delete(key: str) -> None`; `EvidenceAnalyzer.analyze(input: AnalysisInput) -> ModelEvidence`; `create_analysis(session_factory: Callable[[], Session], principal: Principal, input: AnalysisInput) -> Analysis`; `get_analysis(...) -> Analysis`. Produces createAnalysis/getAnalysis/getEvidence. Injectable test adapters never become automatic runtime verdicts.
+**Interfaces:** `EvidenceStore.put(key: str, content: bytes, mime: str) -> None`, `get(key: str) -> StoredEvidence`, `delete(key: str) -> None`; `ReasoningModel.next(messages, tool_schemas, remaining_seconds) -> ModelTurn`; `InvestigationRunner.run(context: InvestigationContext) -> InvestigationRunResult`; `ToolGateway.execute(context, call) -> ToolReceipt`; `create_analysis(session_factory: Callable[[], Session], principal: Principal, input: AnalysisInput) -> Analysis`; `get_analysis(...) -> Analysis`. Produces createAnalysis/getAnalysis/getEvidence. Injectable test adapters never become automatic runtime verdicts.
 
-- [ ] RED: `test_fee_zero_plus_pay_fee_is_mismatch`, `test_new_purchase_has_no_refund_fee_mismatch`, `test_missing_fee_is_uncertain`, `test_timeout_keeps_official_facts`, `test_duplicate_key_does_not_call_provider_twice`, `test_changed_image_or_text_key_is_409`, `test_foreign_order_transfer_or_image_is_404`, `test_invalid_mime_decoding_and_size_rejected`, `test_quota_race_and_model_outage_do_not_block_cancel`.
-- [ ] Run `uv run pytest tests/test_evidence.py tests/test_analysis.py tests/test_ai_quotas.py -q`; expected RED for absent adapters/routes.
-- [ ] Validate decoded images as well as MIME; check decompression limits. Persist canonical input SHA-256 and official facts from owned records. Reserve run/quota atomically using separate consistent AI advisory namespaces, commit PENDING, release the DB transaction, then call store/provider with bounded timeouts and finalize. Idempotency key lock precedes shared quota lock; replays consume no quota/call. Do not infer successful AI from keyword-only rules.
+- [ ] RED: `test_fee_zero_plus_pay_fee_is_mismatch`, `test_new_purchase_has_no_refund_fee_mismatch`, `test_missing_fee_is_uncertain`, `test_timeout_keeps_official_facts`, `test_duplicate_key_does_not_call_provider_twice`, `test_changed_image_or_text_key_is_409`, `test_foreign_order_transfer_or_image_is_404`, `test_invalid_mime_decoding_and_size_rejected`, `test_quota_race_and_model_outage_do_not_block_cancel`, `test_customer_tool_allowlist_and_scope`, `test_three_model_requests_four_tools_share_deadline`, `test_dossier_drops_unsupported_sources_and_quotes`, `test_activity_is_server_receipts_not_model_claims`.
+- [ ] Run `uv run pytest tests/test_evidence.py tests/test_analysis.py tests/test_ai_quotas.py tests/test_ai_tools.py tests/test_ai_dossier.py -q`; expected RED for absent adapters/routes.
+- [ ] Validate decoded images as well as MIME; check decompression limits. Persist canonical input SHA-256 and official facts from owned records. Reserve run/quota atomically using separate consistent AI advisory namespaces, commit PENDING, release the DB transaction, then call store/provider with bounded timeouts and finalize. Idempotency key lock precedes shared quota lock; replays consume no quota/call. Budget logical runs separately from actual provider requests. Append a sanitized AI_MODEL_REQUEST_RESERVED audit event before each outbound request. Persist output_version/public_result/dossier/private _execution without changing physical columns. Do not infer successful AI from keyword-only rules.
 - [ ] Implement S3 adapter with explicit Neon endpoint, region, bucket and scoped credentials plus Python path-style/SigV4 configuration. Keep private object keys unguessable/scoped; compensate failed DB/upload steps with retryable deletion. Pin dependencies such as boto3, image decoder, multipart and the selected provider SDK only when used.
-- [ ] GREEN: exact output schema, correct known/unknown facts, private evidence access for owner or same-sandbox operator only, no tool execution from image text, and one logical run under duplicate concurrent submissions. Honor the total 20-second inference deadline, including validation/repair attempts.
+- [ ] GREEN: exact output schema, correct known/unknown facts, private evidence access for owner or same-sandbox operator only, no tool execution from image text, and one logical run under duplicate concurrent submissions. Honor the shared 20-second deadline, at most three model requests/four tools, and supported source IDs. The customer registry exposes only get_customer_context for explicitly linked owned facts. Project optional nullable dossier without exposing _execution; unsupported necessary evidence produces UNCERTAIN.
 - [ ] Run a separately authorized live storage round trip and one model analysis using synthetic evidence once credentials/provider selection exist. Record provider/model/latency; never describe injected-adapter tests as proof of a live provider.
 - [ ] Commit `feat(backend): add private evidence and bounded AI analysis`.
 
@@ -249,15 +249,15 @@ The task assertions below are test outcomes to encode in the named tests; helper
 - [ ] GREEN: parallel creates produce one active row; expiry/revocation changes subsequent assessments, and approval of one held transfer does not revoke the global restriction.
 - [ ] Commit `feat(backend): add reviewed recipient restriction decisions`.
 
-### Task 12: Exact-reference trace and bounded report investigation
+### Task 12: Exact-reference trace and Ops tool-guided investigation
 
 **Files:** create `investigation/trace.py`, `grouping.py`, `tests/test_trace.py`, `tests/test_grouping.py`; finalize Ops report detail/trace/investigation routes.
 
-**Interfaces:** `trace_report(session: Session, principal: Principal, report_id: UUID) -> Trace`; `ReportGrouper.group(input: GroupInput) -> GroupEvidence`; `investigate_report(session_factory: Callable[[], Session], principal: Principal, report_id: UUID, client_request_id: UUID) -> Investigation`. Produces getOpsReport/traceReport/investigateReport.
+**Interfaces:** `trace_report(session: Session, principal: Principal, report_id: UUID) -> Trace`; Task 9 bounded runner/gateway reused with an Ops tool registry and validated related_reports output; `investigate_report(session_factory: Callable[[], Session], principal: Principal, report_id: UUID, client_request_id: UUID) -> Investigation`. Produces getOpsReport/traceReport/investigateReport.
 
-- [ ] RED: `test_a017_matches_batch_and_real_read`, `test_missing_and_unknown_reference_results`, `test_forwarded_reference_keeps_limitations`, `test_no_cross_sandbox_trace`, `test_grouping_caps_20_and_replays_snapshot`, `test_invalid_report_ids_and_quotes_are_dropped`.
+- [ ] RED: `test_a017_matches_batch_and_real_read`, `test_missing_and_unknown_reference_results`, `test_forwarded_reference_keeps_limitations`, `test_no_cross_sandbox_trace`, `test_grouping_caps_20_and_replays_snapshot`, `test_invalid_report_ids_and_quotes_are_dropped`, `test_ops_access_events_require_batch_established_in_run`, `test_invented_source_never_authorizes_publication`.
 - [ ] Run `uv run pytest tests/test_trace.py tests/test_grouping.py -q`; expected RED for missing trace/grouping.
-- [ ] Match references exactly against immutable issued records; never create issuance from extracted strings or use substring/partial matches for attribution. Join actual batch/partner/access records. Validate related-report IDs and source quotations against the immutable run input snapshot; drop unsupported links with citation_warnings. Use the same bounded run lifecycle/quota discipline as analysis.
+- [ ] Match references exactly against immutable issued records; never create issuance from extracted strings or use substring/partial matches for attribution. Join actual batch/partner/access records. Validate related-report IDs and source quotations against the immutable run input snapshot; drop unsupported links with citation_warnings. Reuse Task 9 runner/gateway with read_case, search_related_reports, lookup_reference and get_batch_access_events only. Validate source IDs and exact evidence-supported codes; access-event retrieval requires an evidenced batch. Return related_reports plus optional dossier. Reuse the same shared run budget, lifecycle and source validation as customer analysis.
 - [ ] GREEN: A-017 -> BATCH_A -> A READ -> three distinct candidate customers; absent code returns NO_REFERENCE, unknown code NO_MATCH. All cases preserve source uncertainty. New reports do not change a replayed grouping snapshot, and a grouping response cannot execute an Ops action.
 - [ ] Commit `feat(backend): implement exact tracing and validated report investigation`.
 
@@ -377,7 +377,7 @@ These assertions do not authorize hard-coded runtime amounts or identities. Each
 ## Execution boundaries and reporting
 
 - Keep an execution ledger identifying this plan and task BASE/commit/test results. Resume from committed task evidence after compaction instead of repeating completed migrations or tests blindly.
-- Before the first code task, settle plan review and use an isolated feature branch/current checkout per workspace policy. The branch above is prepared; no business code was changed while preparing this plan.
+- The user authorized applying the bounded-tool direction on 25 November, then explicitly prioritized sharing updated docs before code. Resume code only in the subsequent implementation phase on the prepared feature checkout per workspace policy. The branch above is prepared; no business code was changed while preparing this plan.
 - A task is complete only after its behavioral tests pass and consumers can use its produced interface. A Swagger path, importable module, placeholder adapter, or skipped live dependency is not evidence of completed integration.
 - Distinguish automated proof with fake adapters, real PostgreSQL proof, real object-store proof, real provider proof and hosted browser proof in every delivery report.
 - Update any intentional behavior change in product requirements, SQL/API specification, tests and FE notes together. Do not silently implement FE mock behavior as a new product requirement.

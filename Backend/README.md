@@ -11,6 +11,7 @@ FastAPI foundation for Nemo's Guardian anti-fraud application. Python 3.12, Pyda
 - Request-scoped sessions close and roll back uncommitted work. Business services will explicitly own commits.
 - Alembic configuration and domain package boundaries are prepared for the next milestone.
 - Demo sessions (backend Task 3): `POST /api/v1/demo/sessions` (createDemo), `POST /api/v1/demo/actors/select` (selectActor) and `GET /api/v1/me` (getMe). See [Demo sessions](#demo-sessions).
+- Customer reference lists (backend Task 4): `GET /api/v1/recipients` (listRecipients) and `GET /api/v1/orders` (listOrders), paginated with `limit` (1-100, default 20) and `offset` (>= 0).
 
 Product requirements, the 19-table schema and full API contract live in [the delivery pack](../docs/guardian/README.md). The domain packages currently establish source boundaries. Authentication, transfers, inference and operator endpoints are future tasks. This migration scaffold has no schema revisions yet. Add domain models and the initial migration from the agreed schema before initializing product tables.
 
@@ -183,7 +184,10 @@ A configured DB creates a lazy engine during lifespan. Liveness stays available 
 | CSRF | `X-CSRF-Token` must match the endpoint's own credential: controller token for `/demo/*` controls, actor token for customer/operator actions; otherwise 403 `CSRF_FAILED` |
 | Session | Missing, unknown, revoked or expired session, or an expired sandbox: 401 `SESSION_EXPIRED` |
 | Actor selection | `POST /demo/actors/select` with `{"actor_id": ...}` issues a new actor cookie and CSRF token and revokes the presented actor cookie. An actor outside the controller's sandbox is 404 `NOT_FOUND` |
-| `/me` | Returns the actor, its accounts with masked identifiers and the same actor CSRF token, re-derived from the cookie without changing state |
+| `/me` | Returns the actor, its accounts with masked identifiers and the same actor CSRF token, re-derived from the cookie without changing state. Ops gets its identity and no accounts |
+| Role | `/recipients` and `/orders` are CUSTOMER-only: an authenticated operator gets 403 `FORBIDDEN` |
+| `/recipients` | The sandbox's seeded external accounts (never a customer wallet), masked, ordered by display_name then ID |
+| `/orders` | The caller's own orders with nested refund or null, newest `fee_verified_at` first (unknown last) then ID descending. An unknown fee is `null`, distinct from a verified `0` |
 | Cookies | HttpOnly, SameSite=Lax, Path=/, Max-Age up to 24 hours. Secure unless `PUBLIC_APP_ORIGIN` is `http://` on localhost/127.0.0.1/::1 outside `APP_ENV=production` |
 
 Browsers set `Origin` themselves. To try these operations in Swagger at `http://localhost:8080/docs`, start the backend with `PUBLIC_APP_ORIGIN=http://localhost:8080`. A manual client sends the header explicitly, for example `curl -i -X POST http://localhost:8080/api/v1/demo/sessions -H "Origin: http://localhost:3000" -H "Content-Type: application/json" -d '{"scenario":"MAIN_REFUND"}'`.

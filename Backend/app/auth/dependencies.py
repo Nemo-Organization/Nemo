@@ -1,10 +1,12 @@
-"""FastAPI dependencies for Origin, cookie and CSRF checks, plus session-cookie writing.
+"""FastAPI dependencies for Origin, cookie, CSRF and role checks, plus session-cookie writing.
 
 Check order for mutations: exact Origin (403 ORIGIN_DENIED), then the endpoint's own credential
-(401 SESSION_EXPIRED), then that credential's CSRF token (403 CSRF_FAILED). Role, actor and
-sandbox headers sent by clients are never read.
+(401 SESSION_EXPIRED), then that credential's CSRF token (403 CSRF_FAILED). Role checks run after
+authentication (403 FORBIDDEN) and before the endpoint's query parameters are validated. Role,
+actor and sandbox headers sent by clients are never read.
 """
 
+from collections.abc import Callable
 from typing import Annotated, Any
 
 from fastapi import Depends, Request, Response, Security
@@ -12,7 +14,7 @@ from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
 
 from app.auth import service
-from app.auth.principal import DemoPrincipal, Principal
+from app.auth.principal import DemoPrincipal, Principal, Role
 from app.db import get_session
 from app.errors import ApplicationError
 from app.settings import Settings
@@ -75,6 +77,26 @@ def actor_mutation(
         request.headers.get(service.CSRF_HEADER),
         request_id=request.state.request_id,
     )
+
+
+def require_role(
+    role: Role, *, via: Callable[..., Principal] = current_actor
+) -> Callable[..., Principal]:
+    """Dependency yielding the principal authenticated by `via`, which must hold `role`.
+
+    `via` is `current_actor` for reads or `actor_mutation` for writes, so a missing session is
+    still 401 and an authenticated caller with the other role is 403 FORBIDDEN.
+    """
+
+    def dependency(principal: Annotated[Principal, Depends(via)]) -> Principal:
+        if principal.role != role:
+            raise service.role_forbidden()
+        return principal
+
+    return dependency
+
+
+CustomerReader = Annotated[Principal, Depends(require_role("CUSTOMER"))]
 
 
 def controller_mutation(

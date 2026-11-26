@@ -1,11 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 
-from app.api.schemas import Bootstrap, CreateDemo, Me, SelectActor
+from app.api.pagination import PageParams
+from app.api.schemas import Bootstrap, CreateDemo, Me, OrderList, RecipientList, SelectActor
 from app.auth.dependencies import (
     CSRF_OPENAPI,
     ORIGIN_NOTE,
+    CustomerReader,
     DbSession,
     controller_mutation,
     require_origin,
@@ -14,9 +16,12 @@ from app.auth.dependencies import (
 )
 from app.auth.principal import DemoPrincipal
 from app.auth.service import ACTOR_COOKIE, CONTROLLER_COOKIE
-from app.demo import service
+from app.demo import queries, service
 
 router = APIRouter(tags=["Demo"])
+# Customer reads of seeded fixtures; the contract tags these operations "Customer".
+customer_router = APIRouter(tags=["Customer"])
+Pagination = Annotated[PageParams, Query()]
 
 
 @router.post(
@@ -65,3 +70,27 @@ def select_demo_actor(
     )
     set_session_cookie(response, ACTOR_COOKIE, selected.actor, settings)
     return selected.me
+
+
+@customer_router.get(
+    "/recipients",
+    operation_id="listRecipients",
+    response_model=RecipientList,
+    description="Seeded recipients in this sandbox, with masked identifiers. CUSTOMER only. "
+    "Ordered by display_name then ID; the caller's own wallet is never listed.",
+)
+def list_recipients(
+    principal: CustomerReader, page: Pagination, session: DbSession
+) -> RecipientList:
+    return queries.list_recipients(session, principal, page)
+
+
+@customer_router.get(
+    "/orders",
+    operation_id="listOrders",
+    response_model=OrderList,
+    description="Customer-owned order and refund facts only. CUSTOMER only. An unknown fee is "
+    "null with null provenance, distinct from a verified zero fee.",
+)
+def list_orders(principal: CustomerReader, page: Pagination, session: DbSession) -> OrderList:
+    return queries.list_orders(session, principal, page)

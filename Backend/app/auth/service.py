@@ -71,6 +71,12 @@ def csrf_failed() -> ApplicationError:
     return ApplicationError(403, "CSRF_FAILED", "CSRF token is missing or invalid.")
 
 
+def role_forbidden() -> ApplicationError:
+    return ApplicationError(
+        403, "FORBIDDEN", "This operation is not permitted for the current role."
+    )
+
+
 def issue_session(
     session: Session,
     *,

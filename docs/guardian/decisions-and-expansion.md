@@ -1,0 +1,86 @@
+# Guardian decisions, boundaries and expansion
+
+## Recorded choices
+
+| Choice | Rationale and consequence |
+| --- | --- |
+| Anti-Fraud is the primary contest theme | Customer intervention and operator-reviewed evidence form one product. Trace functionality supports security investigation. |
+| Two independent risk signals | Behavioral unusualness and verified recipient risk both matter. Warning wording identifies the actual reason. |
+| WARN for behavioral anomalies | Legitimate high-value payments remain possible after acknowledgement. |
+| Operator-created WARN or HOLD restrictions | Community reports create evidence, with explicit human accountability for a public-facing restriction. |
+| 15-minute hold, 30-minute draft, five-minute assessment | Concrete defaults for implementation and tests. They are design proposals, configurable and measurable during usability testing. |
+| Customer reconfirmation after clearance | The customer remains in control of whether a delayed transfer should still happen. |
+| Reference-based tracing | Seeded issuance and access records permit a falsifiable investigation. A code and legitimate read do not establish the perpetrator. |
+| Private Neon S3 evidence storage | Evidence survives Cloud Run restarts and remains available through authorized API reads; bucket credentials remain server-side. |
+| Next.js and FastAPI services | Matches the repository's actual frontend runtime; no static-export assumption. |
+| Neon PostgreSQL, with Supabase as an alternative | Follows the team's preference for affordable hosted PostgreSQL. Separate development/demo data, retain TLS, and verify plan quotas and connection limits before deployment. |
+| Public frontend and IAM-authenticated private API | The Next route proxy attaches its service identity and forwards actor cookies. FastAPI retains application authorization. The cloud-deployment document defines the release steps. |
+| Synchronous bounded AI calls | Keeps the first implementation comprehensible. Persisted runs support future workers. |
+| No automatic partner suspension in core | Investigation-to-customer-protection is sufficient for the primary journey; suspension adds a distinct permission lifecycle and operational impact model. |
+
+## Dependencies to verify on Day 1
+
+- Frontend dependency install, strict namespace generation, type check and production build succeed with the committed lockfile. Record targeted fixes if a dependency/config is unavailable.
+- An authorized vision/text provider responds from the hosting environment. Confirm actual account access and billing eligibility. AWS, GCP and coding-agent credits are separate from runtime model access.
+- Managed PostgreSQL and private object storage are reachable with TLS and scoped service credentials.
+- Next-to-FastAPI proxy forwards cookies and no-store semantics correctly and attaches a valid service identity to the private API. Session creation/selection works in an ordinary browser.
+- Both developers agree on OpenAPI fields before replacing domain mocks. BA agrees the primary scenario starts with a pre-existing verified recipient restriction.
+
+## Extension roadmap
+
+| Stage | Capability | Existing boundary reused | New requirement before implementation |
+| --- | --- | --- | --- |
+| After core passes | More refund impersonation variants and report grouping | ModelEvidence, reports, ai_runs | More independently labeled cases and review UX |
+| Merchant pilot | Real merchant order/refund facts | orders/refunds source metadata | Partner authentication, consent/retention terms, field-level access, data reconciliation |
+| Real payment pilot | Live hold and final settlement | transfer lifecycle and payment service | Authorized provider API, durable dispatch IDs, outbox, UNKNOWN reconciliation, provider guarantees and licensing review |
+| Security response | Suspend one partner's reads; compare policy impact | partners, batches, access events, audit | Integration identities, scoped API permissions, policy history and event-replay model |
+| Additional scam types | Purchase impersonation, investment/task scam evidence | requested action, reports, recipient signals | Distinct evidence sources, labels and intervention criteria for each type |
+| Better behavioral detection | Statistical/ML personalization | risk evaluator and assessment facts | Representative historical data, temporal train/test split, bias/false-positive review, calibration |
+| Higher throughput | Background OCR/grouping and callbacks | persistent ai_runs and adapters | Durable jobs, worker identity, per-run idempotency, retry/dead-letter policy |
+| Multi-organization | Tenant-owned production data | scoped entity boundaries | Explicit organization/tenant tables and membership; separate sandbox expiration from production ownership |
+| Mobile / trusted channels | In-app image sharing and payment intervention | API contract and principal model | Authorized platform integrations, device-specific UX and privacy design |
+
+## Data evolution rules
+
+- Add versioned migrations, with backwards-compatible fields before switching callers. Keep existing sandbox records readable after upgrades.
+- Extend a risk reason additively and version the evaluator. Persist original assessment facts for review. Update frontend labels and API enums together.
+- Keep external identifiers separate from internal UUIDs. Include source system and verification time when introducing authoritative live data.
+- Preserve decision history and source evidence. Use explicit status transitions and compensating ledger entries for corrections.
+- Add separate tables when records have an independent lifecycle, permission or retry history. Avoid a universal JSON table for money, policy and evidence.
+- Introduce external settlement only with a separate provider-state model. Local atomic database commits cannot make a network payment atomic.
+
+## Claims the evidence currently supports
+
+The product combines reviewed-recipient interventions, rule-based anomaly warnings, image evidence interpretation and exact-reference investigation. Existing wallets and security/payment providers already publish recipient warnings, anomaly detection, reporting and policy tooling. The contest's originality claim should focus on the measured behavior of this combined workflow and on avoiding false attribution/false restrictions. A claim that the product is the first in Vietnam requires a separate competitive study.
+
+The initial behavioral dataset and financial balances are synthetic. The primary screenshot and trace records are synthetic. Runtime AI interpretation and database enforcement must be demonstrated through the live product. Customer protection for a completely unseen ordinary transfer without contextual evidence remains limited.
+
+## Credit and availability plan
+
+The team reported roughly USD 200 GCP, USD 20 AWS and organizer coding-tool credits. Treat those as reported balances, not verified runtime budgets. Prefer existing credits for hosting after checking eligibility. Set Cloud Run maximum instances and DB pool sizes to match measured load, add provider quotas, and cap image size/calls before sharing the public URL. Keep a text/sample-image path when a judge's upload is unreadable. Disclose provider errors visibly and keep deterministic transfer controls usable.
+
+## Scope reduction order
+
+If the integrated journey slips, first defer automatic multi-report grouping, then nonessential charts and polished analytics. Preserve recipient and behavioral branches, live screenshot interpretation, exact tracing, reviewed restrictions, cancel/expiry behavior and isolation between sandboxes. Keep targeted batch notices because they close the primary demo. Preserve the false-positive correction test even if its UI becomes a simple operator action.
+
+## Decisions applied on 25 November 2026
+
+- Keep exact-reference tracing in core. Add bounded read-only function calling and evidence dossiers; use [ai-investigation.md](ai-investigation.md) as the detailed behavior authority.
+- Keep all 19 physical tables/161 columns and 32 operations. OpenAPI version 1.1 adds optional nullable dossier to Analysis and Investigation and defines the shared source/finding/activity schemas. Legacy mock responses may omit it during integration.
+- Use private Neon Object Storage through S3 as the storage target, alongside Neon PostgreSQL. Cloud Run still hosts the app; provider credentials live only on the server.
+- Customer/Ops each get an explicit tool allowlist. No tool can transfer money, cancel a payment, change restrictions or publish notices. Every action remains an independently authenticated endpoint.
+- Three model requests, four tool executions and 20 seconds per run. Retain existing hourly logical-run settings and count actual provider attempts for the daily budget. No automatic multi-provider rotation in core.
+- Exclude general chat, token streaming, newly trained ML, signup/KYC, external fund settlement and partner suspension from the current contest implementation. No provider payment or production provisioning has been authorized by this documentation update.
+- Prioritize an early live-model quality/latency/cost check with synthetic development/smoke evidence, keeping the BA-held evaluation set separate. Function calling or a seeded HOLD is not proof of AI value; compare source-linked interpretations and false positives against baselines.
+
+## Decisions applied on 25 November 2026, contract 1.2
+
+- Implement the bounded runner in plain Python. No LangGraph: the run is short and synchronous, Ops approval sits outside the AI loop, and the ai_runs persistence already covers what a checkpointer would add.
+- Contract 1.2 adds optional `ModelEvidence.additional_actions` and a nullable `InvestigationFinding.signal` with a six-code catalog plus OTHER. No endpoint, request body or table changes.
+- Customer findings follow ordered rules: two MISMATCH rules, one CONSISTENT rule, and UNCERTAIN for everything else. SHARE_SECRET and CONFIRM_LOGIN show a fixed UI safety message instead of a new finding value.
+- The keyword baseline vocabulary and decision order are fixed in evaluation.md before any held-out case is written. BA may add terms, not remove them.
+- BA authors and labels the held-out cases outside the repository. Developers and coding agents do not see them until prompts are frozen.
+- The NEW_RECIPIENT evidence variants go in the live guide. The three-minute video keeps the pre-existing HOLD story.
+- Provider remains unselected in these documents. AWS Bedrock is a candidate pending a live smoke test of image input, tool use, region and quota. If adopted, update the provider section and rename the Neon storage variables so they do not use the default AWS credential and region names.
+- Open before backend Task 9: the structured field that carries finding rule 1's claimed incoming transfer.
+- Version records: superseded contract and fixture files are copied byte-for-byte into `docs/guardian/archive/`. In prose documents, superseded text stays in place with a pointer to the dated amendment that replaces it.

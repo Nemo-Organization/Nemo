@@ -1,0 +1,30 @@
+{
+  "name": "Trang chủ",
+  "hero": {
+    "eyebrow": "Chuyển tiền rõ ràng hơn",
+    "title": "Chuyển tiền với các tín hiệu rủi ro rõ ràng",
+    "description": "Xem số dư, chuyển VND tới người nhận có sẵn và biết lý do một giao dịch cần được xem lại. Theo dõi hoàn tiền và thông báo ở cùng một nơi.",
+    "cta": "Bắt đầu chuyển tiền"
+  },
+  "features": {
+    "title": "Bạn có thể làm gì",
+    "items": {
+      "transfer": {
+        "title": "Chuyển tiền VND",
+        "description": "Chuyển tiền tới người nhận có sẵn và theo dõi số dư khả dụng cập nhật."
+      },
+      "risk": {
+        "title": "Kiểm tra rủi ro",
+        "description": "Nhận lý do cụ thể khi giao dịch cần chú ý, cảnh báo về người nhận và về hành vi được hiển thị riêng."
+      },
+      "refund": {
+        "title": "Thông tin hoàn tiền",
+        "description": "Theo dõi trạng thái các khoản hoàn tiền gắn với đơn hàng của bạn."
+      },
+      "notices": {
+        "title": "Thông báo",
+        "description": "Đọc các thông báo chúng tôi gửi về giao dịch và hoàn tiền của bạn."
+      }
+    }
+  }
+}

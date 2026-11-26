@@ -1,17 +1,12 @@
-/**
- * Central place for route paths. Use these instead of hard-coding strings so
- * renaming a route only needs one change. Pass them to `Link` from
- * `@/i18n/navigation` (locale prefix is added automatically).
- */
+// App route paths (pass to Link from @/i18n/navigation).
 export const ROUTES = {
   home: "/",
-  endpoints: "/endpoints",
-  leads: "/leads",
-  logs: "/logs",
-  upgrade: "/upgrade",
+  transfer: "/transfer",
+  operator: "/operator",
 } as const;
 
-export const leadDetailRoute = (leadId: string) => `/leads/${leadId}`;
+export const operatorReportRoute = (reportId: string) =>
+  `/operator/reports/${reportId}`;
 
-export const endpointLeadsRoute = (endpointId: string) =>
-  `/endpoints/${endpointId}/leads`;
+export const operatorHoldRoute = (holdId: string) =>
+  `/operator/holds/${holdId}`;

@@ -7,10 +7,9 @@
     "home": "Trang chủ",
     "main": "Điều hướng chính",
     "language": "Ngôn ngữ",
-    "dashboard": "Tổng quan",
-    "endpoints": "Endpoints",
-    "leads": "Leads",
-    "logs": "Logs"
+    "theme": "Đổi giao diện sáng/tối",
+    "transfer": "Chuyển tiền",
+    "operator": "Vận hành"
   },
   "errors": {
     "title": "Đã xảy ra lỗi",

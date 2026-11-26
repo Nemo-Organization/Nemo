@@ -1,5 +1,3 @@
-/* Global base polish & accessibility overrides. */
-
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;

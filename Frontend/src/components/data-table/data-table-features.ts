@@ -17,7 +17,6 @@ import {
   tableFeatures,
 } from "@tanstack/react-table";
 
-/** Stable, module-level feature set shared by every data table. */
 export const dataTableFeatures = tableFeatures({
   columnFilteringFeature,
   columnFacetingFeature,

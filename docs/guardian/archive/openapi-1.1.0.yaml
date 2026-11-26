@@ -1,0 +1,3500 @@
+openapi: 3.1.0
+info:
+  title: Guardian API
+  version: 1.1.0
+  description: 'Nemo contest contract. Synthetic finance; server-authenticated customer/operator roles. Datetimes
+    are UTC and money is integer VND. Lists order newest first by timestamp then ID, except recipients by display_name
+    then ID. Unknown /api paths return JSON errors. All responses with identity, money or evidence use Cache-Control:
+    no-store. Role restrictions in each operation are enforced at the backend. Revision 1.1 adds optional nullable
+    source-linked dossier responses for bounded read-only AI investigation. No chat, streaming or public tool-execution
+    endpoint is introduced. AI tools cannot mutate money, restrictions or notices.'
+servers:
+- url: /api/v1
+tags:
+- name: Demo
+- name: Customer
+- name: Operations
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      tags:
+      - Customer
+      description: Liveness endpoint. Does not expose environment, credentials or provider details.
+      security: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /demo/sessions:
+    post:
+      operationId: createDemo
+      tags:
+      - Demo
+      description: Creates fresh fixtures and sets guardian_demo and guardian_session cookies. Same-origin creation
+        required; rate limit by client. Fresh create is not a replay.
+      security: []
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bootstrap'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDemo'
+  /demo/actors/select:
+    post:
+      operationId: selectActor
+      tags:
+      - Demo
+      description: Select a seeded actor in the authenticated controller sandbox. Replaces actor cookie and returns
+        its CSRF token.
+      security:
+      - demoCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectActor'
+  /demo/refunds/{id}/settle:
+    post:
+      operationId: settleDemoRefund
+      tags:
+      - Demo
+      description: Settle a seeded APPROVED refund once, including while outgoing funds are held. Repeat returns
+        stored SETTLED result.
+      security:
+      - demoCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: &id001
+          type: string
+          format: uuid
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+  /me:
+    get:
+      operationId: getMe
+      tags:
+      - Customer
+      description: Current authenticated actor and owned accounts. Reconcile expired reservations before returning
+        available balance.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /recipients:
+    get:
+      operationId: listRecipients
+      tags:
+      - Customer
+      description: Seeded recipients in this sandbox, with masked identifiers.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipientList'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+  /orders:
+    get:
+      operationId: listOrders
+      tags:
+      - Customer
+      description: Customer-owned order and refund facts only.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderList'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+  /transfers:
+    get:
+      operationId: listTransfers
+      tags:
+      - Customer
+      description: Transfers sent by the authenticated customer.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferList'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+    post:
+      operationId: createTransfer
+      tags:
+      - Customer
+      description: Immutable draft with a 30-minute lifetime. Does not reserve money. UUID client key replays identical
+        input with 200; changed data returns 409.
+      security:
+      - actorCookie: []
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+        '200':
+          description: Exact idempotent replay
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransfer'
+  /transfers/{id}:
+    get:
+      operationId: getTransfer
+      tags:
+      - Customer
+      description: Customer-owned transfer; reconcile expiry before returning.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+  /transfers/{id}/assess:
+    post:
+      operationId: assessTransfer
+      tags:
+      - Customer
+      description: Evaluate independent recipient and behavioral signals without a model call. Customer-owned draft
+        or active held/ready transfer only.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskAssessment'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+  /transfers/{id}/confirm:
+    post:
+      operationId: confirmTransfer
+      tags:
+      - Customer
+      description: Re-evaluate under locks. Return SUCCEEDED or RISK_HELD. WARN needs a current matching assessment
+        ID. New restrictions override stale acknowledgements. READY needs customer confirmation. Expired/canceled/rejected
+        return 409. Repeated success returns stored result.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmTransfer'
+  /transfers/{id}/cancel:
+    post:
+      operationId: cancelTransfer
+      tags:
+      - Customer
+      description: Cancel owned DRAFT/RISK_HELD/READY; atomically release reservation. Repeated cancellation returns
+        same result. Conflicting terminal state returns 409.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+  /analyses:
+    post:
+      operationId: createAnalysis
+      tags:
+      - Customer
+      description: 'Bounded synchronous live model run, at most 20 seconds. Provider failures are persisted and
+        returned with UNCERTAIN official facts. PENDING exact retries may return while the original request is running.
+        Uses a customer-only read tool registry. Shared run bounds: 20 seconds, three model requests including retry/final
+        formatting, four tools; optional dossier contains validated sources/findings and completed activity. No
+        internal batch/access sources are exposed to customers.'
+      security:
+      - actorCookie: []
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '200':
+          description: Exact idempotent replay
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateAnalysis'
+  /analyses/{id}:
+    get:
+      operationId: getAnalysis
+      tags:
+      - Customer
+      description: Owning customer or operator in the same sandbox. Derive official facts from authorized records,
+        not from model output.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+  /analyses/{id}/evidence:
+    get:
+      operationId: getEvidence
+      tags:
+      - Customer
+      description: Owning customer or same-sandbox operator. Stream private evidence with no-store and content-type;
+        return 404 if no image exists.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Validated source image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+  /reports:
+    post:
+      operationId: createReport
+      tags:
+      - Customer
+      description: Create review item from customer-owned evidence. Recipient must match linked transfer. Report
+        count alone cannot change restrictions.
+      security:
+      - actorCookie: []
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '200':
+          description: Exact idempotent replay
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReport'
+    get:
+      operationId: listOwnReports
+      tags:
+      - Customer
+      description: Only reports submitted by the current customer.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportList'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags:
+      - Customer
+      description: Only current customer notices.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoticeList'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+  /ops/reports:
+    get:
+      operationId: listOpsReports
+      tags:
+      - Operations
+      description: OPERATOR only. Reports within the authenticated sandbox.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportList'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+  /ops/reports/{id}:
+    get:
+      operationId: getOpsReport
+      tags:
+      - Operations
+      description: OPERATOR only. Report, permitted analysis, exact trace results and evidence availability.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDetail'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+    patch:
+      operationId: reviewReport
+      tags:
+      - Operations
+      description: OPERATOR only. Terminal report transitions are final in core. IN_REVIEW may resolve or dismiss.
+        A decision is recorded with reason and actor.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewReport'
+  /ops/reports/{id}/investigate:
+    post:
+      operationId: investigateReport
+      tags:
+      - Operations
+      description: 'Operator-only bounded read-only investigation of this root report. Model may read the case,
+        search bounded related reports, look up a reference supported by a permitted source and read access events
+        for an evidenced batch. Existing related_reports output remains; optional dossier adds source-linked findings,
+        counter-evidence/unresolved points, recommended checks and sanitized completed activity. Shared bounds:
+        20 seconds, at most three model requests and four tools. Exact replay uses the original source snapshot
+        and makes no new provider call. All restrictions/holds/notices require separate authenticated human actions.
+        This endpoint is synchronous and has no stream; a persisted failure/timeout contains safe partial results
+        and never claims successful completion. Initial context contains a bounded permitted root excerpt/source
+        handle. On PENDING or network loss, replay the same POST/key; there is no GET-by-run-ID operation. Persist
+        execution error codes internally; the public Investigation response exposes status, missing_information
+        and optional dossier limitations.'
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Investigation'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestigateReport'
+  /ops/reports/{id}/trace:
+    get:
+      operationId: traceReport
+      tags:
+      - Operations
+      description: OPERATOR only. Exact lookup of codes in validated analysis or report text. Return batch/access
+        records and limitations. Missing reference is a normal NO_REFERENCE result.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trace'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+  /ops/holds:
+    get:
+      operationId: listHolds
+      tags:
+      - Operations
+      description: OPERATOR only. Current RISK_HELD and READY transfers, after expiry reconciliation.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferList'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+  /ops/transfers/{id}/review:
+    post:
+      operationId: reviewHold
+      tags:
+      - Operations
+      description: OPERATOR only. APPROVE turns RISK_HELD into READY and binds clearance to the restriction. It
+        does not send money. REJECT releases funds. Repeat same decision returns result; conflicting decision returns
+        409.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewHold'
+  /ops/recipient-restrictions:
+    get:
+      operationId: listRestrictions
+      tags:
+      - Operations
+      description: OPERATOR only. Include history. Effective active state checks expiry.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestrictionList'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+    post:
+      operationId: createRestriction
+      tags:
+      - Operations
+      description: OPERATOR only. At least one reviewed RESOLVED report on the same recipient required. Expiry must
+        be within the sandbox lifetime. Existing effective active restriction returns 409. Creation has no automatic
+        effect on a completed transfer.
+      security:
+      - actorCookie: []
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Restriction'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRestriction'
+  /ops/recipient-restrictions/{id}/revoke:
+    post:
+      operationId: revokeRestriction
+      tags:
+      - Operations
+      description: OPERATOR only. Audit reason and retain original evidence. Repeat returns stored row. Existing
+        held transfers still require review/cancel/expiry; revocation alone does not send them.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Restriction'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeRestriction'
+  /ops/reports/{id}/notice-preview:
+    get:
+      operationId: previewNotice
+      tags:
+      - Operations
+      description: OPERATOR only. Batch must be matched through this report trace. Server derives distinct customers;
+        no arbitrary recipient list.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoticePreview'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+      - name: batch_id
+        in: query
+        required: true
+        schema: *id001
+  /ops/reports/{id}/notices:
+    post:
+      operationId: publishNotices
+      tags:
+      - Operations
+      description: OPERATOR only. Requires RESOLVED report and a trace-matched batch. Preview then publish in UI.
+        Membership is recomputed at publish. Unique source/batch/customer publication is idempotent; return 409
+        if replay attempts different copy.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishResult'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id001
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Use controller or actor CSRF matching this endpoint credential. Origin must match the configured
+          browser origin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishNotice'
+  /ops/audit-events:
+    get:
+      operationId: listAudit
+      tags:
+      - Operations
+      description: OPERATOR only. Redacted summaries of sandbox events, newest first.
+      security:
+      - actorCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEventList'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Session missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Role, CSRF or Origin denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource missing or outside permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State, balance, acknowledgement, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation or unsupported transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Request or model quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+components:
+  securitySchemes:
+    actorCookie:
+      type: apiKey
+      in: cookie
+      name: guardian_session
+    demoCookie:
+      type: apiKey
+      in: cookie
+      name: guardian_demo
+  schemas:
+    Actor:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        role:
+          type: string
+          enum:
+          - CUSTOMER
+          - OPERATOR
+        display_name:
+          type: string
+      required:
+      - id
+      - role
+      - display_name
+    Account:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        display_name:
+          type: string
+        bank_code:
+          type: string
+        masked_identifier:
+          type: string
+        balance_vnd: &id002
+          type: integer
+          format: int64
+          minimum: 0
+        reserved_vnd: *id002
+        available_vnd: *id002
+      required:
+      - id
+      - display_name
+      - bank_code
+      - masked_identifier
+      - balance_vnd
+      - reserved_vnd
+      - available_vnd
+    Recipient:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        display_name:
+          type: string
+        bank_code:
+          type: string
+        masked_identifier:
+          type: string
+      required:
+      - id
+      - display_name
+      - bank_code
+      - masked_identifier
+    Bootstrap:
+      type: object
+      additionalProperties: false
+      properties:
+        sandbox_id: *id001
+        scenario:
+          type: string
+          enum:
+          - MAIN_REFUND
+          - FALSE_POSITIVE
+          - INSUFFICIENT_EVIDENCE
+        expires_at: &id005
+          type: string
+          format: date-time
+        actors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Actor'
+        current_actor:
+          $ref: '#/components/schemas/Actor'
+        controller_csrf_token:
+          type: string
+        actor_csrf_token:
+          type: string
+      required:
+      - sandbox_id
+      - scenario
+      - expires_at
+      - actors
+      - current_actor
+      - controller_csrf_token
+      - actor_csrf_token
+    Me:
+      type: object
+      additionalProperties: false
+      properties:
+        sandbox_id: *id001
+        actor:
+          $ref: '#/components/schemas/Actor'
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+        actor_csrf_token:
+          type: string
+      required:
+      - sandbox_id
+      - actor
+      - accounts
+      - actor_csrf_token
+    Refund:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        order_id: *id001
+        account_id: *id001
+        amount_vnd: &id003
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 1000000000
+        status:
+          type: string
+          enum:
+          - APPROVED
+          - SETTLED
+        settled_at: &id004
+          type:
+          - string
+          - 'null'
+          format: date-time
+      required:
+      - id
+      - order_id
+      - account_id
+      - amount_vnd
+      - status
+      - settled_at
+    Order:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        order_reference:
+          type: string
+        merchant_name:
+          type: string
+        original_amount_vnd: *id003
+        return_fee_vnd:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        fee_source:
+          type:
+          - string
+          - 'null'
+        fee_verified_at: *id004
+        refund:
+          anyOf:
+          - $ref: '#/components/schemas/Refund'
+          - type: 'null'
+      required:
+      - id
+      - order_reference
+      - merchant_name
+      - original_amount_vnd
+      - return_fee_vnd
+      - fee_source
+      - fee_verified_at
+      - refund
+    RiskReason:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          enum:
+          - AMOUNT_ABOVE_BASELINE
+          - RECIPIENT_WARNING
+          - RECIPIENT_HOLD
+        message:
+          type: string
+        restriction_id: &id006
+          type:
+          - string
+          - 'null'
+          format: uuid
+      required:
+      - code
+      - message
+      - restriction_id
+    RiskAssessment:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        transfer_id: *id001
+        decision:
+          type: string
+          enum:
+          - ALLOW
+          - WARN
+          - HOLD
+        behavior_signal:
+          type: string
+          enum:
+          - NORMAL
+          - ANOMALOUS
+          - INSUFFICIENT_HISTORY
+        recipient_signal:
+          type: string
+          enum:
+          - NONE
+          - WARN
+          - HOLD
+        reasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/RiskReason'
+        policy_version:
+          type: string
+        assessed_at: *id005
+        expires_at: *id005
+      required:
+      - id
+      - transfer_id
+      - decision
+      - behavior_signal
+      - recipient_signal
+      - reasons
+      - policy_version
+      - assessed_at
+      - expires_at
+    Transfer:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        sender_account_id: *id001
+        recipient:
+          $ref: '#/components/schemas/Recipient'
+        amount_vnd: *id003
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - RISK_HELD
+          - READY
+          - SUCCEEDED
+          - CANCELED
+          - REJECTED
+          - EXPIRED
+        reserved_amount_vnd: *id002
+        expires_at: *id005
+        created_at: *id005
+        completed_at: *id004
+        assessment:
+          anyOf:
+          - $ref: '#/components/schemas/RiskAssessment'
+          - type: 'null'
+        review_reason:
+          type:
+          - string
+          - 'null'
+        replayed:
+          type: boolean
+      required:
+      - id
+      - sender_account_id
+      - recipient
+      - amount_vnd
+      - status
+      - reserved_amount_vnd
+      - expires_at
+      - created_at
+      - completed_at
+      - assessment
+      - review_reason
+      - replayed
+    Quote:
+      type: object
+      additionalProperties: false
+      properties:
+        source:
+          type: string
+          enum:
+          - IMAGE_TRANSCRIPTION
+          - CUSTOMER_TEXT
+          - REPORT
+        text:
+          type: string
+        report_id: *id006
+      required:
+      - source
+      - text
+      - report_id
+    ModelEvidence:
+      type: object
+      additionalProperties: false
+      properties:
+        transcription:
+          type: string
+        requested_action:
+          type: string
+          enum:
+          - PAY_FEE
+          - PAY_PURCHASE
+          - CONFIRM_TRANSFER
+          - SHARE_SECRET
+          - CONFIRM_LOGIN
+          - OTHER
+          - UNKNOWN
+        claimed_purpose:
+          type: string
+        quotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Quote'
+        extracted_references:
+          type: array
+          items:
+            type: string
+        missing_information:
+          type: array
+          items:
+            type: string
+      required:
+      - transcription
+      - requested_action
+      - claimed_purpose
+      - quotes
+      - extracted_references
+      - missing_information
+    OfficialFacts:
+      type: object
+      additionalProperties: false
+      properties:
+        transfer_amount_vnd:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        direction:
+          type: string
+          enum:
+          - OUTGOING
+          - UNKNOWN
+        refund_amount_vnd:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        refund_status:
+          type: string
+          enum:
+          - APPROVED
+          - SETTLED
+          - UNKNOWN
+        return_fee_vnd:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        fee_source:
+          type:
+          - string
+          - 'null'
+      required:
+      - transfer_amount_vnd
+      - direction
+      - refund_amount_vnd
+      - refund_status
+      - return_fee_vnd
+      - fee_source
+    Analysis:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        status:
+          type: string
+          enum:
+          - PENDING
+          - SUCCEEDED
+          - FAILED
+          - TIMED_OUT
+        finding:
+          type: string
+          enum:
+          - MISMATCH
+          - CONSISTENT
+          - UNCERTAIN
+        evidence:
+          anyOf:
+          - $ref: '#/components/schemas/ModelEvidence'
+          - type: 'null'
+        official_facts:
+          $ref: '#/components/schemas/OfficialFacts'
+        evidence_available:
+          type: boolean
+        error_code:
+          type:
+          - string
+          - 'null'
+        replayed:
+          type: boolean
+        dossier:
+          anyOf:
+          - $ref: '#/components/schemas/InvestigationDossier'
+          - type: 'null'
+          description: Optional additive 1.1 response extension. New implementations emit null when unavailable;
+            FE accepts absence in legacy fixtures. On failed/timed-out runs may hold permitted partial sources/activity,
+            never a successful definitive verdict.
+      required:
+      - id
+      - status
+      - finding
+      - evidence
+      - official_facts
+      - evidence_available
+      - error_code
+      - replayed
+    Report:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        recipient_account_id: *id001
+        transfer_id: *id006
+        analysis_id: *id006
+        narrative:
+          type: string
+        status:
+          type: string
+          enum:
+          - RECEIVED
+          - IN_REVIEW
+          - RESOLVED
+          - DISMISSED
+        created_at: *id005
+        resolution_reason:
+          type:
+          - string
+          - 'null'
+      required:
+      - id
+      - recipient_account_id
+      - transfer_id
+      - analysis_id
+      - narrative
+      - status
+      - created_at
+      - resolution_reason
+    RelatedReport:
+      type: object
+      additionalProperties: false
+      properties:
+        report_id: *id001
+        rationale:
+          type: string
+        quotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Quote'
+      required:
+      - report_id
+      - rationale
+      - quotes
+    Investigation:
+      type: object
+      additionalProperties: false
+      properties:
+        run_id: *id001
+        status:
+          type: string
+          enum:
+          - PENDING
+          - SUCCEEDED
+          - FAILED
+          - TIMED_OUT
+        related_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedReport'
+        missing_information:
+          type: array
+          items:
+            type: string
+        citation_warnings:
+          type: array
+          items:
+            type: string
+        dossier:
+          anyOf:
+          - $ref: '#/components/schemas/InvestigationDossier'
+          - type: 'null'
+          description: Optional additive 1.1 response extension. New implementations emit null when unavailable;
+            FE accepts absence in legacy fixtures. On failed/timed-out runs may hold permitted partial sources/activity,
+            never a successful definitive verdict.
+      required:
+      - run_id
+      - status
+      - related_reports
+      - missing_information
+      - citation_warnings
+    TraceReference:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+        batch_id: *id001
+        batch_label:
+          type: string
+        order_id: *id001
+        partner_id: *id001
+        partner_name:
+          type: string
+        issued_at: *id005
+      required:
+      - code
+      - batch_id
+      - batch_label
+      - order_id
+      - partner_id
+      - partner_name
+      - issued_at
+    AccessEvent:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        batch_id: *id001
+        partner_id: *id001
+        action:
+          type: string
+          enum:
+          - READ
+          - EXPORT
+        occurred_at: *id005
+      required:
+      - id
+      - batch_id
+      - partner_id
+      - action
+      - occurred_at
+    Trace:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum:
+          - MATCHED_SCOPE
+          - NO_MATCH
+          - NO_REFERENCE
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraceReference'
+        access_events:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessEvent'
+        candidate_customer_count:
+          type: integer
+          minimum: 0
+        limitations:
+          type: array
+          items:
+            type: string
+      required:
+      - status
+      - references
+      - access_events
+      - candidate_customer_count
+      - limitations
+    ReportDetail:
+      type: object
+      additionalProperties: false
+      properties:
+        report:
+          $ref: '#/components/schemas/Report'
+        analysis:
+          anyOf:
+          - $ref: '#/components/schemas/Analysis'
+          - type: 'null'
+        trace:
+          $ref: '#/components/schemas/Trace'
+      required:
+      - report
+      - analysis
+      - trace
+    Restriction:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        recipient_account_id: *id001
+        action:
+          type: string
+          enum:
+          - WARN
+          - HOLD
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - REVOKED
+          - EXPIRED
+        reason:
+          type: string
+        evidence_report_ids:
+          type: array
+          items: *id001
+        created_at: *id005
+        expires_at: *id005
+        created_by: *id001
+        revocation_reason:
+          type:
+          - string
+          - 'null'
+      required:
+      - id
+      - recipient_account_id
+      - action
+      - status
+      - reason
+      - evidence_report_ids
+      - created_at
+      - expires_at
+      - created_by
+      - revocation_reason
+    Notice:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        title:
+          type: string
+        body:
+          type: string
+        created_at: *id005
+        read_at: *id004
+      required:
+      - id
+      - title
+      - body
+      - created_at
+      - read_at
+    NoticePreview:
+      type: object
+      additionalProperties: false
+      properties:
+        batch_id: *id001
+        source_report_id: *id001
+        recipients:
+          type: array
+          items:
+            $ref: '#/components/schemas/Actor'
+        count:
+          type: integer
+          minimum: 0
+      required:
+      - batch_id
+      - source_report_id
+      - recipients
+      - count
+    PublishResult:
+      type: object
+      additionalProperties: false
+      properties:
+        batch_id: *id001
+        source_report_id: *id001
+        recipient_count:
+          type: integer
+          minimum: 0
+        created_count:
+          type: integer
+          minimum: 0
+      required:
+      - batch_id
+      - source_report_id
+      - recipient_count
+      - created_count
+    AuditEvent:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        actor_id: *id006
+        actor_kind:
+          type: string
+          enum:
+          - CUSTOMER
+          - OPERATOR
+          - SYSTEM
+          - DEMO_CONTROL
+        event_type:
+          type: string
+        target_type:
+          type: string
+        target_id: *id006
+        created_at: *id005
+        summary:
+          type: string
+      required:
+      - id
+      - actor_id
+      - actor_kind
+      - event_type
+      - target_type
+      - target_id
+      - created_at
+      - summary
+    Error:
+      type: object
+      additionalProperties: false
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            request_id:
+              type: string
+            current_transfer:
+              $ref: '#/components/schemas/Transfer'
+            assessment:
+              $ref: '#/components/schemas/RiskAssessment'
+          required:
+          - code
+          - message
+          - request_id
+      required:
+      - error
+    RecipientList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recipient'
+        total:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+      - items
+      - total
+      - limit
+      - offset
+    OrderList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+        total:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+      - items
+      - total
+      - limit
+      - offset
+    TransferList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transfer'
+        total:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+      - items
+      - total
+      - limit
+      - offset
+    ReportList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report'
+        total:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+      - items
+      - total
+      - limit
+      - offset
+    RestrictionList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Restriction'
+        total:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+      - items
+      - total
+      - limit
+      - offset
+    NoticeList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notice'
+        total:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+      - items
+      - total
+      - limit
+      - offset
+    AuditEventList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
+        total:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+      - items
+      - total
+      - limit
+      - offset
+    CreateDemo:
+      type: object
+      additionalProperties: false
+      properties:
+        scenario:
+          type: string
+          enum:
+          - MAIN_REFUND
+          - FALSE_POSITIVE
+          - INSUFFICIENT_EVIDENCE
+      required:
+      - scenario
+    SelectActor:
+      type: object
+      additionalProperties: false
+      properties:
+        actor_id: *id001
+      required:
+      - actor_id
+    CreateTransfer:
+      type: object
+      additionalProperties: false
+      properties:
+        client_request_id: *id001
+        sender_account_id: *id001
+        recipient_account_id: *id001
+        amount_vnd: *id003
+      required:
+      - client_request_id
+      - sender_account_id
+      - recipient_account_id
+      - amount_vnd
+    ConfirmTransfer:
+      type: object
+      additionalProperties: false
+      properties:
+        acknowledged_assessment_id: *id001
+    CreateAnalysis:
+      type: object
+      additionalProperties: false
+      properties:
+        client_request_id: *id001
+        transfer_id: *id001
+        order_id: *id001
+        text:
+          type: string
+          maxLength: 12000
+        image:
+          type: string
+          format: binary
+      required:
+      - client_request_id
+      description: Supply text or one image, or both. image is PNG/JPEG/WebP, maximum 5 MiB. Transfer and order
+        must belong to the customer. Exact replay compares original fields and content digest.
+    CreateReport:
+      type: object
+      additionalProperties: false
+      properties:
+        client_request_id: *id001
+        recipient_account_id: *id001
+        transfer_id: *id001
+        analysis_id: *id001
+        narrative: &id007
+          type: string
+          minLength: 1
+          maxLength: 4000
+      required:
+      - client_request_id
+      - recipient_account_id
+      - narrative
+    ReviewReport:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum:
+          - IN_REVIEW
+          - RESOLVED
+          - DISMISSED
+        reason: *id007
+      required:
+      - status
+      - reason
+    InvestigateReport:
+      type: object
+      additionalProperties: false
+      properties:
+        client_request_id: *id001
+      required:
+      - client_request_id
+    ReviewHold:
+      type: object
+      additionalProperties: false
+      properties:
+        decision:
+          type: string
+          enum:
+          - APPROVE
+          - REJECT
+        reason: *id007
+      required:
+      - decision
+      - reason
+    CreateRestriction:
+      type: object
+      additionalProperties: false
+      properties:
+        recipient_account_id: *id001
+        action:
+          type: string
+          enum:
+          - WARN
+          - HOLD
+        reason: *id007
+        evidence_report_ids:
+          type: array
+          items: *id001
+          minItems: 1
+          uniqueItems: true
+        expires_at: *id005
+      required:
+      - recipient_account_id
+      - action
+      - reason
+      - evidence_report_ids
+      - expires_at
+    RevokeRestriction:
+      type: object
+      additionalProperties: false
+      properties:
+        reason: *id007
+      required:
+      - reason
+    PublishNotice:
+      type: object
+      additionalProperties: false
+      properties:
+        batch_id: *id001
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+        body:
+          type: string
+          minLength: 1
+          maxLength: 1000
+      required:
+      - batch_id
+      - title
+      - body
+    Health:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum:
+          - ok
+      required:
+      - status
+    InvestigationSource:
+      type: object
+      additionalProperties: false
+      description: Server-issued run-local source handle. A source is scoped/minimized; IMAGE_TRANSCRIPTION remains
+        model-derived. Customer projection excludes internal report/trace/access data. IDs and quotes require application
+        validation.
+      properties:
+        id:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{1,80}$
+        kind:
+          type: string
+          enum:
+          - CUSTOMER_TEXT
+          - IMAGE_TRANSCRIPTION
+          - TRANSFER
+          - ORDER
+          - REFUND
+          - REPORT
+          - TRACE_REFERENCE
+          - ACCESS_EVENT
+        resource_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        label:
+          type: string
+          minLength: 1
+          maxLength: 160
+        excerpt:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        observed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      required:
+      - id
+      - kind
+      - resource_id
+      - label
+      - excerpt
+      - observed_at
+    InvestigationFinding:
+      type: object
+      additionalProperties: false
+      description: A retained finding must cite valid sources issued to this run. Unsupported claims are removed
+        and warnings recorded. This is not a money/policy command or proof of perpetrator identity. The backend
+        derives source_ids after validating private per-claim exact-quote or typed-fact supports; source IDs alone
+        do not establish semantic correctness.
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 80
+        statement:
+          type: string
+          minLength: 1
+          maxLength: 1500
+        relation:
+          type: string
+          enum:
+          - SUPPORTS_CONCERN
+          - COUNTERS_CONCERN
+          - UNRESOLVED
+        source_ids:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            minLength: 1
+            maxLength: 80
+          minItems: 1
+          uniqueItems: true
+      required:
+      - id
+      - statement
+      - relation
+      - source_ids
+    InvestigationActivity:
+      type: object
+      additionalProperties: false
+      description: Sanitized receipt of a completed backend tool operation. No raw arguments, unrestricted logs,
+        provider exceptions or internal reasoning. Not a live streamed event.
+      properties:
+        step:
+          type: integer
+          minimum: 1
+          maximum: 4
+        tool:
+          type: string
+          enum:
+          - get_customer_context
+          - read_case
+          - search_related_reports
+          - lookup_reference
+          - get_batch_access_events
+        status:
+          type: string
+          enum:
+          - SUCCEEDED
+          - NOT_FOUND
+          - DENIED
+          - UNAVAILABLE
+        summary:
+          type: string
+          minLength: 1
+          maxLength: 240
+      required:
+      - step
+      - tool
+      - status
+      - summary
+    InvestigationDossier:
+      type: object
+      additionalProperties: false
+      description: Validated bounded evidence investigation. Source IDs are unique per run and every finding resolves
+        to allowed sources. Empty findings with explicit uncertainty are valid. Schema validation is not factual
+        validation.
+      properties:
+        version:
+          type: string
+          const: guardian-dossier-v1
+        sources:
+          type: array
+          maxItems: 40
+          items:
+            $ref: '#/components/schemas/InvestigationSource'
+        findings:
+          type: array
+          maxItems: 8
+          items:
+            $ref: '#/components/schemas/InvestigationFinding'
+        activity:
+          type: array
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/InvestigationActivity'
+        recommended_checks:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+        limitations:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+        citation_warnings:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+      required:
+      - version
+      - sources
+      - findings
+      - activity
+      - recommended_checks
+      - limitations
+      - citation_warnings

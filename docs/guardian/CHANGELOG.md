@@ -1,5 +1,13 @@
 # Guardian specification changes
 
+## 26 November 2026 — API contract 1.3, claimed transfer direction
+
+Scope: documentation and executable API specification only.
+
+- Added optional `ModelEvidence.claimed_transfer_direction` (INCOMING, OUTGOING, UNKNOWN). Operations, paths, request bodies and required fields are unchanged.
+- Resolved the rule 1 open item from 1.2: finding rule 1 reads this field with a validated quote and compares it with the linked transfer's direction. Added it to held-out labels, metrics and required checks.
+- Archived OpenAPI 1.2.0 and the 1.2.0 fixtures byte-for-byte. Added dated "Contract 1.3 amendment" sections; the 1.2 text stays in place.
+
 ## 25 November 2026 — API contract 1.2, evaluation labels and baseline
 
 Scope: documentation and executable API specification only. No runtime code, migration or deployment changes.

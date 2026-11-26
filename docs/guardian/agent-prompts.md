@@ -106,6 +106,8 @@ Read docs/guardian/scenarios.md and evaluation.md. Prepare clearly synthetic scr
 Reserve 12–16 independently labeled cases before the devs tune prompts. For every case label requested action, whether a verified contradiction exists, expected trace match, report relationship and the permissible user/operator outcome. Confirm that Linh's initial HOLD comes from pre-existing reviewed near-miss evidence. Review the three-minute recording script and the separate live-app exploration guide.
 
 Contract 1.2 addition: also label additional actions, the expected reference string or abstention, and expected signals, using the definitions in evaluation.md. Keep the cases and labels outside the repository until prompts are frozen.
+
+Contract 1.3 addition: also label claimed_transfer_direction.
 ```
 
 ## Review prompt

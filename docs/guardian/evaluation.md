@@ -120,7 +120,7 @@ Apply the rules in order. The first matching rule decides.
 
 Rule 1 does not apply when a message mentions an earlier refund to the customer while asking for a separate new payment. Rule 4 covers a missing, unknown or positive fee; no linked order; unreadable or unclear evidence; SHARE_SECRET, CONFIRM_LOGIN, CONFIRM_TRANSFER, OTHER and UNKNOWN without a rule 1 contradiction; provider errors and invalid results.
 
-Open item before backend Task 9: ModelEvidence has no structured field that carries the rule 1 claim that the requested transfer is incoming. Decide how the provider expresses that claim, for example a typed claimed-direction field, before implementing rule 1.
+Open item before backend Task 9: ModelEvidence has no structured field that carries the rule 1 claim that the requested transfer is incoming. Decide how the provider expresses that claim, for example a typed claimed-direction field, before implementing rule 1. Contract 1.3 resolves this item; see [Contract 1.3 amendment](#contract-13-amendment).
 
 When requested_action or additional_actions contains SHARE_SECRET or CONFIRM_LOGIN, the customer UI shows a fixed localized safety message. It is display copy keyed on the validated action, not a finding, transfer state or restriction. Because rule 2 also reads additional_actions, adding a secret request to a fee demand does not weaken a supported MISMATCH.
 
@@ -184,3 +184,26 @@ Additional required checks:
 
 - Message demands a refund fee and an OTP, with linked fee 0: requested_action SHARE_SECRET, PAY_FEE in additional_actions, MISMATCH retained and the fixed secret warning shown.
 - Legitimate new purchase mentions an earlier refund to the customer: rule 1 does not fire and no MISMATCH comes from that mention.
+
+## Contract 1.3 amendment
+
+Applied 26 November 2026. This section resolves the rule 1 open item in the 1.2 amendment. The 1.2 text above remains as the record; where they conflict, this section applies.
+
+Contract 1.3 adds optional `ModelEvidence.claimed_transfer_direction`:
+
+| Value | Meaning |
+| --- | --- |
+| INCOMING | The message says the requested transfer or confirmation brings money to the customer |
+| OUTGOING | The message asks the customer to send money |
+| UNKNOWN | The message does not say; new implementations emit UNKNOWN when nothing is stated |
+
+Finding rule 1 now reads: claimed_transfer_direction is INCOMING, a validated quote states that claim, and the linked transfer is OUTGOING, giving MISMATCH. Rules 2–4 are unchanged.
+
+A message that mentions an earlier refund to the customer while asking for a separate new payment is OUTGOING, so rule 1 does not apply.
+
+Held-out labels add claimed_transfer_direction. Metric: correct claimed_transfer_direction / labeled cases.
+
+Additional required checks:
+
+- Legitimate new purchase mentioning an earlier refund: claimed_transfer_direction OUTGOING, no MISMATCH from rule 1.
+- "Confirm this transfer to receive your refund" with a linked OUTGOING transfer: claimed_transfer_direction INCOMING and MISMATCH by rule 1.

@@ -1,0 +1,100 @@
+{
+  "id": "db2ebcf6-290b-4cfc-8521-efbffaf69ce7",
+  "status": "SUCCEEDED",
+  "finding": "MISMATCH",
+  "evidence": {
+    "transcription": "Chi ung giup em 20k phi thu hoi, ben kho moi tra 500k don SHOP-4502. Ma tra soat A-017.",
+    "requested_action": "PAY_FEE",
+    "additional_actions": [],
+    "claimed_purpose": "Receive the pending order refund",
+    "quotes": [
+      {
+        "source": "IMAGE_TRANSCRIPTION",
+        "text": "ung giup em 20k phi thu hoi, ben kho moi tra 500k don SHOP-4502",
+        "report_id": null
+      }
+    ],
+    "extracted_references": [
+      "A-017"
+    ],
+    "missing_information": []
+  },
+  "official_facts": {
+    "transfer_amount_vnd": 20000,
+    "direction": "OUTGOING",
+    "refund_amount_vnd": 500000,
+    "refund_status": "APPROVED",
+    "return_fee_vnd": 0,
+    "fee_source": "Synthetic merchant fee confirmation"
+  },
+  "evidence_available": true,
+  "error_code": null,
+  "replayed": false,
+  "dossier": {
+    "version": "guardian-dossier-v1",
+    "sources": [
+      {
+        "id": "src_message",
+        "kind": "IMAGE_TRANSCRIPTION",
+        "resource_id": null,
+        "label": "Submitted screenshot transcription",
+        "excerpt": "Chi ung giup em 20k phi thu hoi, ben kho moi tra 500k don SHOP-4502. Ma tra soat A-017.",
+        "observed_at": null
+      },
+      {
+        "id": "src_fee",
+        "kind": "ORDER",
+        "resource_id": "116df30e-fbf7-47fe-bf8e-7830677dca7f",
+        "label": "Verified order fee",
+        "excerpt": "return_fee_vnd=0; fee_source=Synthetic merchant fee confirmation",
+        "observed_at": "2026-11-25T09:00:00Z"
+      },
+      {
+        "id": "src_refund",
+        "kind": "REFUND",
+        "resource_id": "a1405346-afdb-4d68-a904-0a34619ccbe8",
+        "label": "Approved refund",
+        "excerpt": "amount_vnd=500000; status=APPROVED",
+        "observed_at": "2026-11-25T09:00:00Z"
+      }
+    ],
+    "findings": [
+      {
+        "id": "finding_fee",
+        "statement": "The message demands an advance fee to receive a refund, while the linked order has a verified return fee of zero.",
+        "relation": "SUPPORTS_CONCERN",
+        "source_ids": [
+          "src_message",
+          "src_fee",
+          "src_refund"
+        ],
+        "signal": null
+      },
+      {
+        "id": "finding_order_details",
+        "statement": "The message cites the order number and a trace code. Specific details can make a request look legitimate, but legitimate shops also cite orders.",
+        "relation": "UNRESOLVED",
+        "source_ids": [
+          "src_message"
+        ],
+        "signal": "USES_ORDER_DETAILS"
+      }
+    ],
+    "activity": [
+      {
+        "step": 1,
+        "tool": "get_customer_context",
+        "status": "SUCCEEDED",
+        "summary": "Retrieved the linked owned order and approved refund facts."
+      }
+    ],
+    "recommended_checks": [
+      "Verify the sender through an official merchant channel before acting."
+    ],
+    "limitations": [
+      "Screenshot transcription is model-derived; inspect the original image.",
+      "The sender identity has not been authenticated by this analysis."
+    ],
+    "citation_warnings": []
+  }
+}

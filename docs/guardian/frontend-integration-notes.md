@@ -85,3 +85,7 @@ Guardian API contract v1.2 adds two optional response fields and no endpoint. Re
 | Locale keys | Add paired en/vi keys for the six signal codes, OTHER and the two safety messages. |
 
 Signal codes and definitions are in [evaluation](evaluation.md#contract-12-amendment). Treat unknown future codes as a generic neutral label rather than failing the page.
+
+## Contract v1.3 amendment — action for FE
+
+Contract v1.3 adds optional `evidence.claimed_transfer_direction`. It feeds server finding composition and needs no UI; FE may ignore it and must accept its absence.

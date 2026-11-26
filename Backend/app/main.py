@@ -2,11 +2,16 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.auth.router import router as auth_router
 from app.db import create_database_engine
+from app.demo.router import customer_router as demo_customer_router
+from app.demo.router import router as demo_router
 from app.errors import ErrorEnvelope, install_error_handlers
 from app.health import router as health_router
 from app.middleware import RequestContextMiddleware
+from app.operations.router import router as operations_router
 from app.settings import Settings
+from app.transfers.router import router as transfers_router
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -38,6 +43,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(RequestContextMiddleware)
     install_error_handlers(app)
     app.include_router(health_router, prefix="/api/v1")
+    app.include_router(demo_router, prefix="/api/v1")
+    app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(demo_customer_router, prefix="/api/v1")
+    app.include_router(transfers_router, prefix="/api/v1")
+    app.include_router(operations_router, prefix="/api/v1")
     return app
 
 

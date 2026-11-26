@@ -1,0 +1,132 @@
+name: Backend CI
+
+# Checks every backend change against a real PostgreSQL 16, the shared contract and the
+# container image. Deployment is not part of this workflow.
+
+on:
+  pull_request:
+    branches: [dev, master]
+    paths:
+      - "Backend/**"
+      - "docs/guardian/openapi.yaml"
+      - "docs/guardian/schema.sql"
+      - ".github/workflows/backend-ci.yml"
+  push:
+    branches: [dev, master]
+    paths:
+      - "Backend/**"
+      - "docs/guardian/openapi.yaml"
+      - "docs/guardian/schema.sql"
+      - ".github/workflows/backend-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+    working-directory: Backend
+
+jobs:
+  test:
+    name: Lint, contract, tests and migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        # Disposable database that exists only for this job; these are not real credentials.
+        env:
+          POSTGRES_USER: guardian
+          POSTGRES_PASSWORD: guardian-ci
+          POSTGRES_DB: guardian_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U guardian -d guardian_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      # The schema tests reset this database; its name must contain "test".
+      TEST_DATABASE_URL: postgresql+psycopg://guardian:guardian-ci@localhost:5432/guardian_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: "0.13.9" # same uv as Backend/Dockerfile
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: Backend/uv.lock
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Check the lock file is current
+        run: uv lock --check
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Validate the OpenAPI contract
+        run: uvx --from openapi-spec-validator==0.9.0 openapi-spec-validator ../docs/guardian/openapi.yaml
+
+      - name: Tests on PostgreSQL (no skips allowed)
+        run: |
+          uv run pytest -q -rs -p no:cacheprovider 2>&1 | tee "$RUNNER_TEMP/pytest.log"
+          if grep -Eq '[0-9]+ skipped' "$RUNNER_TEMP/pytest.log"; then
+            echo "::error::Tests were skipped. A skipped database or money test is not a passed check."
+            exit 1
+          fi
+
+      - name: Migration checks
+        run: |
+          url="$TEST_DATABASE_URL"
+          heads=$(uv run alembic heads)
+          echo "$heads"
+          test "$(grep -c '(head)' <<<"$heads")" -eq 1
+          uv run alembic -x "url=$url" downgrade base
+          uv run alembic -x "url=$url" upgrade head
+          uv run alembic -x "url=$url" upgrade head
+          uv run alembic -x "url=$url" upgrade head --sql > "$RUNNER_TEMP/offline.sql"
+          tables=$(grep -c '^CREATE TABLE' "$RUNNER_TEMP/offline.sql")
+          echo "Offline SQL creates $tables tables (19 Guardian tables plus alembic_version)."
+          test "$tables" -eq 20
+
+  image:
+    name: Container image and health smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build image
+        run: docker build -t guardian-backend:ci .
+
+      - name: Start container and check health
+        run: |
+          docker run -d --name guardian-backend-ci -p 8080:8080 -e PORT=8080 guardian-backend:ci
+          body=$(curl --silent --fail --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:8080/api/v1/health) || {
+            docker logs guardian-backend-ci
+            exit 1
+          }
+          echo "$body"
+          test "$body" = '{"status":"ok"}'
+          test "$(docker exec guardian-backend-ci id -u)" = "10001"
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f guardian-backend-ci || true

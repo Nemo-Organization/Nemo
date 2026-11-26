@@ -4,32 +4,33 @@ from http import HTTPStatus
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict
 from starlette.exceptions import HTTPException
+
+from app.api.schemas import ErrorDetail, ErrorEnvelope, RiskAssessment, Transfer
 
 logger = logging.getLogger(__name__)
 
-
-class ErrorDetail(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    code: str
-    message: str
-    request_id: str
-
-
-class ErrorEnvelope(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    error: ErrorDetail
+__all__ = ["ApplicationError", "ErrorDetail", "ErrorEnvelope", "error_response"]
 
 
 class ApplicationError(Exception):
-    def __init__(self, status_code: int, code: str, message: str):
+    """A safe, contract-shaped error. A 409 may carry the current transfer or a fresh assessment."""
+
+    def __init__(
+        self,
+        status_code: int,
+        code: str,
+        message: str,
+        *,
+        current_transfer: Transfer | None = None,
+        assessment: RiskAssessment | None = None,
+    ):
         super().__init__(message)
         self.status_code = status_code
         self.code = code
         self.message = message
+        self.current_transfer = current_transfer
+        self.assessment = assessment
 
 
 def error_response(
@@ -38,18 +39,38 @@ def error_response(
     code: str,
     message: str,
     headers: dict[str, str] | None = None,
+    *,
+    current_transfer: Transfer | None = None,
+    assessment: RiskAssessment | None = None,
 ) -> JSONResponse:
     request_id = request.state.request_id
-    envelope = ErrorEnvelope(error=ErrorDetail(code=code, message=message, request_id=request_id))
+    detail = ErrorDetail(
+        code=code,
+        message=message,
+        request_id=request_id,
+        current_transfer=current_transfer,
+        assessment=assessment,
+    )
+    # Absent optional context is omitted; nested required-nullable fields keep their nulls.
+    absent = {name for name in ("current_transfer", "assessment") if getattr(detail, name) is None}
+    envelope = {"error": detail.model_dump(mode="json", exclude=absent)}
+    ErrorEnvelope.model_validate(envelope)
     response_headers = dict(headers or {})
     response_headers.update({"X-Request-ID": request_id, "Cache-Control": "no-store"})
-    return JSONResponse(envelope.model_dump(), status_code=status_code, headers=response_headers)
+    return JSONResponse(envelope, status_code=status_code, headers=response_headers)
 
 
 def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApplicationError)
     async def application_error(request: Request, exc: ApplicationError) -> JSONResponse:
-        return error_response(request, exc.status_code, exc.code, exc.message)
+        return error_response(
+            request,
+            exc.status_code,
+            exc.code,
+            exc.message,
+            current_transfer=exc.current_transfer,
+            assessment=exc.assessment,
+        )
 
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException) -> JSONResponse:

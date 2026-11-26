@@ -6,6 +6,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
 
+LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -23,6 +25,8 @@ class Settings(BaseSettings):
     ai_model: str | None = None
     ai_api_key: SecretStr | None = None
     ai_timeout_seconds: int = Field(default=20, gt=0)
+    sandbox_ttl_seconds: int = Field(default=86_400, gt=0)
+    session_ttl_seconds: int = Field(default=86_400, gt=0)
     hold_ttl_seconds: int = Field(default=900, gt=0)
     draft_ttl_seconds: int = Field(default=1800, gt=0)
     assessment_ttl_seconds: int = Field(default=300, gt=0)
@@ -48,6 +52,13 @@ class Settings(BaseSettings):
             raise ValueError("PUBLIC_APP_ORIGIN must be one exact HTTP or HTTPS origin")
         _ = parsed.port  # Validate the optional port before accepting the origin.
         return value.rstrip("/")
+
+    @property
+    def cookie_secure(self) -> bool:
+        """Session cookies are Secure everywhere except a non-production loopback HTTP origin."""
+        origin = urlsplit(self.public_app_origin)
+        local_http = origin.scheme == "http" and origin.hostname in LOOPBACK_HOSTS
+        return self.app_env == "production" or not local_http
 
     @field_validator("database_url")
     @classmethod

@@ -10,6 +10,7 @@ FastAPI foundation for Nemo's Guardian anti-fraud application. Python 3.12, Pyda
 - `create_app(settings)` supports isolated test instances and lifespan-managed database engines.
 - Request-scoped sessions close and roll back uncommitted work. Business services will explicitly own commits.
 - Alembic configuration and domain package boundaries are prepared for the next milestone.
+- Demo sessions (backend Task 3): `POST /api/v1/demo/sessions` (createDemo), `POST /api/v1/demo/actors/select` (selectActor) and `GET /api/v1/me` (getMe). See [Demo sessions](#demo-sessions).
 
 Product requirements, the 19-table schema and full API contract live in [the delivery pack](../docs/guardian/README.md). The domain packages currently establish source boundaries. Authentication, transfers, inference and operator endpoints are future tasks. This migration scaffold has no schema revisions yet. Add domain models and the initial migration from the agreed schema before initializing product tables.
 
@@ -155,12 +156,14 @@ Settings load environment variables and optional `.env` in the working directory
 | --- | --- | --- |
 | `APP_ENV` | `development` | Development, test or production |
 | `PORT` | `8080` | Listener used by `python -m app` and Cloud Run |
-| `PUBLIC_APP_ORIGIN` | `http://localhost:3000` | Exact HTTP/HTTPS origin reserved for the forthcoming CSRF layer |
+| `PUBLIC_APP_ORIGIN` | `http://localhost:3000` | Exact browser origin every mutation's `Origin` header must equal; also decides the cookie Secure flag |
 | `DATABASE_URL` | Unset | `postgresql+psycopg://...`, masked in settings output |
 | `DB_POOL_SIZE`, `DB_MAX_OVERFLOW` | `3`, `2` | Bounded connections with pre-ping |
 | `EVIDENCE_BUCKET` | Unset | Private storage for the evidence milestone |
 | `AI_PROVIDER`, `AI_MODEL`, `AI_API_KEY` | Unset | Configuration for the inference milestone |
 | `AI_TIMEOUT_SECONDS` | `20` | Planned total inference deadline |
+| `SANDBOX_TTL_SECONDS` | `86400` | Demo sandbox lifetime |
+| `SESSION_TTL_SECONDS` | `86400` | Controller/actor session lifetime, capped at the sandbox expiry |
 | `HOLD_TTL_SECONDS` | `900` | Planned hold lifetime |
 | `DRAFT_TTL_SECONDS` | `1800` | Planned draft lifetime |
 | `ASSESSMENT_TTL_SECONDS` | `300` | Planned assessment lifetime |
@@ -168,7 +171,22 @@ Settings load environment variables and optional `.env` in the working directory
 | `GROUP_SANDBOX_HOURLY_LIMIT` | `5` | Planned grouping quota |
 | `AI_DAILY_GLOBAL_LIMIT` | `300` | Planned global model quota |
 
-A configured DB creates a lazy engine during lifespan. Liveness stays available when that DB is unreachable. Financial/readiness endpoints will check their required dependencies explicitly. The origin setting is validated here; session authentication, CORS and CSRF enforcement belong to the auth milestone.
+A configured DB creates a lazy engine during lifespan. Liveness stays available when that DB is unreachable. Financial/readiness endpoints will check their required dependencies explicitly. The origin setting is validated here and enforced on every mutation (see below). The app adds no CORS policy; the frontend reaches the API through a same-origin proxy.
+
+## Demo sessions
+
+`POST /api/v1/demo/sessions` with `{"scenario": "MAIN_REFUND"}` (or `FALSE_POSITIVE`, `INSUFFICIENT_EVIDENCE`) seeds a fresh isolated sandbox from server-held fixtures (`app/demo/fixtures.py`) in one transaction. It sets two opaque HttpOnly cookies, `guardian_demo` (demo controller) and `guardian_session` (actor, initially Linh), and returns both CSRF tokens in the 201 Bootstrap body. The database stores only SHA-256 hashes of the cookies and CSRF tokens.
+
+| Rule | Behavior |
+| --- | --- |
+| Origin | Every mutation, including bootstrap, requires `Origin` exactly equal to `PUBLIC_APP_ORIGIN`; otherwise 403 `ORIGIN_DENIED` |
+| CSRF | `X-CSRF-Token` must match the endpoint's own credential: controller token for `/demo/*` controls, actor token for customer/operator actions; otherwise 403 `CSRF_FAILED` |
+| Session | Missing, unknown, revoked or expired session, or an expired sandbox: 401 `SESSION_EXPIRED` |
+| Actor selection | `POST /demo/actors/select` with `{"actor_id": ...}` issues a new actor cookie and CSRF token and revokes the presented actor cookie. An actor outside the controller's sandbox is 404 `NOT_FOUND` |
+| `/me` | Returns the actor, its accounts with masked identifiers and the same actor CSRF token, re-derived from the cookie without changing state |
+| Cookies | HttpOnly, SameSite=Lax, Path=/, Max-Age up to 24 hours. Secure unless `PUBLIC_APP_ORIGIN` is `http://` on localhost/127.0.0.1/::1 outside `APP_ENV=production` |
+
+Browsers set `Origin` themselves. To try these operations in Swagger at `http://localhost:8080/docs`, start the backend with `PUBLIC_APP_ORIGIN=http://localhost:8080`. A manual client sends the header explicitly, for example `curl -i -X POST http://localhost:8080/api/v1/demo/sessions -H "Origin: http://localhost:3000" -H "Content-Type: application/json" -d '{"scenario":"MAIN_REFUND"}'`.
 
 ## Source layout
 

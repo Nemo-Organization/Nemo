@@ -85,6 +85,7 @@ RequestedAction = Literal[
 AdditionalAction = Literal[
     "PAY_FEE", "PAY_PURCHASE", "CONFIRM_TRANSFER", "SHARE_SECRET", "CONFIRM_LOGIN", "OTHER"
 ]
+ClaimedTransferDirection = Literal["INCOMING", "OUTGOING", "UNKNOWN"]
 RunStatus = Literal["PENDING", "SUCCEEDED", "FAILED", "TIMED_OUT"]
 QuoteSource = Literal["IMAGE_TRANSCRIPTION", "CUSTOMER_TEXT", "REPORT"]
 RestrictionAction = Literal["WARN", "HOLD"]
@@ -212,6 +213,7 @@ class ModelEvidence(ContractModel):
     transcription: str
     requested_action: RequestedAction
     additional_actions: UniqueList(AdditionalAction, max_items=3) = Field(default_factory=list)
+    claimed_transfer_direction: ClaimedTransferDirection = "UNKNOWN"
     claimed_purpose: str
     quotes: list[Quote]
     extracted_references: list[str]

@@ -193,6 +193,17 @@ def test_request_ids_text_lists_and_timestamps_are_strict():
         "missing_information": [],
     }
     assert schemas.ModelEvidence.model_validate(evidence).additional_actions == []
+    assert schemas.ModelEvidence.model_validate(evidence).claimed_transfer_direction == "UNKNOWN"
+    for direction in ("INCOMING", "OUTGOING", "UNKNOWN"):
+        parsed = schemas.ModelEvidence.model_validate(
+            {**evidence, "claimed_transfer_direction": direction}
+        )
+        assert parsed.claimed_transfer_direction == direction
+    for bad_direction in (None, "BOTH", "incoming", ""):
+        with pytest.raises(ValidationError):
+            schemas.ModelEvidence.model_validate(
+                {**evidence, "claimed_transfer_direction": bad_direction}
+            )
     assert schemas.ModelEvidence.model_validate({**evidence, "additional_actions": ["PAY_FEE"]})
     for invalid in (
         ["UNKNOWN"],

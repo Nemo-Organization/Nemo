@@ -1,9 +1,18 @@
 from typing import Annotated
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request, Response
+from fastapi import APIRouter, Depends, Path, Query, Request, Response
 
 from app.api.pagination import PageParams
-from app.api.schemas import Bootstrap, CreateDemo, Me, OrderList, RecipientList, SelectActor
+from app.api.schemas import (
+    Bootstrap,
+    CreateDemo,
+    Me,
+    OrderList,
+    RecipientList,
+    Refund,
+    SelectActor,
+)
 from app.auth.dependencies import (
     CSRF_OPENAPI,
     ORIGIN_NOTE,
@@ -16,12 +25,14 @@ from app.auth.dependencies import (
 )
 from app.auth.principal import DemoPrincipal
 from app.auth.service import ACTOR_COOKIE, CONTROLLER_COOKIE
-from app.demo import queries, service
+from app.demo import queries, refunds, service
 
 router = APIRouter(tags=["Demo"])
 # Customer reads of seeded fixtures; the contract tags these operations "Customer".
 customer_router = APIRouter(tags=["Customer"])
 Pagination = Annotated[PageParams, Query()]
+Controller = Annotated[DemoPrincipal, Depends(controller_mutation)]
+RefundId = Annotated[UUID, Path(alias="id")]
 
 
 @router.post(
@@ -70,6 +81,21 @@ def select_demo_actor(
     )
     set_session_cookie(response, ACTOR_COOKIE, selected.actor, settings)
     return selected.me
+
+
+@router.post(
+    "/demo/refunds/{id}/settle",
+    operation_id="settleDemoRefund",
+    response_model=Refund,
+    openapi_extra=CSRF_OPENAPI,
+    description="Settle a seeded APPROVED refund once, including while outgoing funds are held. "
+    "Repeat returns stored SETTLED result. Demo-controller cookie and controller CSRF only; an "
+    "actor credential cannot settle. Credits the account once (REFUND_CREDIT): the balance "
+    "rises and reservations are unchanged. Another sandbox's or an unknown refund is 404; a "
+    f"refund inconsistent with its order is 409 STATE_CONFLICT. {ORIGIN_NOTE}",
+)
+def settle_demo_refund(controller: Controller, refund_id: RefundId, session: DbSession) -> Refund:
+    return refunds.settle_refund(session, controller, refund_id)
 
 
 @customer_router.get(

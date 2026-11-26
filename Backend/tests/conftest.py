@@ -99,6 +99,19 @@ def guardian_app(pg_engine: Engine) -> Iterator[FastAPI]:
 
 
 @pytest.fixture
+def bounded_app(pg_engine: Engine) -> Iterator[FastAPI]:
+    """An app whose pooled connections carry bounded lock and statement timeouts (race tests)."""
+    url = make_url(require_test_database_url()).update_query_dict(
+        {"options": "-c lock_timeout=5000 -c statement_timeout=15000"}
+    )
+    app = create_app(guardian_test_settings(database_url=url.render_as_string(False)))
+    with TestClient(app):
+        with app.state.db_engine.connect() as connection:
+            assert connection.execute(text("SHOW lock_timeout")).scalar_one() == "5s"
+        yield app
+
+
+@pytest.fixture
 def browser(guardian_app: FastAPI) -> Iterator[Callable[..., TestClient]]:
     """Factory of independent cookie jars, each simulating one browser on the shared app."""
     clients: list[TestClient] = []

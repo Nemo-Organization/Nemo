@@ -1,4 +1,4 @@
-"""Shared HTTP and SQL helpers for the Task 7 money tests. Not a test module.
+"""Shared HTTP and SQL helpers for the Task 7-8 money tests. Not a test module.
 
 Fixture IDs are discovered through the API. Persisted state is read through the disposable
 PostgreSQL engine, and `assert_money_invariants` checks the cached money aggregates in SQL.
@@ -15,6 +15,7 @@ from sqlalchemy import Engine, func, select, text, update
 from sqlalchemy.orm import Session
 
 from app import models
+from app.auth.service import CONTROLLER_COOKIE
 from app.demo import fixtures
 from tests.conftest import API, TEST_ORIGIN, start_demo
 
@@ -62,7 +63,8 @@ class Customer:
         return next(a["id"] for a in self.bootstrap["actors"] if a["display_name"] == name)
 
     def recipient_id(self, symbol: str) -> str:
-        name = fixtures.ACCOUNTS[symbol].display_name
+        # FALSE_POSITIVE's accounts are a superset of every scenario's (they add SHOP_REAL).
+        name = fixtures.scenario_accounts("FALSE_POSITIVE")[symbol].display_name
         items = self.client.get(RECIPIENTS, params={"limit": 100}).json()["items"]
         return next(item["id"] for item in items if item["display_name"] == name)
 
@@ -144,6 +146,21 @@ def as_actor(customer: Customer, name: str) -> Customer:
     me = response.json()
     wallet_id = me["accounts"][0]["id"] if me["accounts"] else ""
     return Customer(customer.client, customer.bootstrap, me["actor_csrf_token"], wallet_id)
+
+
+def with_controller(client: TestClient, customer: Customer) -> TestClient:
+    """`client` presenting the demo-controller cookie of the customer's sandbox only."""
+    client.cookies.set(CONTROLLER_COOKIE, customer.client.cookies.get(CONTROLLER_COOKIE))
+    return client
+
+
+def actor_in(client: TestClient, customer: Customer, name: str) -> Customer:
+    """Select `name` in another browser of the customer's sandbox; the customer's session stays."""
+    return as_actor(Customer(with_controller(client, customer), customer.bootstrap, "", ""), name)
+
+
+def operator_in(client: TestClient, customer: Customer) -> Customer:
+    return actor_in(client, customer, "Ops")
 
 
 def money(account: dict[str, Any]) -> tuple[int, int, int]:
@@ -242,6 +259,21 @@ def add_restriction(pg_engine: Engine, customer: Customer, symbol: str, action: 
     return str(restriction_id)
 
 
+def revoke_restriction(pg_engine: Engine, customer: Customer, restriction_id: str) -> None:
+    """Revoke a decision directly, as Ops would; the revoke endpoint is Task 11."""
+    with pg_engine.begin() as connection:
+        connection.execute(
+            update(models.RecipientRestriction)
+            .where(models.RecipientRestriction.id == uuid.UUID(restriction_id))
+            .values(
+                status="REVOKED",
+                revoked_by=uuid.UUID(customer.actor_id("Ops")),
+                revoked_at=func.now(),
+                revocation_reason="[Synthetic test] The earlier decision was mistaken.",
+            )
+        )
+
+
 def pass_deadline(pg_engine: Engine, transfer_id: str) -> None:
     """Move a stored deadline into the past; the row itself still says it is active."""
     with pg_engine.begin() as connection:
@@ -309,11 +341,30 @@ _LEDGER_LEGS = text(
 )
 
 
+_REFUND_LEGS = text(
+    """
+    SELECT r.id, r.status, count(l.id) AS legs
+    FROM refunds r
+    LEFT JOIN ledger_entries l ON l.sandbox_id = r.sandbox_id AND l.refund_id = r.id
+    WHERE r.sandbox_id = :sandbox
+    GROUP BY r.id, r.status
+    HAVING NOT (
+        (r.status = 'SETTLED'
+         AND count(l.id) = 1
+         AND count(l.id) FILTER (WHERE l.kind = 'REFUND_CREDIT'
+             AND l.account_id = r.account_id AND l.amount_vnd = r.amount_vnd) = 1)
+        OR (r.status = 'APPROVED' AND count(l.id) = 0)
+    )
+    """
+)
+
+
 def assert_money_invariants(pg_engine: Engine, sandbox_id: uuid.UUID) -> None:
     """Cached balances equal the ledger, reservations equal active holds, no overdraft.
 
     Every SUCCEEDED transfer has exactly one sender debit and one recipient credit of its
-    amount; every other transfer has no ledger entry.
+    amount; every other transfer has no ledger entry. Every SETTLED refund has exactly one
+    REFUND_CREDIT of its amount to its account; an APPROVED refund has none.
     """
     with pg_engine.connect() as connection:
         for label, statement in (
@@ -322,6 +373,7 @@ def assert_money_invariants(pg_engine: Engine, sandbox_id: uuid.UUID) -> None:
             ("negative or overdrawn account", _NEGATIVE_OR_OVERDRAWN),
             ("stranded or missing reservation", _STRANDED_RESERVATION),
             ("ledger legs inconsistent with status", _LEDGER_LEGS),
+            ("refund legs inconsistent with status", _REFUND_LEGS),
         ):
             rows = connection.execute(statement, {"sandbox": sandbox_id}).all()
             assert rows == [], (label, rows)

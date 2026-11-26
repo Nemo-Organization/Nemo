@@ -98,6 +98,8 @@ def require_role(
 
 CustomerReader = Annotated[Principal, Depends(require_role("CUSTOMER"))]
 CustomerWriter = Annotated[Principal, Depends(require_role("CUSTOMER", via=actor_mutation))]
+OperatorReader = Annotated[Principal, Depends(require_role("OPERATOR"))]
+OperatorWriter = Annotated[Principal, Depends(require_role("OPERATOR", via=actor_mutation))]
 
 
 def controller_mutation(

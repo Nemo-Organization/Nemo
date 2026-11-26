@@ -28,14 +28,22 @@ Rulings where the docs are silent:
   locked decision time, with the same policy version and facts fingerprint. Any other ID,
   including an unknown one or another transfer's, is treated as missing (409, not 404).
 - Confirming SUCCEEDED or RISK_HELD returns the stored transfer; confirming CANCELED, REJECTED or
-  EXPIRED is 409 STATE_CONFLICT with the current transfer. READY is 409 STATE_CONFLICT until
-  operator clearance and its reconfirmation rules exist (Task 8); no READY row can exist before.
+  EXPIRED is 409 STATE_CONFLICT with the current transfer.
+- Confirming READY (operator clearance, `app.operations.holds`) re-evaluates current facts with
+  only the exact `cleared_restriction_id` HOLD overridden. Another active HOLD re-holds:
+  RISK_HELD with the existing reservation, held_at and deadline, and the stale clearance
+  (reviewed_by, review_reason, cleared_restriction_id) removed. A revoked or expired cleared
+  restriction needs no override. A WARN restriction or behavioral warning still needs a current
+  acknowledgement matching those facts. Execution spends the transfer's own reservation: sender
+  balance and reserved fall together; no available-funds check applies.
 - Cancel of DRAFT, RISK_HELD or READY returns 200 CANCELED; cancel of CANCELED returns the same
   stored result; cancel of SUCCEEDED, REJECTED or EXPIRED is 409 STATE_CONFLICT.
-- Audit event types: TRANSFER_SUCCEEDED, TRANSFER_HELD, TRANSFER_CANCELED (customer actor) and
-  TRANSFER_EXPIRED (SYSTEM), target_type TRANSFER, with the request ID.
+- Audit event types: TRANSFER_SUCCEEDED, TRANSFER_HELD (also READY -> RISK_HELD, with the
+  invalidated restriction), TRANSFER_CANCELED (customer actor) and TRANSFER_EXPIRED (SYSTEM),
+  target_type TRANSFER, with the request ID. Each carries from_status.
 """
 
+from dataclasses import replace
 from datetime import datetime, timedelta
 from uuid import UUID
 
@@ -282,11 +290,15 @@ def _post(
 ) -> None:
     """Write the one debit/credit pair, move both cached balances and mark SUCCEEDED.
 
-    Executes from available funds (a DRAFT; funds were checked). READY confirmation (Task 8)
-    executes from the transfer's own reservation instead and must release it in the same step.
+    A DRAFT executes from available funds (checked by the caller) and has nothing reserved. A
+    READY transfer executes from its own reservation, released in the same step, so the sender's
+    balance and reserved total fall together by the amount.
     """
-    amount = transfer.amount_vnd
+    amount, from_status = transfer.amount_vnd, transfer.status
+    released = transfer.reserved_amount_vnd
     sender.balance_vnd -= amount
+    sender.reserved_vnd -= released
+    transfer.reserved_amount_vnd = 0
     recipient.balance_vnd += amount
     session.add_all(
         [
@@ -317,14 +329,68 @@ def _post(
         "TRANSFER",
         transfer.id,
         {
-            "from_status": "DRAFT",
+            "from_status": from_status,
             "amount_vnd": amount,
+            "released_vnd": released,
+            "cleared_restriction_id": transfer.cleared_restriction_id,
             "decision": decision.decision,
             "assessment_id": assessment.id,
             "acknowledged_assessment_id": (
                 acknowledged_assessment_id if decision.decision == "WARN" else None
             ),
             "policy_version": assessment.policy_version,
+        },
+    )
+    session.flush()
+
+
+def _with_clearance(facts: RiskFacts, cleared_restriction_id: UUID | None) -> RiskFacts:
+    """The facts a READY transfer is judged on: only the exact cleared HOLD is overridden.
+
+    Any other restriction (a replacement HOLD, or any WARN) and the behavioral facts stay.
+    """
+    if (
+        cleared_restriction_id is not None
+        and facts.restriction_action == "HOLD"
+        and facts.restriction_id == cleared_restriction_id
+    ):
+        return replace(facts, restriction_id=None, restriction_action=None)
+    return facts
+
+
+def _rehold(
+    session: Session,
+    principal: Principal,
+    transfer: models.Transfer,
+    facts: RiskFacts,
+    assessment: models.RiskAssessment,
+) -> None:
+    """A HOLD other than the cleared one applies to a READY transfer: hold it for review again.
+
+    The amount is already reserved and the original deadline stays. The stale clearance is
+    removed so it can never be read as a review of the new restriction.
+    """
+    invalidated = transfer.cleared_restriction_id
+    transfer.status = "RISK_HELD"
+    transfer.reviewed_by = None
+    transfer.review_reason = None
+    transfer.cleared_restriction_id = None
+    append_audit(
+        session,
+        principal,
+        "TRANSFER_HELD",
+        "TRANSFER",
+        transfer.id,
+        {
+            "from_status": "READY",
+            "amount_vnd": transfer.amount_vnd,
+            "reserved_vnd": transfer.reserved_amount_vnd,
+            "newly_reserved_vnd": 0,
+            "restriction_id": facts.restriction_id,
+            "invalidated_restriction_id": invalidated,
+            "assessment_id": assessment.id,
+            "policy_version": facts.policy_version,
+            "deadline": transfer.expires_at,
         },
     )
     session.flush()
@@ -339,7 +405,11 @@ def confirm_transfer(
     hold_lifetime: timedelta = DEFAULT_HOLD_LIFETIME,
     assessment_lifetime: timedelta = DEFAULT_ASSESSMENT_LIFETIME,
 ) -> Transfer:
-    """Execute, hold or refuse the caller's transfer according to current risk and funds."""
+    """Execute, hold or refuse the caller's transfer according to current risk and funds.
+
+    A DRAFT is checked against available funds; a READY transfer (operator clearance) spends its
+    own reservation and is judged with only its exact cleared restriction overridden.
+    """
     owned = owned_transfer(session, principal, transfer_id)
     sandbox_id, sender_id, recipient_id = (
         owned.sandbox_id,
@@ -357,21 +427,28 @@ def confirm_transfer(
 
     if transfer.status in ("SUCCEEDED", "RISK_HELD"):
         return _completed(session, transfer)
-    if transfer.status != "DRAFT":
+    if transfer.status not in ("DRAFT", "READY"):
         raise _committed(
             session,
             state_conflict(session, transfer, f"This transfer is {transfer.status}."),
         )
+    # A READY transfer's amount is already reserved for it; a DRAFT needs available funds.
+    spends_available = transfer.status == "DRAFT"
 
     facts = collect_facts(session, transfer, now=now)
+    if transfer.status == "READY":
+        facts = _with_clearance(facts, transfer.cleared_restriction_id)
     decision = evaluate_risk(facts)
     if decision.decision == "HOLD":
-        if _available(sender) < transfer.amount_vnd:
+        if spends_available and _available(sender) < transfer.amount_vnd:
             raise _committed(session, _insufficient_funds())
         assessment = record_assessment(
             session, transfer, facts, decision, lifetime=assessment_lifetime, now=now
         )
-        _hold(session, principal, sender, transfer, facts, assessment, now, hold_lifetime)
+        if spends_available:
+            _hold(session, principal, sender, transfer, facts, assessment, now, hold_lifetime)
+        else:
+            _rehold(session, principal, transfer, facts, assessment)
         return _completed(session, transfer)
 
     if decision.decision == "WARN" and not _is_current_acknowledgement(
@@ -389,7 +466,7 @@ def confirm_transfer(
                 assessment=serialization.assessment_view(fresh),
             ),
         )
-    if _available(sender) < transfer.amount_vnd:
+    if spends_available and _available(sender) < transfer.amount_vnd:
         raise _committed(session, _insufficient_funds())
     assessment = record_assessment(
         session, transfer, facts, decision, lifetime=assessment_lifetime, now=now

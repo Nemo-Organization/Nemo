@@ -105,9 +105,12 @@ def assess_transfer(
     "credit) or RISK_HELD (amount reserved, 15-minute review deadline); inspect status. A current "
     "HOLD wins over any acknowledgement. WARN needs acknowledged_assessment_id of this "
     "transfer's unexpired assessment with matching facts, otherwise 409 ACKNOWLEDGEMENT_REQUIRED "
-    "with the fresh assessment. 409 INSUFFICIENT_FUNDS changes nothing. Repeating returns the "
-    "stored SUCCEEDED or RISK_HELD transfer; EXPIRED, CANCELED or REJECTED is 409 STATE_CONFLICT "
-    f"with current_transfer. {ORIGIN_NOTE}",
+    "with the fresh assessment. 409 INSUFFICIENT_FUNDS changes nothing. A READY transfer "
+    "(operator clearance) executes from its own reservation once current checks pass: only the "
+    "exact cleared restriction is overridden, a different active HOLD returns RISK_HELD with no "
+    "new reservation or deadline extension, and warnings still need acknowledgement. Repeating "
+    "returns the stored SUCCEEDED or RISK_HELD transfer; EXPIRED, CANCELED or REJECTED is 409 "
+    f"STATE_CONFLICT with current_transfer. {ORIGIN_NOTE}",
 )
 def confirm_transfer(
     principal: CustomerWriter,

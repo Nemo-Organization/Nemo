@@ -1,8 +1,9 @@
 """Lock acquisition for money-changing work, always in one global order.
 
-1. The recipient-policy advisory lock (confirmation; restriction create/revoke reuse it).
+1. The recipient-policy advisory lock (confirmation and hold review; restriction create/revoke
+   reuse it).
 2. Account rows, in ascending UUID order.
-3. Transfer (later also refund) rows, in ascending UUID order.
+3. Transfer rows, in ascending UUID order, then refund rows (refund settlement only).
 
 A caller may skip a level but never acquires an earlier level after a later one; in particular
 no operation takes a recipient advisory lock after locking accounts. All locks are
@@ -85,6 +86,23 @@ def lock_transfers(
     if len(locked) != len(ids):
         raise LookupError("A transfer to lock does not exist in this sandbox.")
     return locked
+
+
+def lock_refund(session: Session, sandbox_id: UUID, refund_id: UUID) -> models.Refund:
+    """Lock one refund row and return its current committed state.
+
+    Callers must already hold the lock of the refund's account (and of any of that account's
+    transfer rows they need), so a refund is always the last row locked.
+    """
+    row = session.scalars(
+        select(models.Refund)
+        .where(models.Refund.sandbox_id == sandbox_id, models.Refund.id == refund_id)
+        .with_for_update(key_share=True)
+        .execution_options(populate_existing=True)
+    ).one_or_none()
+    if row is None:
+        raise LookupError("A refund to lock does not exist in this sandbox.")
+    return row
 
 
 def database_clock(session: Session) -> datetime:

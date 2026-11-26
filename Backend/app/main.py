@@ -10,6 +10,7 @@ from app.errors import ErrorEnvelope, install_error_handlers
 from app.health import router as health_router
 from app.middleware import RequestContextMiddleware
 from app.settings import Settings
+from app.transfers.router import router as transfers_router
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -44,6 +45,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(demo_router, prefix="/api/v1")
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(demo_customer_router, prefix="/api/v1")
+    app.include_router(transfers_router, prefix="/api/v1")
     return app
 
 

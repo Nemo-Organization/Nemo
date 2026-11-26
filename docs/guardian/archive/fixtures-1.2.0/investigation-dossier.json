@@ -1,0 +1,73 @@
+{
+  "run_id": "42e090e1-41ee-4d7a-a495-923dbfa96678",
+  "status": "SUCCEEDED",
+  "related_reports": [],
+  "missing_information": [
+    "Who sent or forwarded the message is not established."
+  ],
+  "citation_warnings": [],
+  "dossier": {
+    "version": "guardian-dossier-v1",
+    "sources": [
+      {
+        "id": "src_report",
+        "kind": "REPORT",
+        "resource_id": "9b12d236-a33c-409c-b229-7c65c2e1630b",
+        "label": "Selected report",
+        "excerpt": "I was asked to pay an advance fee. The submitted message contains reference A-017.",
+        "observed_at": "2026-11-25T10:00:00Z"
+      },
+      {
+        "id": "src_reference",
+        "kind": "TRACE_REFERENCE",
+        "resource_id": "c1b3d7ac-0dd8-4596-9a9d-30fe3b1c01db",
+        "label": "Issued reference",
+        "excerpt": "code=A-017; batch=BATCH_A; partner=PARTNER_A",
+        "observed_at": "2026-11-25T09:00:00Z"
+      },
+      {
+        "id": "src_access",
+        "kind": "ACCESS_EVENT",
+        "resource_id": "3e8b9ed0-e6ce-4888-b835-1dc0128c576b",
+        "label": "Recorded batch access",
+        "excerpt": "partner=PARTNER_A; batch=BATCH_A; action=READ",
+        "observed_at": "2026-11-25T09:30:00Z"
+      }
+    ],
+    "findings": [
+      {
+        "id": "finding_scope",
+        "statement": "The reported code matches an issued reference in BATCH_A. A stored READ event exists; the exposure source remains unresolved.",
+        "relation": "UNRESOLVED",
+        "source_ids": [
+          "src_report",
+          "src_reference",
+          "src_access"
+        ],
+        "signal": null
+      }
+    ],
+    "activity": [
+      {
+        "step": 1,
+        "tool": "lookup_reference",
+        "status": "SUCCEEDED",
+        "summary": "Matched the evidenced code to an issued reference."
+      },
+      {
+        "step": 2,
+        "tool": "get_batch_access_events",
+        "status": "SUCCEEDED",
+        "summary": "Read access events for the established batch."
+      }
+    ],
+    "recommended_checks": [
+      "Inspect whether the original evidence could have been forwarded.",
+      "Review the report before publishing any batch notice."
+    ],
+    "limitations": [
+      "A matched reference and legitimate access event do not prove a partner leaked data."
+    ],
+    "citation_warnings": []
+  }
+}

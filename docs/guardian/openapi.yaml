@@ -1,14 +1,14 @@
 openapi: 3.1.0
 info:
   title: Guardian API
-  version: 1.2.0
+  version: 1.3.0
   description: 'Nemo contest contract. Synthetic finance; server-authenticated customer/operator roles. Datetimes
     are UTC and money is integer VND. Lists order newest first by timestamp then ID, except recipients by display_name
     then ID. Unknown /api paths return JSON errors. All responses with identity, money or evidence use Cache-Control:
     no-store. Role restrictions in each operation are enforced at the backend. Revision 1.1 adds optional nullable
     source-linked dossier responses for bounded read-only AI investigation. Revision 1.2 adds optional additional_actions
-    to ModelEvidence and an optional nullable signal to InvestigationFinding. No chat, streaming or public tool-execution
-    endpoint is introduced. AI tools cannot mutate money, restrictions or notices.'
+    to ModelEvidence and an optional nullable signal to InvestigationFinding. Revision 1.3 adds optional
+    claimed_transfer_direction to ModelEvidence. No chat, streaming or public tool-execution endpoint is introduced. AI tools cannot mutate money, restrictions or notices.'
 servers:
 - url: /api/v1
 tags:
@@ -2620,6 +2620,16 @@ components:
             primary requested_action and never UNKNOWN. New implementations emit an empty array when none; FE accepts
             absence in legacy fixtures. Server finding composition and the fixed secret/login warning consider both
             fields.
+        claimed_transfer_direction:
+          type: string
+          enum:
+          - INCOMING
+          - OUTGOING
+          - UNKNOWN
+          description: Optional additive 1.3 extension. What the message claims the requested transfer or confirmation
+            does for the customer. INCOMING means the message says it brings money to the customer; OUTGOING means
+            it asks the customer to send money; UNKNOWN means the message does not say. A mention of an earlier, separate
+            refund does not make this INCOMING. New implementations emit UNKNOWN when not stated; FE accepts absence.
         claimed_purpose:
           type: string
         quotes:

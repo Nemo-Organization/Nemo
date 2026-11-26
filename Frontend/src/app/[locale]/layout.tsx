@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
 
+import { MotionProvider } from '@/components/motion/motion-provider';
 import { ThemeSync } from '@/components/shared/theme-sync';
 import { Toaster } from '@/components/ui/sonner';
 import { fontSans } from '@/config/fonts';
@@ -39,15 +40,11 @@ export default async function LocaleLayout({
         <ThemeSync />
       </head>
       <body className="font-sans antialiased">
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
-        />
         <NextIntlClientProvider>
-          <ThemeSync />
           <Suspense fallback={null}>
-            <StoreProvider>{children}</StoreProvider>
+            <StoreProvider>
+              <MotionProvider>{children}</MotionProvider>
+            </StoreProvider>
             <Toaster />
           </Suspense>
         </NextIntlClientProvider>

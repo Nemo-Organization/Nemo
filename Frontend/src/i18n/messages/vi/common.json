@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "Ứng dụng của tôi",
-    "description": "Mô tả ứng dụng của tôi"
+    "name": "Nemo Guardian",
+    "description": "Chuyển tiền với tín hiệu rủi ro rõ ràng và xác minh bằng chứng bằng AI"
   },
   "navigation": {
     "home": "Trang chủ",

@@ -1,29 +1,30 @@
 {
   "name": "Trang chủ",
   "hero": {
-    "eyebrow": "Chuyển tiền rõ ràng hơn",
-    "title": "Chuyển tiền với các tín hiệu rủi ro rõ ràng",
-    "description": "Xem số dư, chuyển VND tới người nhận có sẵn và biết lý do một giao dịch cần được xem lại. Theo dõi hoàn tiền và thông báo ở cùng một nơi.",
-    "cta": "Bắt đầu chuyển tiền"
+    "eyebrow": "Giao dịch minh bạch hơn",
+    "title": "Chuyển tiền với tín hiệu rủi ro rõ ràng",
+    "description": "Xem số dư, chuyển VND tới người nhận đã lưu và hiểu vì sao một giao dịch cần được xem lại. Theo dõi hoàn tiền, báo cáo và cảnh báo ở cùng một nơi.",
+    "cta": "Bắt đầu chuyển tiền",
+    "operatorCta": "Mở bảng vận hành"
   },
   "features": {
     "title": "Bạn có thể làm gì",
     "items": {
       "transfer": {
         "title": "Chuyển tiền VND",
-        "description": "Chuyển tiền tới người nhận có sẵn và theo dõi số dư khả dụng cập nhật."
+        "description": "Gửi tiền tới người nhận mẫu và xem số dư ghi sổ, đang tạm giữ, khả dụng thay đổi ra sao."
       },
       "risk": {
         "title": "Kiểm tra rủi ro",
-        "description": "Nhận lý do cụ thể khi giao dịch cần chú ý, cảnh báo về người nhận và về hành vi được hiển thị riêng."
+        "description": "Lý do cụ thể khi giao dịch cần chú ý — cảnh báo người nhận và cảnh báo hành vi hiển thị tách biệt."
+      },
+      "check": {
+        "title": "Kiểm tra tin nhắn đáng ngờ",
+        "description": "Tải ảnh chụp hoặc dán tin nhắn; AI đối chiếu với dữ liệu chính thức và nêu rõ điểm chưa chắc chắn."
       },
       "refund": {
-        "title": "Thông tin hoàn tiền",
-        "description": "Theo dõi trạng thái các khoản hoàn tiền gắn với đơn hàng của bạn."
-      },
-      "notices": {
-        "title": "Thông báo",
-        "description": "Đọc các thông báo chúng tôi gửi về giao dịch và hoàn tiền của bạn."
+        "title": "Hoàn tiền & cảnh báo",
+        "description": "Theo dõi trạng thái hoàn tiền của đơn hàng và đọc các cảnh báo phòng ngừa từ Nemo."
       }
     }
   }

@@ -22,19 +22,28 @@ export type TransferStatus =
   | "cancelled";
 
 export type AccountBalance = {
-  balance: number;
+  balance: number; // ledger balance
+  held: number; // reserved funds
   available: number; // balance minus held funds
 };
 
 export type Recipient = {
   id: string;
   name: string;
+  bankCode: string;
   accountNumber: string;
   flags: string[];
+  restriction?: "WARN" | "HOLD";
 };
 
-export type Draft = { id: string; label: string };
-export type Order = { id: string; label: string; amount: number };
+export type Draft = { id: string; label: string; amount: number };
+
+export type Order = {
+  id: string;
+  label: string;
+  amount: number;
+  feeVnd: number | null;
+};
 
 export type RefundStatus = "pending" | "approved" | "completed" | "rejected";
 
@@ -46,12 +55,67 @@ export type Refund = {
   updatedAt: string;
 };
 
-export type NoticeKind = "risk" | "refund" | "info";
+export type AlertKind = "risk" | "refund" | "info";
 
-// Maps to i18n key transfer.notices.items.<key>
-export type Notice = {
+// Maps to i18n key transfer.alerts.items.<key>
+export type AlertItem = {
   id: string;
-  kind: NoticeKind;
+  kind: AlertKind;
   key: string;
+  createdAt: string;
+};
+
+export type AnalysisVerdict = "MISMATCH" | "CONSISTENT" | "UNCERTAIN";
+
+export type AnalysisResult = {
+  id: string;
+  verdict: AnalysisVerdict;
+  requestedAction: string;
+  claimedPurpose: string;
+  extractedReferences: string[];
+  sourceExcerpts: string[];
+  missingInfo: string[];
+  orderComparison?: {
+    orderLabel: string;
+    orderAmount: number;
+    feeVnd: number | null;
+  };
+  draftLabel?: string;
+  fileName?: string;
+  analyzedAt: string;
+};
+
+export type RecentTransferStatus = "completed" | "held" | "cancelled";
+
+export type RecentTransfer = {
+  id: string;
+  recipientId: string;
+  recipientName: string;
+  accountNumber: string;
+  amount: number;
+  status: RecentTransferStatus;
+  createdAt: string;
+  holdDeadline?: string;
+};
+
+export type CustomerReportCategory =
+  | "scamRecipient"
+  | "phishingMessage"
+  | "fraudOrder";
+
+export type CustomerReportStatus =
+  | "received"
+  | "inReview"
+  | "resolved"
+  | "dismissed";
+
+export type CustomerReport = {
+  id: string;
+  recipientId: string;
+  recipientName: string;
+  category: CustomerReportCategory;
+  description: string;
+  evidenceId?: string;
+  status: CustomerReportStatus;
   createdAt: string;
 };

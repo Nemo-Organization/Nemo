@@ -1,12 +1,10 @@
+import { HOLD_THRESHOLD, UNUSUAL_THRESHOLD } from "../constants/transfer.constants";
 import type {
   AccountBalance,
   Recipient,
   RiskResult,
   RiskSignal,
 } from "../types/transfer.types";
-
-const HOLD_THRESHOLD = 20_000_000;
-const UNUSUAL_THRESHOLD = 5_000_000;
 
 // Mock risk engine (TODO: replace with API). Keeps recipient & behavioral signals separate.
 export function evaluateRisk(
@@ -28,9 +26,11 @@ export function evaluateRisk(
     behavioralSignals.push({ code: "highAmount", kind: "behavioral" });
 
   const level =
-    amount >= HOLD_THRESHOLD
+    recipient.restriction === "HOLD" || amount >= HOLD_THRESHOLD
       ? "HOLD"
-      : recipientSignals.length || behavioralSignals.length
+      : recipient.restriction === "WARN" ||
+          recipientSignals.length ||
+          behavioralSignals.length
         ? "WARN"
         : "ALLOW";
 
@@ -43,7 +43,7 @@ export function evaluateRisk(
     behavioralSignals,
     holdDeadline:
       level === "HOLD"
-        ? new Date(Date.now() + 24 * 3600 * 1000).toISOString()
+        ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
         : undefined,
   };
 }

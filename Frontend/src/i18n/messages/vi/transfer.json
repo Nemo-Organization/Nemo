@@ -1,77 +1,120 @@
 {
   "name": "Chuyển tiền",
-  "title": "Chuyển tiền và hoàn tiền",
-  "description": "Xem số dư, tạo chuyển khoản và theo dõi hoàn tiền, thông báo",
+  "title": "Chuyển tiền và bối cảnh hoàn tiền",
+  "description": "Xem số dư, kiểm tra rủi ro giao dịch, phân tích tin nhắn đáng ngờ và theo dõi hoàn tiền, báo cáo",
+  "tabs": {
+    "label": "Quy trình chuyển tiền và kiểm tra",
+    "transfer": "Giao dịch",
+    "check": "Kiểm tra tin nhắn đáng ngờ",
+    "refund": "Hoàn tiền",
+    "history": "Giao dịch gần đây",
+    "reports": "Báo cáo"
+  },
   "balance": {
     "title": "Tóm tắt số dư",
-    "balance": "Số dư",
-    "available": "Số dư khả dụng",
-    "availableHint": "Số dư khả dụng đã trừ phần tiền đang bị giữ."
+    "balance": "Số dư ghi sổ",
+    "held": "Đang tạm giữ",
+    "available": "Khả dụng",
+    "availableHint": "Số dư khả dụng đã trừ phần tiền đang tạm giữ chờ xem xét."
   },
   "form": {
-    "title": "Chuyển tiền mới",
-    "description": "Chuyển tiền bằng VND tới người nhận có sẵn.",
+    "title": "Giao dịch mới",
+    "description": "Chọn người nhận đã lưu và nhập số tiền VND để đánh giá rủi ro.",
+    "quickRecipients": "Chọn nhanh người nhận",
     "recipient": "Người nhận",
     "recipientPlaceholder": "Chọn người nhận",
     "amount": "Số tiền (VND)",
-    "amountHint": "Chỉ nhập số nguyên lớn hơn 0.",
-    "submit": "Kiểm tra và chuyển",
+    "amountHint": "Chỉ nhập số nguyên dương (VND).",
+    "quickAmounts": "Chọn nhanh mệnh giá",
+    "submit": "Kiểm tra rủi ro",
+    "restrictionTag": {
+      "WARN": "Cảnh báo",
+      "HOLD": "Tạm giữ"
+    },
     "errors": {
       "recipient": "Vui lòng chọn người nhận.",
-      "amount": "Nhập số nguyên dương (VND)."
+      "amount": "Nhập số nguyên dương (VND).",
+      "insufficient": "Số tiền vượt quá số dư khả dụng."
     }
   },
   "risk": {
     "title": "Đánh giá rủi ro",
-    "empty": "Tạo giao dịch để xem kết quả đánh giá rủi ro.",
+    "empty": "Tạo giao dịch ở bên trái để xem kết quả đánh giá rủi ro.",
     "allow": {
       "title": "Chưa phát hiện cảnh báo bổ sung",
-      "description": "Chúng tôi không thấy cảnh báo thêm cho giao dịch này."
+      "description": "Không có tín hiệu can thiệp nào được kích hoạt với dữ liệu hiện tại."
     },
     "warn": {
       "title": "Vui lòng xem lại trước khi tiếp tục",
-      "description": "Có một số lý do bạn nên kiểm tra lại giao dịch này."
+      "description": "Có dấu hiệu rủi ro bạn cần kiểm tra kỹ trước khi xác nhận."
     },
     "hold": {
-      "title": "Giao dịch đang chờ xem xét",
-      "description": "Giao dịch đang chờ review và số tiền đang được giữ."
+      "title": "Giao dịch đang được tạm giữ xem xét",
+      "description": "Số tiền đã được giữ lại khỏi số dư khả dụng và chưa chuyển đi."
     },
-    "allowDisclaimer": "Đây không phải là sự đảm bảo. Hãy luôn tự xác minh người nhận.",
+    "reservedAmount": "Số tiền tạm giữ: {amount}",
+    "acknowledge": "Tôi đã đọc các cảnh báo trên và xác nhận vẫn muốn tiếp tục chuyển tiền.",
+    "allowDisclaimer": "Không có cảnh báo bổ sung không đồng nghĩa an toàn tuyệt đối. Hãy luôn tự xác minh người nhận.",
     "recipientWarnings": "Cảnh báo về người nhận",
     "behavioralWarnings": "Cảnh báo về hành vi",
     "none": "Không có cảnh báo trong nhóm này.",
-    "deadline": "Hạn xem xét: {date}. Bạn có thể hủy giao dịch bất cứ lúc nào trước thời hạn này.",
-    "continue": "Tiếp tục",
+    "deadline": "Hạn xem xét: {date}. Bạn có thể hủy lệnh bất cứ lúc nào trước thời hạn này.",
+    "continue": "Xác nhận chuyển",
     "cancel": "Hủy",
-    "cancelHold": "Hủy giao dịch",
+    "cancelHold": "Hủy lệnh tạm giữ",
     "status": {
       "completed": "Giao dịch đã hoàn tất.",
       "cancelled": "Đã hủy giao dịch. Không có khoản tiền nào bị chuyển đi."
     },
     "signals": {
       "newRecipient": "Bạn chưa từng chuyển tiền cho người nhận này.",
-      "reportedRecipient": "Người nhận này đã bị người dùng khác báo cáo.",
+      "reportedRecipient": "Người nhận này đang có hạn chế do các báo cáo đã được xác minh.",
       "unusualAmount": "Số tiền cao hơn mức bạn thường chuyển.",
       "drainsBalance": "Giao dịch này dùng phần lớn số dư khả dụng của bạn.",
       "highAmount": "Số tiền vượt hạn mức tự động duyệt."
     }
   },
   "screenshot": {
-    "title": "Phân tích ảnh chụp màn hình (tùy chọn)",
-    "description": "Tải ảnh hoặc dán nội dung tin nhắn để kiểm tra.",
+    "title": "Kiểm tra tin nhắn đáng ngờ",
+    "description": "Tải ảnh chụp màn hình hoặc dán nội dung tin nhắn để AI đối chiếu với dữ liệu đơn hàng.",
     "upload": "Ảnh chụp màn hình",
-    "text": "Hoặc dán văn bản",
-    "textPlaceholder": "Dán nội dung tin nhắn bạn nhận được...",
-    "linkDraft": "Liên kết với bản nháp (tùy chọn)",
-    "linkOrder": "Liên kết với đơn hàng (tùy chọn)",
+    "uploadHint": "Chọn ảnh PNG, JPG hoặc WebP",
+    "removeFile": "Xóa ảnh",
+    "text": "Hoặc dán nội dung tin nhắn",
+    "textPlaceholder": "Dán nội dung tin nhắn yêu cầu chuyển tiền, phí hoặc hoàn tiền...",
+    "fillSample": "Điền tin nhắn mẫu",
+    "linkDraft": "Liên kết bản nháp (tùy chọn)",
+    "linkOrder": "Liên kết đơn hàng (tùy chọn)",
     "none": "Không chọn",
-    "analyze": "Phân tích",
-    "result": "Đã nhận kết quả phân tích (mock). Chưa phát hiện cảnh báo bổ sung trong nội dung đã cung cấp. Đây không phải là sự đảm bảo."
+    "analyze": "Phân tích bằng AI"
+  },
+  "analysis": {
+    "title": "Kết quả phân tích",
+    "description": "AI trích xuất yêu cầu, đối chiếu dữ liệu chính thức và chỉ rõ thông tin còn thiếu.",
+    "empty": "Tải ảnh hoặc nhập tin nhắn ở bên trái rồi nhấn Phân tích để xem kết quả.",
+    "verdict": {
+      "MISMATCH": "Phát hiện mâu thuẫn",
+      "CONSISTENT": "Nhất quán với dữ liệu",
+      "UNCERTAIN": "Chưa đủ cơ sở kết luận"
+    },
+    "requestedAction": "Hành động được yêu cầu",
+    "claimedPurpose": "Mục đích được nêu",
+    "references": "Mã tham chiếu trích xuất",
+    "noReferences": "Không trích xuất được mã nào.",
+    "orderCheck": "Đối chiếu dữ liệu đơn hàng",
+    "orderAmount": "Giá trị đơn hàng: {amount}",
+    "orderFee": "Phí ghi nhận trên hệ thống: {fee}",
+    "feeUnknown": "Không ghi nhận phí",
+    "feeZero": "0 ₫ (miễn phí)",
+    "excerpts": "Trích dẫn từ bằng chứng",
+    "missingInfo": "Thông tin còn thiếu / cần lưu ý",
+    "disclaimer": "Kết quả AI chỉ hỗ trợ đối chiếu, không chứng nhận người gửi là hợp pháp.",
+    "reportCta": "Tạo báo cáo từ bằng chứng này"
   },
   "refund": {
-    "title": "Thông tin hoàn tiền",
-    "description": "Các khoản hoàn tiền gắn với đơn hàng của bạn.",
-    "empty": "Chưa có hoàn tiền nào.",
+    "title": "Bối cảnh hoàn tiền",
+    "description": "Theo dõi trạng thái hoàn tiền gắn với các đơn hàng của bạn.",
+    "empty": "Chưa có khoản hoàn tiền nào.",
     "refundAmount": "Hoàn tiền: {amount}",
     "orderAmount": "Đơn hàng: {amount}",
     "status": {
@@ -81,14 +124,61 @@
       "rejected": "Từ chối"
     }
   },
-  "notices": {
-    "title": "Thông báo",
-    "description": "Các thông báo gửi tới bạn.",
-    "empty": "Không có thông báo.",
-    "kind": { "risk": "Rủi ro", "refund": "Hoàn tiền", "info": "Thông tin" },
+  "alerts": {
+    "title": "Cảnh báo & cập nhật",
+    "description": "Các cảnh báo phòng ngừa rủi ro và cập nhật trạng thái hoàn tiền gửi riêng cho bạn.",
+    "empty": "Chưa có cảnh báo hoặc cập nhật nào.",
+    "kind": {
+      "risk": "Cảnh báo rủi ro",
+      "refund": "Cập nhật hoàn tiền",
+      "info": "Lưu ý bảo mật"
+    },
     "items": {
-      "refundApproved": "Khoản hoàn tiền cho Order #5001 đã được duyệt.",
-      "stayAlert": "Chúng tôi không bao giờ hỏi OTP hay mật khẩu của bạn qua điện thoại hoặc tin nhắn."
+      "refundImpersonation": "Lưu ý phòng ngừa: Ghi nhận tin nhắn giả mạo thu phí hoàn tiền liên quan tới mã đơn hàng gần đây. Không chuyển tiền ra ngoài quy trình chính thức.",
+      "refundApproved": "Khoản hoàn tiền cho Order #5001 (1.250.000 ₫) đã được duyệt và sẽ tự động cộng về ví, không mất phí.",
+      "stayAlert": "Nemo không bao giờ yêu cầu bạn chuyển tiền trước, cung cấp OTP hoặc mật khẩu để nhận hoàn tiền."
+    }
+  },
+  "history": {
+    "title": "Giao dịch gần đây",
+    "description": "Lịch sử các giao dịch đã thực hiện, đang tạm giữ hoặc đã hủy.",
+    "empty": "Chưa có giao dịch nào.",
+    "cancelHold": "Hủy tạm giữ",
+    "status": {
+      "completed": "Hoàn tất",
+      "held": "Đang tạm giữ",
+      "cancelled": "Đã hủy"
+    }
+  },
+  "reports": {
+    "createTitle": "Gửi báo cáo mới",
+    "createDescription": "Báo cáo người nhận hoặc tin nhắn đáng ngờ để đội vận hành kiểm tra và truy vết.",
+    "listTitle": "Báo cáo của tôi",
+    "listDescription": "Các báo cáo bạn đã gửi cùng trạng thái xử lý hiện tại.",
+    "empty": "Bạn chưa gửi báo cáo nào.",
+    "recipient": "Người nhận liên quan",
+    "recipientPlaceholder": "Chọn người nhận",
+    "category": "Loại báo cáo",
+    "evidence": "Bằng chứng đính kèm",
+    "noEvidence": "Không đính kèm kết quả phân tích",
+    "descriptionLabel": "Mô tả chi tiết",
+    "descriptionPlaceholder": "Mô tả nội dung yêu cầu, dấu hiệu bất thường hoặc mã tham chiếu liên quan...",
+    "submit": "Gửi báo cáo",
+    "submittedToast": "Đã tiếp nhận báo cáo (dữ liệu mock).",
+    "errors": {
+      "recipient": "Vui lòng chọn người nhận liên quan.",
+      "description": "Vui lòng nhập mô tả chi tiết."
+    },
+    "categories": {
+      "scamRecipient": "Người nhận nghi lừa đảo",
+      "phishingMessage": "Tin nhắn giả mạo hoàn tiền / thu phí",
+      "fraudOrder": "Đơn hàng gian lận"
+    },
+    "status": {
+      "received": "Đã tiếp nhận",
+      "inReview": "Đang rà soát",
+      "resolved": "Đã xử lý",
+      "dismissed": "Đã đóng"
     }
   }
 }

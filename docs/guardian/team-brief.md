@@ -51,6 +51,7 @@ Show AI value using changed-evidence variants and held-out evaluation. A pre-exi
 | Requirements | Bounded model-selected read-only verification, source validation, source-linked dossier, safe failure and run budgets |
 | API | Version 1.1; all 32 operations/28 paths and request bodies retained. Analysis and Investigation gain optional nullable dossier; related_reports and existing fields remain |
 | API 1.2 | Optional ModelEvidence.additional_actions and finding signal; operations, request bodies and required fields unchanged. Versions 1.0 and 1.1 are archived in docs/guardian/archive |
+| API 1.3 | Optional ModelEvidence.claimed_transfer_direction for finding rule 1; nothing else changes. Version 1.2 is archived |
 | DB | Still 19 tables/161 columns. Dossier and private execution metadata use existing ai_runs.output; physical keys/types remain unchanged |
 | Tracing | Already in scope; now explicitly reused by permitted investigation tools, with exact-match and no-attribution limitations |
 | Storage | Private Neon Object Storage via S3 adapter, alongside Neon Postgres; Cloud Run still hosts the app |

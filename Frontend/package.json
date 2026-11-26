@@ -7,7 +7,7 @@
     "gen:i18n:strict": "node scripts/generate-namespaces.mjs --strict",
     "predev": "npm run gen:i18n",
     "prebuild": "npm run gen:i18n:strict",
-    "dev": "next dev",
+    "dev": "node scripts/dev.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

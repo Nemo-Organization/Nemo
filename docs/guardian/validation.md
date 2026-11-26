@@ -81,3 +81,20 @@ Documentation and contract only. Compared against `origin/dev` at `9168dc5` (con
 | Documentation | Relative links in changed Markdown resolve; no trailing whitespace in changed files |
 
 The checks ran in a temporary virtual environment outside the repository with openapi-spec-validator 0.9.0, jsonschema 4.26.0 and PyYAML 6.0.4. No runtime dependency or lock file changed. These checks do not validate model behavior, the rule 1 direction field, which is still open, or any provider.
+
+## 26 November contract 1.3 amendment
+
+Compared against `311c683`, contract 1.2.0 merged into dev. 37 checks passed.
+
+| Check | Observed result |
+| --- | --- |
+| Guardian API contract v1.3 | OpenAPI 3.1 validation passed; info.version 1.3.0 |
+| API compatibility | Paths and all 32 operation definitions identical to 1.2.0; same schema names |
+| Schema changes | Only ModelEvidence changed: claimed_transfer_direction added; required list and existing properties unchanged |
+| New field | Rejects values outside INCOMING/OUTGOING/UNKNOWN; accepts all three; examples without it stay valid |
+| Examples and fixtures | Seven inline examples and both fixtures validate; the analysis fixture claims OUTGOING |
+| Archive | All seven archived files are byte-identical to their Git sources; archived 1.2.0 contract validates and its fixtures validate against it |
+| Earlier prose | Every original line of changed Markdown files is still present; two have one inserted sentence. In openapi.yaml only the version line and two re-wrapped description lines changed |
+| Documentation | Relative links resolve; no trailing whitespace |
+
+This resolves the rule 1 open item recorded in the 1.2 entry above. These checks do not validate model behavior or any provider.

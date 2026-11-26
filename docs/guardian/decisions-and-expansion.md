@@ -84,3 +84,8 @@ If the integrated journey slips, first defer automatic multi-report grouping, th
 - Provider remains unselected in these documents. AWS Bedrock is a candidate pending a live smoke test of image input, tool use, region and quota. If adopted, update the provider section and rename the Neon storage variables so they do not use the default AWS credential and region names.
 - Open before backend Task 9: the structured field that carries finding rule 1's claimed incoming transfer.
 - Version records: superseded contract and fixture files are copied byte-for-byte into `docs/guardian/archive/`. In prose documents, superseded text stays in place with a pointer to the dated amendment that replaces it.
+
+## Decisions applied on 26 November 2026, contract 1.3
+
+- Resolves the rule 1 open item above. Contract 1.3 adds optional `ModelEvidence.claimed_transfer_direction` (INCOMING, OUTGOING or UNKNOWN). Finding rule 1 uses it with a validated quote and the linked transfer's actual direction.
+- BA labels add a claimed_transfer_direction column.

@@ -5,7 +5,7 @@ disposable PostgreSQL engine. Rulings encoded here: the idempotency key is (sand
 account, client_request_id); a self-transfer is 422 VALIDATION_ERROR before any lookup; a foreign
 or unknown sender/recipient is an indistinguishable 404 NOT_FOUND; drafts do not check or reserve
 funds; listTransfers returns the caller's own sent transfers, newest created_at first, then id
-descending. Confirmation of an expired draft is completed in Task 7 (see the last test).
+descending. Confirming a draft after its deadline is 409 STATE_CONFLICT with EXPIRED state.
 """
 
 import threading
@@ -618,8 +618,8 @@ def test_transfer_list_is_owned_ordered_and_paginated(browser, pg_engine: Engine
 def test_expired_draft_cannot_confirm(browser, pg_engine: Engine):
     """The deadline is fixed at creation in database time and never extended by a replay.
 
-    Task 7 completes this test: confirming the expired draft returns 409 with EXPIRED state and
-    writes no ledger entry. Until then it asserts the observable deadline behavior only.
+    Confirming the draft after that deadline returns 409 STATE_CONFLICT with the committed
+    EXPIRED state, and writes no ledger entry, reservation or assessment.
     """
     linh = open_customer(browser())
     cafe = linh.recipient("CAFE")
@@ -636,20 +636,34 @@ def test_expired_draft_cannot_confirm(browser, pg_engine: Engine):
             .values(expires_at=func.now() - timedelta(seconds=1))
         )
     (row,) = key_rows(pg_engine, linh, key)
+    assert row.status == "DRAFT", "the stored row still says DRAFT"
     before = money_state(pg_engine, linh.sandbox_id)
+
+    confirmed = linh.client.post(
+        f"{TRANSFERS}/{created.json()['id']}/confirm", json={}, headers=writes(linh.csrf)
+    )
+
+    assert confirmed.status_code == 409, confirmed.text
+    assert error_code(confirmed) == "STATE_CONFLICT"
+    current = confirmed.json()["error"]["current_transfer"]
+    assert (current["id"], current["status"]) == (created.json()["id"], "EXPIRED")
+    assert current["completed_at"] is not None and current["reserved_amount_vnd"] == 0
+    (expired,) = key_rows(pg_engine, linh, key)
+    assert expired.status == "EXPIRED", "the expiry is committed before the 409"
 
     replay = linh.draft(cafe["id"], 20_000, key=key)
 
     assert replay.status_code == 200, replay.text
-    assert replay.json()["id"] == created.json()["id"] and replay.json()["replayed"] is True
+    assert replay.json() == {**current, "replayed": True}, "a replay shows the expired state"
     assert instant(replay.json()["expires_at"]) == row.expires_at, "a replay never extends it"
     assert replay.json()["created_at"] == created.json()["created_at"]
     assert len(key_rows(pg_engine, linh, key)) == 1, "an expired key is not reissued"
     fetched = linh.client.get(f"{TRANSFERS}/{created.json()['id']}").json()
+    assert fetched == current
     with Session(pg_engine) as db:
         assert instant(fetched["expires_at"]) < db.scalar(select(func.now()))
     assert fetched["reserved_amount_vnd"] == 0
-    assert money_state(pg_engine, linh.sandbox_id) == before
+    assert money_state(pg_engine, linh.sandbox_id) == before, "no ledger or assessment write"
 
 
 def test_task5_operations_match_contract(guardian_app):

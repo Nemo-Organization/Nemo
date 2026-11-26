@@ -16,12 +16,12 @@ import hashlib
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any, Literal
 from uuid import UUID
 
-from sqlalchemy import case, func, select
+from sqlalchemy import DateTime, case, func, literal, select
 from sqlalchemy.orm import Session
 
 from app import models
@@ -108,9 +108,15 @@ def fingerprint_facts(facts: RiskFacts) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def collect_facts(session: Session, transfer: models.Transfer) -> RiskFacts:
-    """Current history and restriction facts for `transfer`, from one database snapshot."""
-    now = func.now()
+def collect_facts(
+    session: Session, transfer: models.Transfer, *, now: datetime | None = None
+) -> RiskFacts:
+    """Current history and restriction facts for `transfer`, from one database snapshot.
+
+    `now` defaults to the transaction's `now()`. Confirmation passes the database time it read
+    after acquiring its locks, so facts and deadlines are judged at the same instant.
+    """
+    current = func.now() if now is None else literal(now, DateTime(timezone=True))
     history = models.Transfer.__table__.alias("history")
     amounts = (
         select(func.array_agg(history.c.amount_vnd))
@@ -118,7 +124,7 @@ def collect_facts(session: Session, transfer: models.Transfer) -> RiskFacts:
             history.c.sandbox_id == transfer.sandbox_id,
             history.c.sender_account_id == transfer.sender_account_id,
             history.c.status == "SUCCEEDED",
-            history.c.created_at >= now - timedelta(days=HISTORY_WINDOW_DAYS),
+            history.c.created_at >= current - timedelta(days=HISTORY_WINDOW_DAYS),
             history.c.id != transfer.id,
         )
         .scalar_subquery()
@@ -130,7 +136,7 @@ def collect_facts(session: Session, transfer: models.Transfer) -> RiskFacts:
             restriction.sandbox_id == transfer.sandbox_id,
             restriction.recipient_account_id == transfer.recipient_account_id,
             restriction.status == "ACTIVE",
-            restriction.expires_at > now,
+            restriction.expires_at > current,
         )
         .order_by(
             case(_SEVERITY, value=restriction.action, else_=len(_SEVERITY)),

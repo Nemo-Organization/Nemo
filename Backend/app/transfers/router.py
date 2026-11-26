@@ -5,7 +5,13 @@ from uuid import UUID
 from fastapi import APIRouter, Path, Query, Request, Response
 
 from app.api.pagination import PageParams
-from app.api.schemas import CreateTransfer, RiskAssessment, Transfer, TransferList
+from app.api.schemas import (
+    ConfirmTransfer,
+    CreateTransfer,
+    RiskAssessment,
+    Transfer,
+    TransferList,
+)
 from app.auth.dependencies import (
     CSRF_OPENAPI,
     ORIGIN_NOTE,
@@ -27,7 +33,8 @@ TransferId = Annotated[UUID, Path(alias="id")]
     operation_id="listTransfers",
     response_model=TransferList,
     description="Transfers sent by the authenticated customer. CUSTOMER only. Newest "
-    "created_at first, then ID descending; total counts the caller's transfers before paging.",
+    "created_at first, then ID descending; total counts the caller's transfers before paging. "
+    "Passed deadlines are first reconciled to EXPIRED, releasing reservations.",
 )
 def list_transfers(principal: CustomerReader, page: Pagination, session: DbSession) -> TransferList:
     return service.list_transfers(session, principal, page)
@@ -64,7 +71,7 @@ def create_transfer(
     operation_id="getTransfer",
     response_model=Transfer,
     description="Customer-owned transfer with its latest assessment. CUSTOMER only; another "
-    "customer's or sandbox's transfer is 404.",
+    "customer's or sandbox's transfer is 404. Passed deadlines are first reconciled to EXPIRED.",
 )
 def get_transfer(
     principal: CustomerReader, transfer_id: TransferId, session: DbSession
@@ -87,3 +94,49 @@ def assess_transfer(
 ) -> RiskAssessment:
     lifetime = timedelta(seconds=settings_of(request).assessment_ttl_seconds)
     return risk_service.assess_transfer(session, principal, transfer_id, lifetime=lifetime)
+
+
+@router.post(
+    "/transfers/{id}/confirm",
+    operation_id="confirmTransfer",
+    response_model=Transfer,
+    openapi_extra=CSRF_OPENAPI,
+    description="Re-evaluate under locks with database time. Returns SUCCEEDED (one debit and one "
+    "credit) or RISK_HELD (amount reserved, 15-minute review deadline); inspect status. A current "
+    "HOLD wins over any acknowledgement. WARN needs acknowledged_assessment_id of this "
+    "transfer's unexpired assessment with matching facts, otherwise 409 ACKNOWLEDGEMENT_REQUIRED "
+    "with the fresh assessment. 409 INSUFFICIENT_FUNDS changes nothing. Repeating returns the "
+    "stored SUCCEEDED or RISK_HELD transfer; EXPIRED, CANCELED or REJECTED is 409 STATE_CONFLICT "
+    f"with current_transfer. {ORIGIN_NOTE}",
+)
+def confirm_transfer(
+    principal: CustomerWriter,
+    transfer_id: TransferId,
+    body: ConfirmTransfer,
+    request: Request,
+    session: DbSession,
+) -> Transfer:
+    settings = settings_of(request)
+    return service.confirm_transfer(
+        session,
+        principal,
+        transfer_id,
+        body.acknowledged_assessment_id,
+        hold_lifetime=timedelta(seconds=settings.hold_ttl_seconds),
+        assessment_lifetime=timedelta(seconds=settings.assessment_ttl_seconds),
+    )
+
+
+@router.post(
+    "/transfers/{id}/cancel",
+    operation_id="cancelTransfer",
+    response_model=Transfer,
+    openapi_extra=CSRF_OPENAPI,
+    description="Cancel the caller's DRAFT, RISK_HELD or READY transfer and release its "
+    "reservation exactly once. Repeated cancellation returns the same CANCELED transfer; another "
+    f"terminal state (including a passed deadline) is 409 STATE_CONFLICT. {ORIGIN_NOTE}",
+)
+def cancel_transfer(
+    principal: CustomerWriter, transfer_id: TransferId, session: DbSession
+) -> Transfer:
+    return service.cancel_transfer(session, principal, transfer_id)

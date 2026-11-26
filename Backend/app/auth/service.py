@@ -25,6 +25,7 @@ from app import models
 from app.api import schemas
 from app.auth.principal import DemoPrincipal, Principal, Role
 from app.errors import ApplicationError
+from app.transfers.expiry import reconcile_actor_accounts
 
 SessionKind = Literal["ACTOR", "DEMO_CONTROL"]
 
@@ -242,8 +243,16 @@ def build_me(session: Session, actor: models.Actor, actor_csrf_token: str) -> sc
 
 
 def get_me(session: Session, principal: Principal, session_token: str) -> schemas.Me:
-    """Current actor and owned accounts. Read-only: re-derives the actor CSRF token."""
+    """Current actor and owned accounts, re-deriving the actor CSRF token.
+
+    Session state never changes. Before balances are shown, the actor's transfers past their
+    deadline are expired and their reservations released (committed); nothing is ever debited.
+    """
     actor = session.get(models.Actor, principal.actor_id)
     if actor is None or actor.sandbox_id != principal.sandbox_id:
         raise session_expired()
+    if reconcile_actor_accounts(
+        session, principal.sandbox_id, principal.actor_id, request_id=principal.request_id
+    ):
+        session.commit()
     return build_me(session, actor, derive_csrf(session_token, "ACTOR"))

@@ -21,6 +21,7 @@ from app.auth.service import (
 from app.demo import fixtures
 from app.errors import ApplicationError
 from app.settings import Settings
+from app.transfers.expiry import reconcile_actor_accounts
 
 DEFAULT_LIFETIME = timedelta(hours=24)
 
@@ -111,6 +112,10 @@ def select_actor(
     )
     if actor is None:
         raise ApplicationError(404, "NOT_FOUND", "Resource not found.")
+    # The returned Me shows balances, so passed deadlines are reconciled first (same commit).
+    reconcile_actor_accounts(
+        session, controller.sandbox_id, actor.id, request_id=controller.request_id
+    )
     now, sandbox_expires_at = session.execute(
         select(func.now(), models.Sandbox.expires_at).where(
             models.Sandbox.id == controller.sandbox_id

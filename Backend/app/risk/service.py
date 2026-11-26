@@ -11,12 +11,13 @@ Reasons list the recipient reason first, then the behavioral reason. No model is
 Rulings where the docs are silent:
 - Assessable states are DRAFT, RISK_HELD and READY (the contract's "draft or active held/ready
   transfer"). Any other state is 409 STATE_CONFLICT with the current transfer.
-- An assessable transfer whose deadline has passed is also 409 STATE_CONFLICT and records
-  nothing; expiry reconciliation itself belongs to the transfer lifecycle service.
+- The caller's transfers past their deadline are first reconciled to EXPIRED (committed), so an
+  assessable transfer whose deadline has passed is 409 STATE_CONFLICT showing EXPIRED, and no
+  assessment is recorded.
 """
 
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Literal
 from uuid import UUID
@@ -38,7 +39,8 @@ from app.risk.facts import (
     fingerprint_facts,
 )
 from app.transfers import serialization
-from app.transfers.service import owned_transfer
+from app.transfers.expiry import reconcile_actor_accounts
+from app.transfers.ownership import owned_transfer
 
 Decision = Literal["ALLOW", "WARN", "HOLD"]
 BehaviorSignal = Literal["NORMAL", "ANOMALOUS", "INSUFFICIENT_HISTORY"]
@@ -101,8 +103,13 @@ def record_assessment(
     decision: RiskDecision,
     *,
     lifetime: timedelta = DEFAULT_ASSESSMENT_LIFETIME,
+    now: datetime | None = None,
 ) -> models.RiskAssessment:
-    """Persist one assessment snapshot (flush only). Times are database `now()`."""
+    """Persist one assessment snapshot (flush only).
+
+    Times are database `now()`, or the database time `now` that confirmation read under its locks.
+    """
+    assessed_at = func.now() if now is None else now
     row = models.RiskAssessment(
         sandbox_id=transfer.sandbox_id,
         transfer_id=transfer.id,
@@ -113,8 +120,8 @@ def record_assessment(
         facts_fingerprint=fingerprint_facts(facts),
         reasons=[reason.model_dump(mode="json") for reason in decision.reasons],
         facts=facts_document(facts),
-        assessed_at=func.now(),
-        expires_at=func.now() + lifetime,
+        assessed_at=assessed_at,
+        expires_at=assessed_at + lifetime,
     )
     session.add(row)
     session.flush()
@@ -143,6 +150,10 @@ def assess_transfer(
     Changes no balance, reservation or transfer status.
     """
     transfer = owned_transfer(session, principal, transfer_id)
+    if reconcile_actor_accounts(
+        session, principal.sandbox_id, principal.actor_id, request_id=principal.request_id
+    ):
+        session.commit()
     if transfer.status not in ASSESSABLE_STATUSES:
         raise state_conflict(session, transfer, "This transfer can no longer be assessed.")
     if transfer.expires_at <= database_now(session):

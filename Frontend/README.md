@@ -58,7 +58,6 @@ src/
 ├─ components/
 │  ├─ ui/                    shadcn/ui primitives — DO NOT edit manually (CLI overwrites)
 │  ├─ layout/                Small reusable page building blocks (`page-breadcrumbs`, `page-header`, `page-container`)
-│  ├─ layout/                Small reusable page building blocks (`page-breadcrumbs`, `page-header`, `page-container`)
 │  ├─ data-table/            Reusable TanStack Table v9 wrapper, pagination, sorting, faceted filters
 │  └─ shared/                Cross-feature shared components
 ├─ config/                   App-wide configuration (`routes.ts`, `fonts.ts`)

@@ -2,9 +2,9 @@ import { useTranslations } from "next-intl";
 import {
   ArrowRightIcon,
   ArrowsLeftRightIcon,
-  BellIcon,
   ReceiptIcon,
   ShieldCheckIcon,
+  SparkleIcon,
 } from "@phosphor-icons/react/ssr";
 
 import { PageContainer } from "@/components/layout/page-container";
@@ -16,8 +16,8 @@ import { cn } from "@/lib/utils";
 const FEATURES = [
   { key: "transfer", icon: ArrowsLeftRightIcon, iconClass: "text-teal-600 dark:text-teal-400" },
   { key: "risk", icon: ShieldCheckIcon, iconClass: "text-emerald-600 dark:text-emerald-400" },
-  { key: "refund", icon: ReceiptIcon, iconClass: "text-sky-600 dark:text-sky-400" },
-  { key: "notices", icon: BellIcon, iconClass: "text-amber-600 dark:text-amber-400" },
+  { key: "check", icon: SparkleIcon, iconClass: "text-sky-600 dark:text-sky-400" },
+  { key: "refund", icon: ReceiptIcon, iconClass: "text-amber-600 dark:text-amber-400" },
 ] as const;
 
 export function HomeView() {
@@ -27,7 +27,6 @@ export function HomeView() {
   return (
     <PageContainer className="space-y-8">
       <section className="relative overflow-hidden border bg-card px-6 py-12 shadow-2xs sm:px-12 sm:py-16">
-        {/* Decorative soft shapes (purely visual). */}
         <div
           aria-hidden
           className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-primary/10 blur-3xl"
@@ -49,16 +48,25 @@ export function HomeView() {
           <p className="text-base leading-relaxed text-muted-foreground">
             {t("hero.description")}
           </p>
-          <Link
-            href={ROUTES.transfer}
-            className={cn(buttonVariants({ size: "lg" }), "group mt-2")}
-          >
-            {t("hero.cta")}
-            <ArrowRightIcon data-icon="inline-end"
-              className="transition-transform group-hover:translate-x-1"
-              aria-hidden
-            />
-          </Link>
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <Link
+              href={ROUTES.transfer}
+              className={cn(buttonVariants({ size: "lg" }), "group")}
+            >
+              {t("hero.cta")}
+              <ArrowRightIcon
+                data-icon="inline-end"
+                className="transition-transform group-hover:translate-x-1"
+                aria-hidden
+              />
+            </Link>
+            <Link
+              href={ROUTES.operator}
+              className={buttonVariants({ variant: "outline", size: "lg" })}
+            >
+              {t("hero.operatorCta")}
+            </Link>
+          </div>
         </div>
       </section>
 

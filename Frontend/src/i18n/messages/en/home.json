@@ -1,29 +1,30 @@
 {
   "name": "Home",
   "hero": {
-    "eyebrow": "Clearer transfers",
-    "title": "Transfer money with clearer risk signals",
-    "description": "Check your balance, send VND to saved recipients and see why a transfer may need a second look. Keep track of refunds and notices in one place.",
-    "cta": "Start a transfer"
+    "eyebrow": "More transparent transfers",
+    "title": "Transfer with clear risk signals",
+    "description": "View your balance, send VND to saved recipients and understand why a transfer needs review. Follow refunds, reports and alerts in one place.",
+    "cta": "Start a transfer",
+    "operatorCta": "Open operator console"
   },
   "features": {
     "title": "What you can do",
     "items": {
       "transfer": {
-        "title": "Transfer in VND",
-        "description": "Send money to saved recipients and see your available balance update."
+        "title": "VND transfers",
+        "description": "Send money to saved recipients and watch ledger, held and available balances update."
       },
       "risk": {
         "title": "Risk check",
-        "description": "Get specific reasons when a transfer needs attention, with recipient and behavior warnings shown separately."
+        "description": "Specific reasons when a transfer needs attention — recipient and behavioral warnings shown separately."
+      },
+      "check": {
+        "title": "Check suspicious messages",
+        "description": "Upload a screenshot or paste text; AI cross-checks official records and highlights uncertainties."
       },
       "refund": {
-        "title": "Refund context",
-        "description": "Follow the status of refunds linked to your orders."
-      },
-      "notices": {
-        "title": "Notices",
-        "description": "Read the messages we send you about your transfers and refunds."
+        "title": "Refunds & alerts",
+        "description": "Track order refund status and read precautionary alerts from Nemo."
       }
     }
   }

@@ -1,2 +1,9 @@
 export { TransferView } from "./components/transfer-view";
-export type { RiskLevel, RiskResult } from "./types/transfer.types";
+export type {
+  AnalysisResult,
+  AnalysisVerdict,
+  CustomerReport,
+  RecentTransfer,
+  RiskLevel,
+  RiskResult,
+} from "./types/transfer.types";

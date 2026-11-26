@@ -42,31 +42,43 @@ Copy `.env.example` to `.env.local` and configure the values (never commit real 
 
 ```text
 scripts/
+├─ dev.mjs                   Starts Next.js dev server and auto-opens the browser
 └─ generate-namespaces.mjs   Generates i18n namespace types and validates locale parity
 
 src/
 ├─ proxy.ts                  next-intl locale routing proxy (Next.js 16)
 ├─ app/
 │  ├─ globals.css            Tailwind CSS 4 entry, custom @theme type scale, theme tokens
-│  └─ [locale]/              Thin App Router pages: compose features, metadata, error/loading/not-found
-├─ features/                 Domain modules (components, hooks, services, types, constants, mocks, index.ts)
+│  └─ [locale]/
+│     ├─ layout.tsx          Root locale layout, fonts, ThemeSync, StoreProvider, Toaster
+│     ├─ error.tsx / loading.tsx / not-found.tsx
+│     └─ (app)/              App shell route group (`page.tsx`, `transfer/page.tsx`, `operator/...`)
+├─ features/                 Domain modules (components, constants, hooks, lib, mocks, services, types, index.ts)
 │  ├─ home/                  Landing overview and feature highlights
+│  ├─ transfer/              Balance summary + 5 tabs: transfer, suspicious check, refunds & alerts, history, reports
+│  │  ├─ components/         `transfer-view`, `balance-summary`, `transfer-form`, `risk-result`,
+│  │  │                      `screenshot-analysis`, `analysis-result`, `refund-context`, `alerts-list`,
+│  │  │                      `recent-transfers`, `reports-panel`
+│  │  ├─ constants/          `transfer.constants.ts` (currency, thresholds, quick amounts)
+│  │  ├─ hooks/              `use-transfer-recipients.ts`
+│  │  ├─ lib/                `evaluate-risk.ts`, `analyze-message.ts` (mock engines)
+│  │  ├─ mocks/              `transfer.mock.ts`
+│  │  ├─ services/           `transfer.service.ts`
+│  │  └─ types/              `transfer.types.ts`
 │  ├─ operator/              Operator queues (reports, holds), case review, restrictions, notices
-│  ├─ transfer/              Transfer flow, risk evaluation, screenshot analysis, refunds, notices
 │  └─ _template/             Starter template for new features (type-checked; see its README)
 ├─ layouts/                  Full-page layout shells shared across route groups (`app-layout.tsx`, `app-topbar.tsx`)
 ├─ components/
 │  ├─ ui/                    shadcn/ui primitives — DO NOT edit manually (CLI overwrites)
 │  ├─ layout/                Small reusable page building blocks (`page-breadcrumbs`, `page-header`, `page-container`)
-│  ├─ layout/                Small reusable page building blocks (`page-breadcrumbs`, `page-header`, `page-container`)
 │  ├─ data-table/            Reusable TanStack Table v9 wrapper, pagination, sorting, faceted filters
-│  └─ shared/                Cross-feature shared components
+│  └─ shared/                Cross-feature shared components (`date-time`, `theme-sync`, `theme-toggle`)
 ├─ config/                   App-wide configuration (`routes.ts`, `fonts.ts`)
-├─ hooks/                    Shared React hooks (`use-mobile.ts`)
+├─ hooks/                    Shared React hooks (`use-date-formatter.ts`, `use-mobile.ts`)
 ├─ i18n/                     next-intl setup (`routing.ts`, `request.ts`, `navigation.ts`, `messages/{en,vi}/`)
-├─ lib/                      Pure utility helpers (`utils.ts`)
+├─ lib/                      Pure utility helpers (`format.ts`, `theme.ts`, `utils.ts`)
 ├─ store/                    Redux Toolkit store, typed hooks, provider, and slices (`ui-slice.ts`)
-└─ styles/overrides/         Per-component shadcn/ui CSS overrides (`tokens`, `base`, `card`, `table`, `chart`, `input`, `overlay`, `progress`)
+└─ styles/overrides/         Per-component CSS overrides (`tokens`, `base`, `card`, `table`, `chart`, `input`, `overlay`, `progress`, `theme-toggle`)
 ```
 
 ## Architecture & Conventions

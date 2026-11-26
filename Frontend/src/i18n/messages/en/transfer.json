@@ -1,76 +1,119 @@
 {
   "name": "Transfer",
   "title": "Transfer and refund context",
-  "description": "Review your balance, make a transfer and follow refunds and notices",
+  "description": "Review your balance, assess transfer risk, check suspicious messages and track refunds or reports",
+  "tabs": {
+    "label": "Transfer and verification workflow",
+    "transfer": "Transfer",
+    "check": "Check suspicious message",
+    "refund": "Refunds",
+    "history": "Recent transfers",
+    "reports": "Reports"
+  },
   "balance": {
     "title": "Balance summary",
-    "balance": "Balance",
-    "available": "Available balance",
-    "availableHint": "Available balance excludes funds currently on hold."
+    "balance": "Ledger balance",
+    "held": "On hold",
+    "available": "Available",
+    "availableHint": "Available balance excludes funds currently held for review."
   },
   "form": {
     "title": "New transfer",
-    "description": "Transfer money in VND to a saved recipient.",
+    "description": "Select a saved recipient and enter a VND amount to assess risk.",
+    "quickRecipients": "Quick recipients",
     "recipient": "Recipient",
     "recipientPlaceholder": "Select a recipient",
     "amount": "Amount (VND)",
-    "amountHint": "Whole numbers only, greater than 0.",
-    "submit": "Check and transfer",
+    "amountHint": "Positive whole numbers only (VND).",
+    "quickAmounts": "Quick amounts",
+    "submit": "Assess risk",
+    "restrictionTag": {
+      "WARN": "Warning",
+      "HOLD": "Hold"
+    },
     "errors": {
       "recipient": "Please select a recipient.",
-      "amount": "Enter a positive whole number in VND."
+      "amount": "Enter a positive whole number in VND.",
+      "insufficient": "Amount exceeds your available balance."
     }
   },
   "risk": {
     "title": "Risk assessment",
-    "empty": "Submit a transfer to see its risk assessment.",
+    "empty": "Submit a transfer on the left to view its risk assessment.",
     "allow": {
       "title": "No additional warning identified",
-      "description": "We did not find extra warnings for this transfer."
+      "description": "No configured intervention was triggered with the available evidence."
     },
     "warn": {
       "title": "Please review before continuing",
-      "description": "We found reasons you may want to double-check this transfer."
+      "description": "We identified signals you should double-check before confirming."
     },
     "hold": {
-      "title": "Transfer on hold for review",
-      "description": "Your transfer is pending review and the funds are being held."
+      "title": "Transfer held for review",
+      "description": "Funds are reserved from your available balance and have not been sent."
     },
-    "allowDisclaimer": "This is not a guarantee. Always verify the recipient yourself.",
+    "reservedAmount": "Reserved amount: {amount}",
+    "acknowledge": "I have read the warnings above and confirm I still want to proceed.",
+    "allowDisclaimer": "No additional warning is not a guarantee. Always verify the recipient yourself.",
     "recipientWarnings": "Recipient warnings",
     "behavioralWarnings": "Behavioral warnings",
     "none": "No warnings in this group.",
-    "deadline": "Review deadline: {date}. You can cancel the transfer at any time before then.",
-    "continue": "Continue",
+    "deadline": "Review deadline: {date}. You can cancel the hold at any time before then.",
+    "continue": "Confirm transfer",
     "cancel": "Cancel",
-    "cancelHold": "Cancel transfer",
+    "cancelHold": "Cancel hold",
     "status": {
       "completed": "Transfer completed.",
       "cancelled": "Transfer cancelled. No money was moved."
     },
     "signals": {
       "newRecipient": "You have not transferred to this recipient before.",
-      "reportedRecipient": "This recipient has been reported by other users.",
+      "reportedRecipient": "This recipient has an active restriction from verified reports.",
       "unusualAmount": "This amount is higher than your usual transfers.",
       "drainsBalance": "This transfer uses most of your available balance.",
       "highAmount": "This amount exceeds the automatic approval limit."
     }
   },
   "screenshot": {
-    "title": "Analyze a screenshot (optional)",
-    "description": "Upload a screenshot or paste text from a message to check it.",
+    "title": "Check suspicious message",
+    "description": "Upload a screenshot or paste a message so AI can cross-check official order records.",
     "upload": "Screenshot",
-    "text": "Or paste text",
-    "textPlaceholder": "Paste the message you received...",
+    "uploadHint": "Choose a PNG, JPG, or WebP image",
+    "removeFile": "Remove image",
+    "text": "Or paste message text",
+    "textPlaceholder": "Paste the message asking for a transfer, fee, or refund step...",
+    "fillSample": "Fill sample message",
     "linkDraft": "Link to a draft (optional)",
     "linkOrder": "Link to an order (optional)",
     "none": "None",
-    "analyze": "Analyze",
-    "result": "Analysis received (mock). No additional warning identified in the content provided. This is not a guarantee."
+    "analyze": "Analyze with AI"
+  },
+  "analysis": {
+    "title": "Analysis result",
+    "description": "AI extracts the request, cross-checks official records, and highlights missing facts.",
+    "empty": "Upload an image or paste text on the left and click Analyze to view results.",
+    "verdict": {
+      "MISMATCH": "Mismatch detected",
+      "CONSISTENT": "Consistent with records",
+      "UNCERTAIN": "Inconclusive"
+    },
+    "requestedAction": "Requested action",
+    "claimedPurpose": "Claimed purpose",
+    "references": "Extracted references",
+    "noReferences": "No reference codes extracted.",
+    "orderCheck": "Official order cross-check",
+    "orderAmount": "Order amount: {amount}",
+    "orderFee": "Recorded system fee: {fee}",
+    "feeUnknown": "No fee recorded",
+    "feeZero": "0 ₫ (no fee)",
+    "excerpts": "Source excerpts",
+    "missingInfo": "Missing information / caveats",
+    "disclaimer": "AI analysis supports review only and never certifies a sender as legitimate.",
+    "reportCta": "Create report from this evidence"
   },
   "refund": {
     "title": "Refund context",
-    "description": "Refunds linked to your orders.",
+    "description": "Track refund statuses linked to your orders.",
     "empty": "No refunds yet.",
     "refundAmount": "Refund: {amount}",
     "orderAmount": "Order: {amount}",
@@ -81,14 +124,61 @@
       "rejected": "Rejected"
     }
   },
-  "notices": {
-    "title": "Notices",
-    "description": "Messages sent to you.",
-    "empty": "No notices.",
-    "kind": { "risk": "Risk", "refund": "Refund", "info": "Information" },
+  "alerts": {
+    "title": "Alerts & updates",
+    "description": "Precautionary fraud alerts and refund updates sent to your account.",
+    "empty": "No alerts or updates yet.",
+    "kind": {
+      "risk": "Risk alert",
+      "refund": "Refund update",
+      "info": "Security tip"
+    },
     "items": {
-      "refundApproved": "Your refund for Order #5001 has been approved.",
-      "stayAlert": "We will never ask for your OTP or password by phone or message."
+      "refundImpersonation": "Precaution: Reports mention fake refund-fee messages referencing recent orders. Never transfer money outside official flows.",
+      "refundApproved": "Your refund for Order #5001 (1,250,000 ₫) is approved and settles directly to your wallet with no fee.",
+      "stayAlert": "Nemo will never ask you to transfer funds upfront, share an OTP, or give your password to receive a refund."
+    }
+  },
+  "history": {
+    "title": "Recent transfers",
+    "description": "History of completed, held, and cancelled transfers.",
+    "empty": "No transfers yet.",
+    "cancelHold": "Cancel hold",
+    "status": {
+      "completed": "Completed",
+      "held": "On hold",
+      "cancelled": "Cancelled"
+    }
+  },
+  "reports": {
+    "createTitle": "Submit a report",
+    "createDescription": "Report a suspicious recipient or message for operator review and tracing.",
+    "listTitle": "My reports",
+    "listDescription": "Reports you have submitted and their current review status.",
+    "empty": "You have not submitted any reports yet.",
+    "recipient": "Related recipient",
+    "recipientPlaceholder": "Select a recipient",
+    "category": "Report category",
+    "evidence": "Attached evidence",
+    "noEvidence": "No analyzed evidence attached",
+    "descriptionLabel": "Details",
+    "descriptionPlaceholder": "Describe the request, suspicious details, or related reference codes...",
+    "submit": "Submit report",
+    "submittedToast": "Report received (mock data).",
+    "errors": {
+      "recipient": "Please select a related recipient.",
+      "description": "Please provide details."
+    },
+    "categories": {
+      "scamRecipient": "Suspicious recipient",
+      "phishingMessage": "Fake refund / fee message",
+      "fraudOrder": "Fraudulent order"
+    },
+    "status": {
+      "received": "Received",
+      "inReview": "In review",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
     }
   }
 }

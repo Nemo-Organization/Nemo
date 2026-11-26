@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { formatVnd } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { QUICK_TRANSFER_AMOUNTS } from "../constants/transfer.constants";
 import type { Recipient } from "../types/transfer.types";
 
 const selectClass =
@@ -19,28 +23,50 @@ const selectClass =
 
 export function TransferForm({
   recipients,
+  availableBalance,
   disabled,
   onSubmit,
 }: {
   recipients: Recipient[];
+  availableBalance: number;
   disabled?: boolean;
   onSubmit: (value: { recipientId: string; amount: number }) => void;
 }) {
   const t = useTranslations("transfer.form");
+  const locale = useLocale();
   const [recipientId, setRecipientId] = useState("");
   const [amount, setAmount] = useState("");
-  const [errors, setErrors] = useState<{ recipient?: boolean; amount?: boolean }>({});
+  const [errors, setErrors] = useState<{
+    recipient?: boolean;
+    amount?: "invalid" | "insufficient";
+  }>({});
+
+  const selectRecipient = (id: string) => {
+    setRecipientId(id);
+    if (errors.recipient) setErrors((prev) => ({ ...prev, recipient: false }));
+  };
+
+  const updateAmount = (raw: string) => {
+    setAmount(raw);
+    if (errors.amount) setErrors((prev) => ({ ...prev, amount: undefined }));
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     const value = Number(amount);
-    const next = {
+    // VND: positive integer only.
+    const invalidAmount =
+      !/^\d+$/.test(amount) || !Number.isSafeInteger(value) || value <= 0;
+    const nextErrors: typeof errors = {
       recipient: !recipientId,
-      // VND: positive integer only.
-      amount: !/^\d+$/.test(amount) || !Number.isSafeInteger(value) || value <= 0,
+      amount: invalidAmount
+        ? "invalid"
+        : value > availableBalance
+          ? "insufficient"
+          : undefined,
     };
-    setErrors(next);
-    if (next.recipient || next.amount) return;
+    setErrors(nextErrors);
+    if (nextErrors.recipient || nextErrors.amount) return;
     onSubmit({ recipientId, amount: value });
   };
 
@@ -52,6 +78,53 @@ export function TransferForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">
+              {t("quickRecipients")}
+            </p>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {recipients.map((r) => {
+                const selected = recipientId === r.id;
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => selectRecipient(r.id)}
+                    className={cn(
+                      "flex flex-col items-start gap-1 border p-2.5 text-left transition-colors disabled:opacity-50",
+                      selected
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card hover:bg-accent/40",
+                    )}
+                  >
+                    <div className="flex w-full items-center justify-between gap-1">
+                      <span className="truncate text-xs font-medium text-foreground">
+                        {r.name}
+                      </span>
+                      {r.restriction && (
+                        <Badge
+                          variant="secondary"
+                          className={cn(
+                            "px-1.5 py-0 text-[10px]",
+                            r.restriction === "HOLD"
+                              ? "text-destructive"
+                              : "text-amber-600 dark:text-amber-400",
+                          )}
+                        >
+                          {t(`restrictionTag.${r.restriction}`)}
+                        </Badge>
+                      )}
+                    </div>
+                    <span className="text-[11px] tabular-nums text-muted-foreground">
+                      {r.bankCode} · {r.accountNumber}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="space-y-1.5">
             <label htmlFor="recipient" className="text-sm font-medium">
               {t("recipient")}
@@ -60,17 +133,14 @@ export function TransferForm({
               id="recipient"
               className={selectClass}
               value={recipientId}
-              onChange={(e) => {
-                setRecipientId(e.target.value);
-                if (errors.recipient) setErrors((prev) => ({ ...prev, recipient: false }));
-              }}
+              onChange={(e) => selectRecipient(e.target.value)}
               aria-invalid={errors.recipient}
               disabled={disabled}
             >
               <option value="">{t("recipientPlaceholder")}</option>
               {recipients.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.name} · {r.accountNumber}
+                  {r.name} · {r.bankCode} {r.accountNumber}
                 </option>
               ))}
             </select>
@@ -79,7 +149,7 @@ export function TransferForm({
             )}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label htmlFor="amount" className="text-sm font-medium">
               {t("amount")}
             </label>
@@ -88,16 +158,31 @@ export function TransferForm({
               inputMode="numeric"
               placeholder="500000"
               value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value.trim());
-                if (errors.amount) setErrors((prev) => ({ ...prev, amount: false }));
-              }}
-              aria-invalid={errors.amount}
+              onChange={(e) => updateAmount(e.target.value.trim())}
+              aria-invalid={Boolean(errors.amount)}
               disabled={disabled}
             />
+            <div className="flex flex-wrap gap-1.5" aria-label={t("quickAmounts")}>
+              {QUICK_TRANSFER_AMOUNTS.map((preset) => (
+                <Button
+                  key={preset}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={disabled}
+                  onClick={() => updateAmount(String(preset))}
+                  className="h-7 px-2 text-xs tabular-nums"
+                >
+                  {formatVnd(preset, locale)}
+                </Button>
+              ))}
+            </div>
             <p className="text-xs text-muted-foreground">{t("amountHint")}</p>
-            {errors.amount && (
+            {errors.amount === "invalid" && (
               <p className="text-xs text-destructive">{t("errors.amount")}</p>
+            )}
+            {errors.amount === "insufficient" && (
+              <p className="text-xs text-destructive">{t("errors.insufficient")}</p>
             )}
           </div>
 

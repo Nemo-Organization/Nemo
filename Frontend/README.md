@@ -1,6 +1,6 @@
 # Nemo — Frontend
 
-Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui (Base UI, `base-lyra` style, Phosphor icons) · next-intl · Redux Toolkit · TanStack Table v9 · Recharts.
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui (Base UI, `base-lyra` style, Phosphor icons) · next-intl · Redux Toolkit · Axios · TanStack Query · TanStack Table v9 · Recharts.
 
 > Read [AGENTS.md](./AGENTS.md) before writing code: this Next.js 16 version introduces breaking changes compared to earlier releases. Canonical documentation is bundled locally in `node_modules/next/dist/docs/`.
 
@@ -60,23 +60,27 @@ src/
 │  │  │                      `screenshot-analysis`, `analysis-result`, `refund-context`, `alerts-list`,
 │  │  │                      `recent-transfers`, `reports-panel`
 │  │  ├─ constants/          `transfer.constants.ts` (currency, thresholds, quick amounts)
-│  │  ├─ hooks/              `use-transfer-recipients.ts`
+│  │  ├─ hooks/              `use-transfer-recipients.ts`, `use-transfer-api.ts` (TanStack Query, ready to wire)
 │  │  ├─ lib/                `evaluate-risk.ts`, `analyze-message.ts` (mock engines)
 │  │  ├─ mocks/              `transfer.mock.ts`
-│  │  ├─ services/           `transfer.service.ts`
-│  │  └─ types/              `transfer.types.ts`
+│  │  ├─ services/           `transfer.service.ts` (Axios API functions, ready to wire)
+│  │  └─ types/              `transfer.types.ts`, `transfer-api.types.ts` (OpenAPI DTOs)
 │  ├─ operator/              Operator queues (reports, holds), case review, restrictions, notices
+│  │  ├─ services/           `operator.service.ts` (Axios API functions, ready to wire)
+│  │  ├─ hooks/              `use-operator-api.ts` (TanStack Query), mock hooks
+│  │  └─ types/              `operator.types.ts`, `operator-api.types.ts` (OpenAPI DTOs)
 │  └─ _template/             Starter template for new features (type-checked; see its README)
 ├─ layouts/                  Full-page layout shells shared across route groups (`app-layout.tsx`, `app-topbar.tsx`)
 ├─ components/
 │  ├─ ui/                    shadcn/ui primitives — DO NOT edit manually (CLI overwrites)
-│  ├─ layout/                Small reusable page building blocks (`page-breadcrumbs`, `page-header`, `page-container`)
+│  ├─ layout/                Reusable page building blocks (`page-header`, `page-container`, `page-tabs`)
+│  ├─ motion/                Motion primitives (`motion-provider`, `motion-card`, `collapse`, `animated-number`, `tab-panel-motion`)
 │  ├─ data-table/            Reusable TanStack Table v9 wrapper, pagination, sorting, faceted filters
-│  └─ shared/                Cross-feature shared components (`date-time`, `theme-sync`, `theme-toggle`)
+│  └─ shared/                Cross-feature shared components (`date-time`, `query-provider`, `theme-sync`, `theme-toggle`)
 ├─ config/                   App-wide configuration (`routes.ts`, `fonts.ts`)
-├─ hooks/                    Shared React hooks (`use-date-formatter.ts`, `use-mobile.ts`)
+├─ hooks/                    Shared React hooks (`use-date-formatter.ts`, `use-mobile.ts`, `use-tab-param.ts`)
 ├─ i18n/                     next-intl setup (`routing.ts`, `request.ts`, `navigation.ts`, `messages/{en,vi}/`)
-├─ lib/                      Pure utility helpers (`format.ts`, `theme.ts`, `utils.ts`)
+├─ lib/                      Pure utility helpers (`api-client.ts`, `format.ts`, `motion.ts`, `theme.ts`, `utils.ts`)
 ├─ store/                    Redux Toolkit store, typed hooks, provider, and slices (`ui-slice.ts`)
 └─ styles/overrides/         Per-component CSS overrides (`tokens`, `base`, `card`, `table`, `chart`, `input`, `overlay`, `progress`, `theme-toggle`)
 ```

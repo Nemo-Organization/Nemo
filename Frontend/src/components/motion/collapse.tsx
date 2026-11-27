@@ -2,8 +2,7 @@
 
 import { m, useReducedMotion, type HTMLMotionProps } from "motion/react";
 
-// Height + opacity reveal. Render as a keyed child of AnimatePresence.
-// Put spacing (padding) inside so it collapses with the content.
+// Height + opacity reveal inside AnimatePresence (keep padding inside).
 export function Collapse({ style, ...props }: HTMLMotionProps<"div">) {
   const reduceMotion = useReducedMotion();
   const collapsed = reduceMotion ? "auto" : 0;

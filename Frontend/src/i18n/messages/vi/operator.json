@@ -44,7 +44,26 @@
       "resolvedDone": "Đã xử lý báo cáo (mock).",
       "dismissedDone": "Đã bỏ qua báo cáo (mock)."
     },
-    "closedNote": "Báo cáo này đã đóng."
+    "fields": {
+      "recipient": "Người nhận bị báo cáo",
+      "reporter": "Người báo cáo",
+      "status": "Trạng thái",
+      "createdAt": "Thời gian tạo"
+    },
+    "review": {
+      "description": "Ghi lý do, tách bằng chứng về người nhận khỏi độ không chắc chắn về nguồn dữ liệu.",
+      "reason": "Lý do",
+      "reasonPlaceholder": "Ví dụ: Người nhận đã có HOLD từ 2 báo cáo độc lập; nguồn rò rỉ chưa xác định...",
+      "reasonRequired": "Vui lòng nhập lý do.",
+      "flow": "RECEIVED → IN_REVIEW → RESOLVED / DISMISSED. Trạng thái cuối không thể đổi.",
+      "cancel": "Hủy"
+    },
+    "tabs": {
+      "label": "Nội dung báo cáo",
+      "investigate": "Điều tra",
+      "decision": "Quyết định",
+      "notice": "Thông báo"
+    }
   },
   "holds": {
     "columns": {
@@ -61,46 +80,136 @@
       "reset": "Đặt lại"
     },
     "status": {
-      "pending": "Chờ duyệt",
-      "approved": "Đã duyệt",
+      "pending": "Chờ xem xét",
+      "approved": "Chờ KH xác nhận lại",
       "rejected": "Đã từ chối"
     },
     "open": "Mở",
-    "detailTitle": "Giao dịch bị giữ {id}",
-    "detailDescription": "Giao dịch {transferId} đang chờ được xem xét.",
-    "recipientSignals": "Cảnh báo về người nhận",
-    "behavioralSignals": "Cảnh báo về hành vi",
-    "noSignals": "Không có cảnh báo trong nhóm này.",
-    "actions": {
-      "approved": "Duyệt giao dịch",
-      "rejected": "Từ chối giao dịch",
-      "approvedDone": "Đã duyệt giao dịch (mock).",
-      "rejectedDone": "Đã từ chối giao dịch (mock)."
+    "detailTitle": "Giao dịch bị tạm giữ",
+    "description": {
+      "pending": "{transferId} đang chờ xem xét. Tiền đã được tạm giữ, chưa ghi nợ.",
+      "approved": "{transferId} đã được duyệt. Tiền vẫn đang tạm giữ, chưa gửi.",
+      "rejected": "{transferId} đã bị từ chối. Tiền tạm giữ đã được giải phóng."
     },
-    "decidedNote": "Giao dịch này đã có quyết định."
+    "fields": {
+      "customer": "Khách hàng",
+      "recipient": "Người nhận",
+      "amount": "Số tiền",
+      "status": "Trạng thái",
+      "deadline": "Hạn xem xét"
+    },
+    "signals": {
+      "recipient": "Tín hiệu người nhận",
+      "behavior": "Tín hiệu hành vi",
+      "recipientSource": "Hạn chế từ {reports} · tạo {date}"
+    },
+    "decision": {
+      "title": "Quyết định cho giao dịch này",
+      "description": "Duyệt hoặc từ chối riêng giao dịch này. Không thay đổi hạn chế toàn cục của người nhận.",
+      "reason": "Lý do",
+      "reasonPlaceholder": "Ví dụ: Khách hàng xác nhận qua kênh chính thức đây là thanh toán hợp lệ...",
+      "reasonRequired": "Vui lòng nhập lý do.",
+      "infoTitle": "Duyệt không gửi tiền",
+      "infoBody": "Duyệt → READY: giữ nguyên khoản tạm giữ và hạn {deadline}; khách hàng phải xác nhận lại. Từ chối → REJECTED: giải phóng tiền tạm giữ đúng một lần.",
+      "approve": "Duyệt → READY",
+      "reject": "Từ chối → REJECTED",
+      "approvedTitle": "Đã duyệt bởi {by} lúc {time} · READY",
+      "approvedBody": "Chưa có tiền nào được gửi. {customer} phải xác nhận lại trước {deadline} (hạn ban đầu). Nếu người nhận có hạn chế mới, giao dịch quay lại RISK_HELD.",
+      "rejectedTitle": "Đã từ chối bởi {by} lúc {time} · REJECTED",
+      "rejectedBody": "Đã giải phóng {amount} về số dư khả dụng của {customer}.",
+      "reasonLine": "Lý do: {reason}",
+      "approvedDone": "Đã duyệt giao dịch, chờ khách hàng xác nhận lại (mock).",
+      "rejectedDone": "Đã từ chối giao dịch và giải phóng tiền tạm giữ (mock)."
+    }
   },
   "evidence": {
     "title": "Bằng chứng gốc",
-    "description": "Nội dung khách hàng đã gửi ban đầu.",
-    "empty": "Không có bằng chứng đính kèm.",
-    "screenshotMock": "Ảnh chụp màn hình đính kèm: {name} (mock chưa hiển thị ảnh).",
-    "submittedAt": "Thời điểm gửi",
-    "linkedDraft": "Bản nháp liên kết",
-    "linkedOrder": "Đơn hàng liên kết"
+    "description": {
+      "report": "Những gì khách hàng đã gửi. Xem nguồn gốc thay vì chấp nhận kết luận được tạo sẵn.",
+      "hold": "Những gì khách hàng đã gửi."
+    },
+    "empty": {
+      "report": "Báo cáo không có bằng chứng đính kèm.",
+      "hold": "Khách hàng không gửi bằng chứng cho giao dịch này."
+    },
+    "emptyHint": "Bằng chứng là tùy chọn với giao dịch thông thường.",
+    "openOriginal": "Mở ảnh gốc qua đường dẫn đã xác thực · không có URL công khai",
+    "textSource": {
+      "transcription": "Bản chép từ ảnh · do mô hình tạo, có thể sai",
+      "customerText": "Văn bản khách hàng dán vào"
+    },
+    "submittedAt": "Gửi lúc",
+    "linkedTransfer": "Giao dịch liên kết",
+    "linkedOrder": "Đơn liên kết",
+    "customerAnalysis": "Phân tích của khách hàng"
   },
-  "trace": {
-    "title": "Kết quả truy vết",
-    "description": "Tham chiếu trong bằng chứng được đối chiếu với bản ghi issuance và access.",
-    "empty": "Không tìm thấy bản ghi khớp.",
-    "recordType": { "issuance": "Bản ghi issuance", "access": "Bản ghi access" },
-    "match": { "exact": "Khớp hoàn toàn", "partial": "Khớp một phần" }
+  "investigation": {
+    "title": "Điều tra với AI",
+    "description": "Một lần chạy có giới hạn, chỉ đọc dữ liệu trong sandbox. Kết quả là gợi ý để xem xét, không phải quyết định.",
+    "allowedTools": "Công cụ được phép:",
+    "limits": "Giới hạn: {seconds} giây · tối đa {models} lượt gọi mô hình · {tools} lần dùng công cụ. AI không thể chuyển/hủy tiền, tạo hạn chế hay phát hành thông báo.",
+    "run": "Điều tra với AI",
+    "running": "Đang điều tra…",
+    "runningHint": "AI đang đọc dữ liệu được cấp quyền. Kết quả hiển thị khi lần chạy hoàn tất.",
+    "rerun": "Chạy lại điều tra",
+    "rerunHint": "Mỗi lần chạy lại dùng khóa yêu cầu mới và tính vào hạn mức.",
+    "usage": "{models}/{maxModels} lượt gọi mô hình · {tools}/{maxTools} công cụ",
+    "findings": {
+      "title": "Phát hiện có dẫn nguồn",
+      "empty": "Không có phát hiện nào được giữ lại.",
+      "sources": "Nguồn:"
+    },
+    "relation": {
+      "supportsConcern": "Củng cố nghi ngờ",
+      "countersConcern": "Phản bác",
+      "unresolved": "Chưa giải quyết"
+    },
+    "signal": {
+      "CLAIMS_OFFICIAL_ROLE": "Mạo danh vai trò chính thức",
+      "URGENCY_PRESSURE": "Thúc ép gấp",
+      "OFF_PLATFORM_CHANNEL": "Kênh ngoài nền tảng",
+      "PAYEE_DIFFERS_FROM_SENDER": "Người nhận tiền khác người gửi",
+      "USES_ORDER_DETAILS": "Dùng thông tin đơn hàng",
+      "DISCOURAGES_VERIFICATION": "Ngăn cản xác minh",
+      "OTHER": "Dấu hiệu khác"
+    },
+    "related": {
+      "title": "Báo cáo liên quan ({count})",
+      "empty": "Không tìm thấy báo cáo liên quan.",
+      "note": "Độ tương đồng chỉ là giả thuyết, không chứng minh cùng một kẻ gian."
+    },
+    "trace": {
+      "title": "Truy vết mã tham chiếu",
+      "status": {
+        "MATCHED_SCOPE": "Đã khớp {count} mã · thu hẹp phạm vi điều tra",
+        "NO_MATCH": "Không có mã nào khớp hồ sơ phát hành",
+        "NO_REFERENCE": "Bằng chứng không có mã tham chiếu để truy vết"
+      },
+      "exact": "Khớp chính xác",
+      "batch": "Lô dữ liệu",
+      "partner": "Đối tác phát hành",
+      "issuedAt": "Phát hành",
+      "access": "Lượt truy cập lô {batch}",
+      "noAccess": "Không có lượt truy cập nào được ghi nhận.",
+      "beforeReport": "trước thời điểm báo cáo",
+      "candidates": "{count} khách hàng ứng viên có đơn trong {batch}"
+    },
+    "checks": "Đề xuất kiểm tra (văn bản, không phải nút)",
+    "missing": "Thông tin còn thiếu",
+    "limitations": "Giới hạn",
+    "activity": "Hoạt động đã hoàn tất ({count})",
+    "citationWarnings": "{count} trích dẫn không có nguồn hợp lệ đã bị loại khỏi kết quả."
   },
   "decision": {
     "title": "Quyết định về người nhận",
-    "description": "Tạo hoặc thu hồi hạn chế đối với người nhận này.",
+    "description": "Tạo hoặc thu hồi hạn chế. Quyết định tách biệt với gợi ý của AI.",
     "recipient": "Người nhận",
-    "current": "Hạn chế hiện tại",
-    "none": "Người nhận này chưa bị hạn chế.",
+    "active": "Hạn chế đang hiệu lực",
+    "metaCreated": "Tạo {createdAt} bởi {by}",
+    "metaEvidence": "Bằng chứng: {evidence}",
+    "metaExpires": "Hết hạn {expiresAt}",
+    "reasonLine": "Lý do: {reason}",
+    "none": "Người nhận này chưa có hạn chế hiệu lực.",
     "level": "Mức hạn chế",
     "warn": "WARN – cảnh báo khách trước khi chuyển",
     "hold": "HOLD – giữ giao dịch để xem xét",
@@ -110,23 +219,41 @@
     "create": "Tạo hạn chế",
     "revoke": "Thu hồi hạn chế",
     "created": "Đã tạo hạn chế (mock).",
-    "revoked": "Đã thu hồi hạn chế (mock)."
+    "revoked": "Đã thu hồi hạn chế (mock).",
+    "history": "Xem lịch sử ({count})",
+    "hideHistory": "Ẩn lịch sử",
+    "historyAction": {
+      "created": "Tạo hạn chế {level}",
+      "revoked": "Thu hồi hạn chế {level}"
+    },
+    "footnote": "Mỗi người nhận chỉ có một hạn chế hiệu lực. Thu hồi/tạo mới ghi một quyết định mới có kiểm toán, không ghi đè."
   },
   "notice": {
     "title": "Xem trước thông báo",
-    "description": "Kiểm tra danh sách khách nhận thông báo trước khi publish.",
-    "template": "Nội dung",
-    "templateBody": "Người nhận mà bạn đã chuyển tiền hoặc đang soạn giao dịch đã bị hạn chế. Vui lòng xem lại trước khi chuyển tiền.",
-    "audience": "{count} khách hàng sẽ nhận thông báo",
-    "empty": "Không có khách hàng nào cần thông báo.",
-    "reason": {
-      "transferredRecently": "Vừa chuyển tiền",
-      "hasDraft": "Có bản nháp đang mở"
+    "description": "Kiểm tra ai sẽ nhận thông báo trước khi phát hành.",
+    "notInvestigated": {
+      "title": "Chưa xác định phạm vi thông báo",
+      "hint": "Chạy Điều tra với AI ở tab Điều tra để truy vết lô dữ liệu liên quan."
     },
-    "publish": "Publish thông báo",
-    "confirm": "Publish thông báo này tới {count} khách hàng theo một lô?",
-    "confirmPublish": "Xác nhận và publish",
+    "noScope": {
+      "title": "Không có lô dữ liệu để thông báo",
+      "hint": "Lần điều tra không truy vết được mã tham chiếu nào."
+    },
+    "template": "Nội dung",
+    "audience": "{count} khách hàng có đơn trong {batch} sẽ nhận thông báo",
+    "derivedFrom": "Danh sách người nhận do máy chủ suy ra từ lô đã truy vết ({batch}).",
+    "locked": {
+      "title": "Cần đánh dấu báo cáo RESOLVED trước khi phát hành",
+      "hint": "Dùng nút \"Đánh dấu đã xử lý\" ở đầu trang."
+    },
+    "dismissed": {
+      "title": "Báo cáo đã bỏ qua",
+      "hint": "Không phát hành thông báo cho báo cáo đã bỏ qua."
+    },
+    "publish": "Phát hành thông báo",
+    "confirm": "Phát hành thông báo này tới {count} khách hàng theo một lô?",
+    "confirmPublish": "Xác nhận và phát hành",
     "back": "Quay lại",
-    "published": "Đã publish thông báo tới {count} khách hàng (mock)."
+    "published": "Đã phát hành thông báo tới {count} khách hàng (mock)."
   }
 }

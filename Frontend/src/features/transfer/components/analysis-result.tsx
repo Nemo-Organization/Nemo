@@ -16,16 +16,9 @@ import {
 } from "@/components/ui/card";
 import { useDateTimeFormatter } from "@/hooks/use-date-formatter";
 import { formatVnd } from "@/lib/format";
-import { cardVariants, itemVariants } from "@/lib/motion";
+import { cardMotion, itemVariants } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { AnalysisResult, AnalysisVerdict } from "../types/transfer.types";
-
-const CARD_MOTION = {
-  variants: cardVariants,
-  initial: "hidden",
-  animate: "visible",
-  exit: "exit",
-} as const;
 
 const VERDICT_TONE: Record<AnalysisVerdict, string> = {
   MISMATCH: "border-l-destructive",
@@ -48,13 +41,13 @@ export function AnalysisResultCard({
 }) {
   const t = useTranslations("transfer.analysis");
 
-  // initial={false}: no entrance when the tab remounts; only new results animate.
+  // Animate new results only; skip on tab remount.
   return (
     <AnimatePresence mode="wait" initial={false}>
       {result ? (
         <ResultCard key={result.id} result={result} onCreateReport={onCreateReport} />
       ) : (
-        <MotionCard key="empty" {...CARD_MOTION}>
+        <MotionCard key="empty" {...cardMotion}>
           <CardHeader>
             <CardTitle className="text-base font-semibold">{t("title")}</CardTitle>
             <CardDescription>{t("empty")}</CardDescription>
@@ -78,7 +71,7 @@ function ResultCard({
 
   return (
     <MotionCard
-      {...CARD_MOTION}
+      {...cardMotion}
       className={cn("border-l-4", VERDICT_TONE[result.verdict])}
     >
       <CardHeader>
@@ -95,7 +88,6 @@ function ResultCard({
         </div>
       </CardHeader>
 
-      {/* Each block reveals in turn, following the card's stagger. */}
       <CardContent className="space-y-4 text-sm">
         <m.div variants={itemVariants} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1 border p-3">

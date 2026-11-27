@@ -23,31 +23,37 @@ const selectClass =
 
 export function TransferForm({
   recipients,
+  recipientId,
+  amount,
   availableBalance,
   disabled,
+  onRecipientChange,
+  onAmountChange,
   onSubmit,
 }: {
   recipients: Recipient[];
+  recipientId: string;
+  amount: string;
   availableBalance: number;
   disabled?: boolean;
+  onRecipientChange: (id: string) => void;
+  onAmountChange: (amount: string) => void;
   onSubmit: (value: { recipientId: string; amount: number }) => void;
 }) {
   const t = useTranslations("transfer.form");
   const locale = useLocale();
-  const [recipientId, setRecipientId] = useState("");
-  const [amount, setAmount] = useState("");
   const [errors, setErrors] = useState<{
     recipient?: boolean;
     amount?: "invalid" | "insufficient";
   }>({});
 
   const selectRecipient = (id: string) => {
-    setRecipientId(id);
+    onRecipientChange(id);
     if (errors.recipient) setErrors((prev) => ({ ...prev, recipient: false }));
   };
 
   const updateAmount = (raw: string) => {
-    setAmount(raw);
+    onAmountChange(raw);
     if (errors.amount) setErrors((prev) => ({ ...prev, amount: undefined }));
   };
 

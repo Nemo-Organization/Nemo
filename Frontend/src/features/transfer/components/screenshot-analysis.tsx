@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useTranslations } from "next-intl";
-import { SparkleIcon, UploadSimpleIcon, XIcon } from "@phosphor-icons/react/ssr";
+import { UploadSimpleIcon, XIcon } from "@phosphor-icons/react/ssr";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,10 +21,26 @@ const selectClass =
 export function ScreenshotAnalysis({
   drafts,
   orders,
+  file,
+  text,
+  draftId,
+  orderId,
+  onFileChange,
+  onTextChange,
+  onDraftChange,
+  onOrderChange,
   onAnalyze,
 }: {
   drafts: Draft[];
   orders: Order[];
+  file: File | null;
+  text: string;
+  draftId: string;
+  orderId: string;
+  onFileChange: (file: File | null) => void;
+  onTextChange: (text: string) => void;
+  onDraftChange: (draftId: string) => void;
+  onOrderChange: (orderId: string) => void;
   onAnalyze: (payload: {
     fileName?: string;
     text: string;
@@ -34,22 +50,18 @@ export function ScreenshotAnalysis({
 }) {
   const t = useTranslations("transfer.screenshot");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [file, setFile] = useState<File | null>(null);
-  const [text, setText] = useState("");
-  const [draftId, setDraftId] = useState("");
-  const [orderId, setOrderId] = useState("");
 
   const canAnalyze = Boolean(file) || text.trim().length > 0;
 
   const handleClearFile = () => {
-    setFile(null);
+    onFileChange(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleFillSample = () => {
-    setText(mockSampleSuspiciousText);
-    if (orders[1]) setOrderId(orders[1].id);
-    if (drafts[1]) setDraftId(drafts[1].id);
+    onTextChange(mockSampleSuspiciousText);
+    if (orders[1]) onOrderChange(orders[1].id);
+    if (drafts[1]) onDraftChange(drafts[1].id);
   };
 
   const handleAnalyze = () => {
@@ -104,7 +116,7 @@ export function ScreenshotAnalysis({
               id="shot-file"
               type="file"
               accept="image/*"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              onChange={(e) => onFileChange(e.target.files?.[0] ?? null)}
               className="block w-full text-xs text-muted-foreground file:mr-3 file:border file:border-border file:bg-card file:px-2.5 file:py-1 file:text-xs file:font-medium file:text-foreground hover:file:bg-accent/50"
             />
           </div>
@@ -118,7 +130,7 @@ export function ScreenshotAnalysis({
             id="shot-text"
             rows={4}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => onTextChange(e.target.value)}
             placeholder={t("textPlaceholder")}
             className="w-full border border-input bg-card p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           />
@@ -133,7 +145,7 @@ export function ScreenshotAnalysis({
               id="shot-draft"
               className={selectClass}
               value={draftId}
-              onChange={(e) => setDraftId(e.target.value)}
+              onChange={(e) => onDraftChange(e.target.value)}
             >
               <option value="">{t("none")}</option>
               {drafts.map((d) => (
@@ -151,7 +163,7 @@ export function ScreenshotAnalysis({
               id="shot-order"
               className={selectClass}
               value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
+              onChange={(e) => onOrderChange(e.target.value)}
             >
               <option value="">{t("none")}</option>
               {orders.map((o) => (
@@ -164,7 +176,6 @@ export function ScreenshotAnalysis({
         </div>
 
         <Button disabled={!canAnalyze} onClick={handleAnalyze}>
-          <SparkleIcon data-icon="inline-start" aria-hidden />
           {t("analyze")}
         </Button>
       </CardContent>

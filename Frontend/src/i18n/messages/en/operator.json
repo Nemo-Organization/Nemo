@@ -44,7 +44,26 @@
       "resolvedDone": "Report resolved (mock).",
       "dismissedDone": "Report dismissed (mock)."
     },
-    "closedNote": "This report is closed."
+    "fields": {
+      "recipient": "Reported recipient",
+      "reporter": "Reported by",
+      "status": "Status",
+      "createdAt": "Created"
+    },
+    "review": {
+      "description": "Record a reason. Keep evidence about the recipient separate from uncertainty about the data source.",
+      "reason": "Reason",
+      "reasonPlaceholder": "E.g. The recipient already has a HOLD from 2 independent reports; the leak source is unknown...",
+      "reasonRequired": "Please enter a reason.",
+      "flow": "RECEIVED → IN_REVIEW → RESOLVED / DISMISSED. Final states cannot change.",
+      "cancel": "Cancel"
+    },
+    "tabs": {
+      "label": "Report sections",
+      "investigate": "Investigation",
+      "decision": "Decision",
+      "notice": "Notice"
+    }
   },
   "holds": {
     "columns": {
@@ -61,46 +80,136 @@
       "reset": "Reset"
     },
     "status": {
-      "pending": "Pending",
-      "approved": "Approved",
+      "pending": "Awaiting review",
+      "approved": "Awaiting customer re-confirmation",
       "rejected": "Rejected"
     },
     "open": "Open",
-    "detailTitle": "Held transfer {id}",
-    "detailDescription": "Transfer {transferId} is waiting for review.",
-    "recipientSignals": "Recipient warnings",
-    "behavioralSignals": "Behavioral warnings",
-    "noSignals": "No warnings in this group.",
-    "actions": {
-      "approved": "Approve transfer",
-      "rejected": "Reject transfer",
-      "approvedDone": "Transfer approved (mock).",
-      "rejectedDone": "Transfer rejected (mock)."
+    "detailTitle": "Held transfer",
+    "description": {
+      "pending": "{transferId} is awaiting review. Funds are reserved, not debited.",
+      "approved": "{transferId} was approved. Funds are still reserved, not sent.",
+      "rejected": "{transferId} was rejected. The reserved funds were released."
     },
-    "decidedNote": "A decision has already been made for this transfer."
+    "fields": {
+      "customer": "Customer",
+      "recipient": "Recipient",
+      "amount": "Amount",
+      "status": "Status",
+      "deadline": "Review deadline"
+    },
+    "signals": {
+      "recipient": "Recipient signal",
+      "behavior": "Behavior signal",
+      "recipientSource": "Restriction from {reports} · created {date}"
+    },
+    "decision": {
+      "title": "Decision for this transfer",
+      "description": "Approve or reject this transfer only. The recipient's global restriction does not change.",
+      "reason": "Reason",
+      "reasonPlaceholder": "E.g. The customer confirmed through an official channel that this is a valid payment...",
+      "reasonRequired": "Please enter a reason.",
+      "infoTitle": "Approval does not send money",
+      "infoBody": "Approve → READY: keeps the reservation and the {deadline} deadline; the customer must confirm again. Reject → REJECTED: releases the reserved funds exactly once.",
+      "approve": "Approve → READY",
+      "reject": "Reject → REJECTED",
+      "approvedTitle": "Approved by {by} at {time} · READY",
+      "approvedBody": "No money has been sent. {customer} must confirm again before {deadline} (original deadline). If the recipient gets a new restriction, the transfer returns to RISK_HELD.",
+      "rejectedTitle": "Rejected by {by} at {time} · REJECTED",
+      "rejectedBody": "Released {amount} back to {customer}'s available balance.",
+      "reasonLine": "Reason: {reason}",
+      "approvedDone": "Transfer approved, awaiting customer re-confirmation (mock).",
+      "rejectedDone": "Transfer rejected and reserved funds released (mock)."
+    }
   },
   "evidence": {
     "title": "Source evidence",
-    "description": "What the customer originally submitted.",
-    "empty": "No evidence was attached.",
-    "screenshotMock": "Screenshot attached: {name} (preview not available in mock).",
+    "description": {
+      "report": "What the customer submitted. Check the source instead of accepting a generated conclusion.",
+      "hold": "What the customer submitted."
+    },
+    "empty": {
+      "report": "This report has no attached evidence.",
+      "hold": "The customer did not submit evidence for this transfer."
+    },
+    "emptyHint": "Evidence is optional for ordinary transfers.",
+    "openOriginal": "Open the original image through an authenticated link · no public URL",
+    "textSource": {
+      "transcription": "Transcribed from the image · model-generated, may be wrong",
+      "customerText": "Text pasted by the customer"
+    },
     "submittedAt": "Submitted",
-    "linkedDraft": "Linked draft",
-    "linkedOrder": "Linked order"
+    "linkedTransfer": "Linked transfer",
+    "linkedOrder": "Linked order",
+    "customerAnalysis": "Customer analysis"
   },
-  "trace": {
-    "title": "Trace matches",
-    "description": "References from the evidence matched against issuance and access records.",
-    "empty": "No matching records found.",
-    "recordType": { "issuance": "Issuance record", "access": "Access record" },
-    "match": { "exact": "Exact match", "partial": "Partial match" }
+  "investigation": {
+    "title": "Investigate with AI",
+    "description": "One bounded, read-only run over sandbox data. The result is a suggestion to review, not a decision.",
+    "allowedTools": "Allowed tools:",
+    "limits": "Limits: {seconds} seconds · up to {models} model calls · {tools} tool uses. AI cannot move or cancel money, create restrictions or publish notices.",
+    "run": "Investigate with AI",
+    "running": "Investigating…",
+    "runningHint": "AI is reading the data it is permitted to access. Results appear when the run finishes.",
+    "rerun": "Run again",
+    "rerunHint": "Each rerun uses a new request key and counts toward the quota.",
+    "usage": "{models}/{maxModels} model calls · {tools}/{maxTools} tools",
+    "findings": {
+      "title": "Source-linked findings",
+      "empty": "No findings were retained.",
+      "sources": "Sources:"
+    },
+    "relation": {
+      "supportsConcern": "Supports concern",
+      "countersConcern": "Counters concern",
+      "unresolved": "Unresolved"
+    },
+    "signal": {
+      "CLAIMS_OFFICIAL_ROLE": "Claims an official role",
+      "URGENCY_PRESSURE": "Urgency pressure",
+      "OFF_PLATFORM_CHANNEL": "Off-platform channel",
+      "PAYEE_DIFFERS_FROM_SENDER": "Payee differs from sender",
+      "USES_ORDER_DETAILS": "Uses order details",
+      "DISCOURAGES_VERIFICATION": "Discourages verification",
+      "OTHER": "Other sign"
+    },
+    "related": {
+      "title": "Related reports ({count})",
+      "empty": "No related reports found.",
+      "note": "Similarity is a hypothesis, not proof of the same fraudster."
+    },
+    "trace": {
+      "title": "Reference trace",
+      "status": {
+        "MATCHED_SCOPE": "{count, plural, one {# code matched} other {# codes matched}} · narrows the investigation scope",
+        "NO_MATCH": "No code matched an issuance record",
+        "NO_REFERENCE": "The evidence has no reference code to trace"
+      },
+      "exact": "Exact match",
+      "batch": "Data batch",
+      "partner": "Issuing partner",
+      "issuedAt": "Issued",
+      "access": "Access to batch {batch}",
+      "noAccess": "No access was recorded.",
+      "beforeReport": "before the report",
+      "candidates": "{count, plural, one {# candidate customer has} other {# candidate customers have}} orders in {batch}"
+    },
+    "checks": "Recommended checks (text, not buttons)",
+    "missing": "Missing information",
+    "limitations": "Limitations",
+    "activity": "Completed activity ({count})",
+    "citationWarnings": "{count, plural, one {# citation without a valid source was} other {# citations without a valid source were}} removed from the result."
   },
   "decision": {
     "title": "Recipient decision",
-    "description": "Create or revoke a restriction on this recipient.",
+    "description": "Create or revoke a restriction. Decisions are separate from AI suggestions.",
     "recipient": "Recipient",
-    "current": "Current restriction",
-    "none": "This recipient has no restriction.",
+    "active": "Active restriction",
+    "metaCreated": "Created {createdAt} by {by}",
+    "metaEvidence": "Evidence: {evidence}",
+    "metaExpires": "Expires {expiresAt}",
+    "reasonLine": "Reason: {reason}",
+    "none": "This recipient has no active restriction.",
     "level": "Restriction level",
     "warn": "WARN – warn customers before they transfer",
     "hold": "HOLD – hold transfers for review",
@@ -110,18 +219,36 @@
     "create": "Create restriction",
     "revoke": "Revoke restriction",
     "created": "Restriction created (mock).",
-    "revoked": "Restriction revoked (mock)."
+    "revoked": "Restriction revoked (mock).",
+    "history": "View history ({count})",
+    "hideHistory": "Hide history",
+    "historyAction": {
+      "created": "Created {level} restriction",
+      "revoked": "Revoked {level} restriction"
+    },
+    "footnote": "A recipient has at most one active restriction. Revoking or creating records a new audited decision; nothing is overwritten."
   },
   "notice": {
     "title": "Notice preview",
     "description": "Check who will receive the notice before publishing.",
+    "notInvestigated": {
+      "title": "Notice scope not determined yet",
+      "hint": "Run Investigate with AI in the Investigation tab to trace the related data batch."
+    },
+    "noScope": {
+      "title": "No data batch to notify",
+      "hint": "The investigation did not trace any reference code."
+    },
     "template": "Message",
-    "templateBody": "A recipient you transferred to or drafted a transfer for has been restricted. Please review before sending money.",
-    "audience": "{count, plural, one {# customer will be notified} other {# customers will be notified}}",
-    "empty": "No customers to notify.",
-    "reason": {
-      "transferredRecently": "Transferred recently",
-      "hasDraft": "Has an open draft"
+    "audience": "{count, plural, one {# customer} other {# customers}} with orders in {batch} will be notified",
+    "derivedFrom": "The server derives recipients from the traced batch ({batch}).",
+    "locked": {
+      "title": "Mark the report RESOLVED before publishing",
+      "hint": "Use the \"Resolve\" button at the top of the page."
+    },
+    "dismissed": {
+      "title": "Report dismissed",
+      "hint": "Notices are not published for dismissed reports."
     },
     "publish": "Publish notice",
     "confirm": "Publish this notice to {count, plural, one {# customer} other {# customers}} as one batch?",

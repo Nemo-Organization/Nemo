@@ -25,6 +25,13 @@ import type {
   TransferStatus,
 } from "../types/transfer.types";
 
+const CARD_MOTION = {
+  variants: cardVariants,
+  initial: "hidden",
+  animate: "visible",
+  exit: "exit",
+} as const;
+
 const TONE: Record<RiskResultType["level"], string> = {
   ALLOW: "border-l-primary",
   WARN: "border-l-amber-500",

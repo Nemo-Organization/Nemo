@@ -13,11 +13,12 @@ import { ROUTES } from "@/config/routes";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
+// Regular weight on transfer arrows avoids stray duotone fill.
 const FEATURES = [
-  { key: "transfer", icon: ArrowsLeftRightIcon, iconClass: "text-teal-600 dark:text-teal-400" },
-  { key: "risk", icon: ShieldCheckIcon, iconClass: "text-emerald-600 dark:text-emerald-400" },
-  { key: "check", icon: SparkleIcon, iconClass: "text-sky-600 dark:text-sky-400" },
-  { key: "refund", icon: ReceiptIcon, iconClass: "text-amber-600 dark:text-amber-400" },
+  { key: "transfer", icon: ArrowsLeftRightIcon, weight: "regular", iconClass: "text-teal-600 dark:text-teal-400" },
+  { key: "risk", icon: ShieldCheckIcon, weight: "duotone", iconClass: "text-emerald-600 dark:text-emerald-400" },
+  { key: "check", icon: SparkleIcon, weight: "duotone", iconClass: "text-sky-600 dark:text-sky-400" },
+  { key: "refund", icon: ReceiptIcon, weight: "duotone", iconClass: "text-amber-600 dark:text-amber-400" },
 ] as const;
 
 export function HomeView() {
@@ -75,12 +76,12 @@ export function HomeView() {
           {t("features.title")}
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map(({ key, icon: Icon, iconClass }) => (
+          {FEATURES.map(({ key, icon: Icon, weight, iconClass }) => (
             <div
               key={key}
               className="space-y-3 border bg-card p-5 shadow-2xs transition-colors hover:border-primary/60 hover:bg-accent/35"
             >
-              <Icon className={cn("size-7", iconClass)} weight="duotone" aria-hidden />
+              <Icon className={cn("size-7", iconClass)} weight={weight} aria-hidden />
               <h3 className="font-semibold text-foreground">
                 {t(`features.items.${key}.title`)}
               </h3>

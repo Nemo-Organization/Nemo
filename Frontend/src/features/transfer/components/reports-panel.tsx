@@ -36,13 +36,15 @@ export function ReportsPanel({
   recipients,
   reports,
   evidences,
-  defaultEvidenceId,
+  evidenceId,
+  onEvidenceChange,
   onSubmitReport,
 }: {
   recipients: Recipient[];
   reports: CustomerReport[];
   evidences: AnalysisResult[];
-  defaultEvidenceId?: string;
+  evidenceId: string;
+  onEvidenceChange: (evidenceId: string) => void;
   onSubmitReport: (payload: {
     recipientId: string;
     category: CustomerReportCategory;
@@ -54,14 +56,11 @@ export function ReportsPanel({
   const formatDateTime = useDateTimeFormatter();
   const [recipientId, setRecipientId] = useState("");
   const [category, setCategory] = useState<CustomerReportCategory>("phishingMessage");
-  const [evidenceId, setEvidenceId] = useState(defaultEvidenceId ?? "");
   const [description, setDescription] = useState("");
   const [errors, setErrors] = useState<{
     recipient?: boolean;
     description?: boolean;
   }>({});
-
-  const selectedEvidenceId = evidenceId || defaultEvidenceId || "";
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -76,11 +75,10 @@ export function ReportsPanel({
       recipientId,
       category,
       description: description.trim(),
-      evidenceId: selectedEvidenceId || undefined,
+      evidenceId: evidenceId || undefined,
     });
     setRecipientId("");
     setDescription("");
-    setEvidenceId("");
     toast.success(t("submittedToast"));
   };
 
@@ -148,8 +146,8 @@ export function ReportsPanel({
                 <select
                   id="report-evidence"
                   className={selectClass}
-                  value={selectedEvidenceId}
-                  onChange={(e) => setEvidenceId(e.target.value)}
+                  value={evidenceId}
+                  onChange={(e) => onEvidenceChange(e.target.value)}
                 >
                   <option value="">{t("noEvidence")}</option>
                   {evidences.map((ev) => (
@@ -197,7 +195,7 @@ export function ReportsPanel({
           {reports.length === 0 && (
             <p className="text-sm text-muted-foreground">{t("empty")}</p>
           )}
-          {/* initial={false}: rows present on mount stay still; new rows slide in. */}
+          {/* Animate new rows only */}
           <AnimatePresence initial={false}>
             {reports.map((item) => (
               <m.div

@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
 
 import { MotionProvider } from '@/components/motion/motion-provider';
+import { QueryProvider } from '@/components/shared/query-provider';
 import { ThemeSync } from '@/components/shared/theme-sync';
 import { Toaster } from '@/components/ui/sonner';
 import { fontSans } from '@/config/fonts';
@@ -42,9 +43,11 @@ export default async function LocaleLayout({
       <body className="font-sans antialiased">
         <NextIntlClientProvider>
           <Suspense fallback={null}>
-            <StoreProvider>
-              <MotionProvider>{children}</MotionProvider>
-            </StoreProvider>
+            <QueryProvider>
+              <StoreProvider>
+                <MotionProvider>{children}</MotionProvider>
+              </StoreProvider>
+            </QueryProvider>
             <Toaster />
           </Suspense>
         </NextIntlClientProvider>

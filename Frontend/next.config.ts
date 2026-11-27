@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   reactCompiler: true,
+  async rewrites() {
+    return [{ source: "/favicon.ico", destination: "/icon.png" }];
+  },
   turbopack: {
     rules: {
       "*.css": {

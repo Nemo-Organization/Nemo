@@ -5,7 +5,7 @@ import { animate, useReducedMotion } from "motion/react";
 
 import { EASE_OUT } from "@/lib/motion";
 
-// Counts from the previous value to the new one. Server render shows the final value.
+// Animates numeric transitions on client; SSR renders final value.
 export function AnimatedNumber({
   value,
   format,

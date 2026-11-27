@@ -17,20 +17,13 @@ import {
 } from "@/components/ui/card";
 import { useDateTimeFormatter } from "@/hooks/use-date-formatter";
 import { formatVnd } from "@/lib/format";
-import { cardVariants, itemVariants } from "@/lib/motion";
+import { cardMotion, itemVariants } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type {
   RiskResult as RiskResultType,
   RiskSignal,
   TransferStatus,
 } from "../types/transfer.types";
-
-const CARD_MOTION = {
-  variants: cardVariants,
-  initial: "hidden",
-  animate: "visible",
-  exit: "exit",
-} as const;
 
 const TONE: Record<RiskResultType["level"], string> = {
   ALLOW: "border-l-primary",
@@ -72,7 +65,7 @@ export function RiskResult({
   const t = useTranslations("transfer.risk");
   const [ackedTransferId, setAckedTransferId] = useState<string | null>(null);
 
-  // initial={false}: no entrance when the tab remounts; only new results animate.
+  // Animate new results only; skip on tab remount.
   return (
     <AnimatePresence mode="wait" initial={false}>
       {risk && status ? (
@@ -88,7 +81,7 @@ export function RiskResult({
           onCancel={onCancel}
         />
       ) : (
-        <MotionCard key="empty" {...CARD_MOTION}>
+        <MotionCard key="empty" {...cardMotion}>
           <CardHeader>
             <CardTitle className="text-base font-semibold">{t("title")}</CardTitle>
             <CardDescription>{t("empty")}</CardDescription>
@@ -120,7 +113,7 @@ function ResultCard({
   const levelKey = risk.level.toLowerCase() as "allow" | "warn" | "hold";
 
   return (
-    <MotionCard {...CARD_MOTION} className={cn("border-l-4", TONE[risk.level])}>
+    <MotionCard {...cardMotion} className={cn("border-l-4", TONE[risk.level])}>
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="space-y-1">
@@ -134,7 +127,6 @@ function ResultCard({
       </CardHeader>
 
       <CardContent>
-        {/* Fixed for a given result; revealed one after another. */}
         <div className="space-y-4">
           {risk.level !== "ALLOW" && (
             <m.div
@@ -175,7 +167,7 @@ function ResultCard({
           )}
         </div>
 
-        {/* Changes with status. Spacing sits inside Collapse so it shrinks too. */}
+        {/* Keep spacing inside Collapse so it animates smoothly */}
         <AnimatePresence initial={false}>
           {status === "awaiting_decision" && (
             <Collapse key="acknowledge">

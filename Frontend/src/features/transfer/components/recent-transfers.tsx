@@ -48,7 +48,7 @@ export function RecentTransfers({
         {transfers.length === 0 && (
           <p className="text-sm text-muted-foreground">{t("empty")}</p>
         )}
-        {/* initial={false}: rows present on mount stay still; new rows slide in. */}
+        {/* Animate new rows only */}
         <AnimatePresence initial={false}>
           {transfers.map((item) => (
             <m.div

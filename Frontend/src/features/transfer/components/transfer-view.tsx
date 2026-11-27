@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { m } from "motion/react";
 import {
   ArrowsLeftRightIcon,
   ClockCounterClockwiseIcon,
@@ -13,13 +12,10 @@ import {
 
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
-import {
-  Tabs,
-  TabsContent,
-  TabsIndicator,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { PageTabsList } from "@/components/layout/page-tabs";
+import { TabPanelMotion } from "@/components/motion/tab-panel-motion";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { useTabParam } from "@/hooks/use-tab-param";
 import { analyzeSuspiciousMessage } from "../lib/analyze-message";
 import { evaluateRisk } from "../lib/evaluate-risk";
 import {
@@ -51,52 +47,42 @@ import { RiskResult } from "./risk-result";
 import { ScreenshotAnalysis } from "./screenshot-analysis";
 import { TransferForm } from "./transfer-form";
 
-type TransferTab = "transfer" | "check" | "refund" | "history" | "reports";
+const TABS = ["transfer", "check", "refund", "history", "reports"] as const;
+type TransferTab = (typeof TABS)[number];
 
-const TAB_ITEMS: { key: TransferTab; icon: typeof ArrowsLeftRightIcon }[] = [
-  { key: "transfer", icon: ArrowsLeftRightIcon },
-  { key: "check", icon: SparkleIcon },
-  { key: "refund", icon: ReceiptIcon },
-  { key: "history", icon: ClockCounterClockwiseIcon },
-  { key: "reports", icon: FlagIcon },
-];
-
-const tabIndex = (tab: TransferTab) => TAB_ITEMS.findIndex((item) => item.key === tab);
-
-// Panels mount on tab change; slide in from the side the user moved toward.
-// direction 0 = first render, no animation.
-function PanelMotion({
-  direction,
-  children,
-}: {
-  direction: -1 | 0 | 1;
-  children: React.ReactNode;
-}) {
-  return (
-    <m.div
-      initial={direction === 0 ? false : { opacity: 0, x: direction * 8 }}
-      animate={{ opacity: 1, x: 0 }}
-    >
-      {children}
-    </m.div>
-  );
-}
+const TAB_ICONS = {
+  transfer: ArrowsLeftRightIcon,
+  check: SparkleIcon,
+  refund: ReceiptIcon,
+  history: ClockCounterClockwiseIcon,
+  reports: FlagIcon,
+} satisfies Record<TransferTab, unknown>;
 
 export function TransferView() {
   const t = useTranslations("transfer");
-  const [activeTab, setActiveTab] = useState<TransferTab>("transfer");
-  const [panelDirection, setPanelDirection] = useState<-1 | 0 | 1>(0);
+  const {
+    active: activeTab,
+    setActive: changeTab,
+    direction: panelDirection,
+  } = useTabParam(TABS, { fallback: "transfer" });
+  // TODO(API): swap mock state below for hooks in ../hooks/use-transfer-api.ts.
   const [account, setAccount] = useState<AccountBalance>(mockAccount);
+  const [recipientId, setRecipientId] = useState("");
+  const [amountInput, setAmountInput] = useState("");
   const [risk, setRisk] = useState<RiskResultType | null>(null);
   const [status, setStatus] = useState<TransferStatus | null>(null);
+  const [shotFile, setShotFile] = useState<File | null>(null);
+  const [shotText, setShotText] = useState("");
+  const [shotDraftId, setShotDraftId] = useState("");
+  const [shotOrderId, setShotOrderId] = useState("");
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [evidences, setEvidences] = useState<AnalysisResult[]>([]);
-  const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | undefined>();
+  const [selectedEvidenceId, setSelectedEvidenceId] = useState("");
   const [recentTransfers, setRecentTransfers] =
     useState<RecentTransfer[]>(mockRecentTransfers);
   const [reports, setReports] = useState<CustomerReport[]>(mockCustomerReports);
 
-  // Lock form while a transfer awaits decision or review.
+  // Lock form while awaiting decision or hold review.
   const isBusy = status === "awaiting_decision" || status === "held";
 
   const debit = (amount: number) =>
@@ -168,7 +154,7 @@ export function TransferView() {
   };
 
   const handleContinue = () => {
-    if (!risk) return;
+    if (!risk || status !== "awaiting_decision" || risk.amount > account.available) return;
     debit(risk.amount);
     setStatus("completed");
     appendTransfer(risk.transferId, risk.recipientId, risk.amount, "completed");
@@ -196,7 +182,7 @@ export function TransferView() {
   };
 
   const handleCancel = () => {
-    if (!risk) return;
+    if (!risk || (status !== "awaiting_decision" && status !== "held")) return;
     if (status === "held") {
       releaseHeldTransfer(risk.transferId);
       return;
@@ -221,12 +207,6 @@ export function TransferView() {
     const result = analyzeSuspiciousMessage({ text, fileName, draft, order });
     setAnalysis(result);
     setEvidences((prev) => [result, ...prev]);
-  };
-
-  const changeTab = (next: TransferTab) => {
-    if (next === activeTab) return;
-    setPanelDirection(tabIndex(next) > tabIndex(activeTab) ? 1 : -1);
-    setActiveTab(next);
   };
 
   const handleCreateReportFromAnalysis = (item: AnalysisResult) => {
@@ -260,7 +240,7 @@ export function TransferView() {
       },
       ...prev,
     ]);
-    setSelectedEvidenceId(undefined);
+    setSelectedEvidenceId("");
   };
 
   return (
@@ -274,35 +254,27 @@ export function TransferView() {
         onValueChange={(value) => changeTab(value as TransferTab)}
         className="space-y-5"
       >
-        {/* Scrolls horizontally on narrow screens instead of wrapping. */}
-        <TabsList
-          aria-label={t("tabs.label")}
-          className="flex h-auto w-full justify-start gap-1 overflow-x-auto border border-border bg-muted/60 p-1 group-data-horizontal/tabs:h-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          <TabsIndicator renderBeforeHydration className="bg-primary shadow-sm" />
-          {TAB_ITEMS.map(({ key, icon: Icon }) => (
-            <TabsTrigger
-              key={key}
-              value={key}
-              className="h-9 gap-2 px-3 text-xs font-medium text-muted-foreground transition-colors duration-300 not-data-active:hover:bg-background/70 data-active:bg-transparent data-active:text-primary-foreground data-active:hover:text-primary-foreground dark:data-active:border-transparent dark:data-active:bg-transparent dark:data-active:text-primary-foreground dark:data-active:hover:text-primary-foreground"
-            >
-              <Icon
-                className="size-4"
-                weight={activeTab === key ? "fill" : "regular"}
-                aria-hidden
-              />
-              <span>{t(`tabs.${key}`)}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <PageTabsList
+          label={t("tabs.label")}
+          active={activeTab}
+          items={TABS.map((value) => ({
+            value,
+            label: t(`tabs.${value}`),
+            icon: TAB_ICONS[value],
+          }))}
+        />
 
         <TabsContent value="transfer" className="mt-0">
-          <PanelMotion direction={panelDirection}>
+          <TabPanelMotion direction={panelDirection}>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <TransferForm
                 recipients={mockRecipients}
+                recipientId={recipientId}
+                amount={amountInput}
                 availableBalance={account.available}
                 disabled={isBusy}
+                onRecipientChange={setRecipientId}
+                onAmountChange={setAmountInput}
                 onSubmit={handleSubmitTransfer}
               />
               <RiskResult
@@ -312,15 +284,23 @@ export function TransferView() {
                 onCancel={handleCancel}
               />
             </div>
-          </PanelMotion>
+          </TabPanelMotion>
         </TabsContent>
 
         <TabsContent value="check" className="mt-0">
-          <PanelMotion direction={panelDirection}>
+          <TabPanelMotion direction={panelDirection}>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <ScreenshotAnalysis
                 drafts={mockDrafts}
                 orders={mockOrders}
+                file={shotFile}
+                text={shotText}
+                draftId={shotDraftId}
+                orderId={shotOrderId}
+                onFileChange={setShotFile}
+                onTextChange={setShotText}
+                onDraftChange={setShotDraftId}
+                onOrderChange={setShotOrderId}
                 onAnalyze={handleAnalyzeMessage}
               />
               <AnalysisResultCard
@@ -328,37 +308,38 @@ export function TransferView() {
                 onCreateReport={handleCreateReportFromAnalysis}
               />
             </div>
-          </PanelMotion>
+          </TabPanelMotion>
         </TabsContent>
 
         <TabsContent value="refund" className="mt-0">
-          <PanelMotion direction={panelDirection}>
+          <TabPanelMotion direction={panelDirection}>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <RefundContext refunds={mockRefunds} orders={mockOrders} />
               <AlertsList alerts={mockAlerts} />
             </div>
-          </PanelMotion>
+          </TabPanelMotion>
         </TabsContent>
 
         <TabsContent value="history" className="mt-0">
-          <PanelMotion direction={panelDirection}>
+          <TabPanelMotion direction={panelDirection}>
             <RecentTransfers
               transfers={recentTransfers}
               onCancelHold={releaseHeldTransfer}
             />
-          </PanelMotion>
+          </TabPanelMotion>
         </TabsContent>
 
         <TabsContent value="reports" className="mt-0">
-          <PanelMotion direction={panelDirection}>
+          <TabPanelMotion direction={panelDirection}>
             <ReportsPanel
               recipients={mockRecipients}
               reports={reports}
               evidences={evidences}
-              defaultEvidenceId={selectedEvidenceId}
+              evidenceId={selectedEvidenceId}
+              onEvidenceChange={setSelectedEvidenceId}
               onSubmitReport={handleSubmitReport}
             />
-          </PanelMotion>
+          </TabPanelMotion>
         </TabsContent>
       </Tabs>
     </PageContainer>
